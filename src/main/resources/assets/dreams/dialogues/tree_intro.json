@@ -1,0 +1,49 @@
+{
+  "start": "caida",
+  "nodes": {
+    "caida": {
+      "speaker": "dreams:narrator",
+      "text": "Una hoja se desprende de la rama más alta y cae, despacio, hasta tocar la tierra.",
+      "next": "despertar"
+    },
+    "despertar": {
+      "speaker": "dreams:tree",
+      "expression": "neutral",
+      "text": "Despierta, pequeña hoja... Has caído justo a tiempo.",
+      "next": "presentacion"
+    },
+    "presentacion": {
+      "speaker": "dreams:tree",
+      "expression": "neutral",
+      "text": "Soy el Árbol Madre. Soñé este mundo mucho antes de que existieras, y ahora tú eres parte de ese sueño.",
+      "next": "problema"
+    },
+    "problema": {
+      "speaker": "dreams:tree",
+      "expression": "sad",
+      "text": "Algo anda mal. Mis raíces se enfrían y mis ramas se secan. Antes alguien velaba por mí, pero... se fue.",
+      "choices": [
+        { "text": "¿Quién se fue?", "next": "quien" },
+        { "text": "¿Qué puedo hacer yo?", "next": "ayuda" }
+      ]
+    },
+    "quien": {
+      "speaker": "dreams:tree",
+      "expression": "sad",
+      "text": "No me pidas que lo diga todavía. Duele más de lo que parece... Solo sé que hay que encontrarlo.",
+      "next": "camino"
+    },
+    "ayuda": {
+      "speaker": "dreams:tree",
+      "expression": "happy",
+      "text": "Eres pequeña, pero naciste de mí. Eso es más fuerza de la que crees.",
+      "next": "camino"
+    },
+    "camino": {
+      "speaker": "dreams:tree",
+      "expression": "happy",
+      "text": "Camina hacia el este, donde los bosques todavía recuerdan los cuentos. Las otras hojas ya despiertan a tu lado.",
+      "next": null
+    }
+  }
+}

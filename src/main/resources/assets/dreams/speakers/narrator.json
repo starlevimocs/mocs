@@ -1,0 +1,10 @@
+{
+  "name": "...",
+  "color": "#B8C4D6",
+  "voice": {
+    "sound": "minecraft:block.note_block.chime",
+    "pitch": 1.2,
+    "variance": 0.05,
+    "volume": 0.35
+  }
+}
