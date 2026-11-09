@@ -1,0 +1,6 @@
+{
+  "item.dreams.spawn_wand": "Spawn Wand",
+  "item.dreams.spawn_wand.tooltip.a": "Left click on a block: set point A",
+  "item.dreams.spawn_wand.tooltip.b": "Right click on a block: set point B",
+  "item.dreams.spawn_wand.tooltip.menu": "Right click in the air (or sneak + right click): open the menu"
+}

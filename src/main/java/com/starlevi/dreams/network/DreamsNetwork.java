@@ -8,7 +8,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class DreamsNetwork {
-    private static final String PROTOCOL = "1";
+    private static final String PROTOCOL = "2";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(DreamsMod.MOD_ID, "main"),
@@ -23,6 +23,10 @@ public final class DreamsNetwork {
         int id = 0;
         CHANNEL.registerMessage(id++, OpenDialoguePacket.class,
                 OpenDialoguePacket::encode, OpenDialoguePacket::decode, OpenDialoguePacket::handle);
+        CHANNEL.registerMessage(id++, SyncSpawnPacket.class,
+                SyncSpawnPacket::encode, SyncSpawnPacket::decode, SyncSpawnPacket::handle);
+        CHANNEL.registerMessage(id++, SpawnActionPacket.class,
+                SpawnActionPacket::encode, SpawnActionPacket::decode, SpawnActionPacket::handle);
     }
 
     public static void openDialogue(ServerPlayer player, ResourceLocation dialogueId) {

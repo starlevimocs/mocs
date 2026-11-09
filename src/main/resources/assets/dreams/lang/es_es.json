@@ -1,0 +1,6 @@
+{
+  "item.dreams.spawn_wand": "Varita de spawn",
+  "item.dreams.spawn_wand.tooltip.a": "Clic izquierdo en un bloque: marcar el punto A",
+  "item.dreams.spawn_wand.tooltip.b": "Clic derecho en un bloque: marcar el punto B",
+  "item.dreams.spawn_wand.tooltip.menu": "Clic derecho al aire (o agachado + clic derecho): abrir el menu"
+}
