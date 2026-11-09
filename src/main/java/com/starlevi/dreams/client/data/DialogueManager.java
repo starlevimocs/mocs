@@ -92,6 +92,8 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
                 }
             }
         }
-        return new Dialogue(id, start, Map.copyOf(nodes));
+        String cinematic = root.has("cinematic") && !root.get("cinematic").isJsonNull()
+                ? GsonHelper.getAsString(root, "cinematic") : null;
+        return new Dialogue(id, start, Map.copyOf(nodes), cinematic);
     }
 }

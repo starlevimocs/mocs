@@ -8,9 +8,10 @@ import java.util.Map;
 /**
  * Una conversacion completa: un grafo de nodos. Cada nodo es una linea dicha por un personaje.
  *
- * @param start id del nodo con el que empieza
+ * @param start     id del nodo con el que empieza
+ * @param cinematic nombre de una cinematica que se reproduce mientras dura el dialogo (puede ser null)
  */
-public record Dialogue(ResourceLocation id, String start, Map<String, Node> nodes) {
+public record Dialogue(ResourceLocation id, String start, Map<String, Node> nodes, String cinematic) {
 
     /**
      * @param speaker    id del personaje (archivo en assets/&lt;ns&gt;/speakers/)

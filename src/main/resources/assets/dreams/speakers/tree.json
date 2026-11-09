@@ -1,11 +1,6 @@
 {
   "name": "Árbol Madre",
   "color": "#7FD99A",
-  "portraits": {
-    "neutral": "dreams:textures/gui/portraits/tree_neutral.png",
-    "sad": "dreams:textures/gui/portraits/tree_sad.png",
-    "happy": "dreams:textures/gui/portraits/tree_happy.png"
-  },
   "voice": {
     "sound": "minecraft:block.note_block.didgeridoo",
     "pitch": 0.75,

@@ -1,6 +1,6 @@
 # Dreams (mod de diálogos)
 
-Mod para **Forge 1.20.1** con diálogos estilo novela visual (retratos, texto letra por letra y voces de bips) para el servidor Dreams. No depende de ningún otro mod.
+Mod para **Forge 1.20.1** con diálogos estilo novela visual (texto letra por letra y voces de bips), cinemáticas y control de spawn para el servidor Dreams. No depende de ningún otro mod.
 
 ## Compilar
 
@@ -32,12 +32,10 @@ Todo vive en `src/main/resources/assets/dreams/` (también funciona en un resour
 {
   "name": "Árbol Madre",
   "color": "#7FD99A",
-  "portraits": { "neutral": "dreams:textures/gui/portraits/tree_neutral.png" },
   "voice": { "sound": "minecraft:block.note_block.didgeridoo", "pitch": 0.75, "variance": 0.08, "volume": 0.7 }
 }
 ```
 
-- `portraits`: un PNG por expresión. Si no existe la imagen, se muestra un recuadro de color con la inicial. Si una expresión no tiene retrato, usa `neutral`.
 - `voice`: el sonido que se repite por cada letra, con tono base y variación aleatoria. Sirve cualquier sonido de Minecraft; para sonidos propios, agregá un `.ogg` y declaralo en `assets/dreams/sounds.json`.
 
 ### Diálogos: `dialogues/<nombre>.json`
@@ -46,13 +44,79 @@ Un diálogo es un grafo de nodos. Cada nodo es una línea de un personaje:
 
 | Campo | Qué hace |
 |---|---|
+| `cinematic` | (a nivel del diálogo, junto a `start`) nombre de una cinemática que se reproduce mientras dura el diálogo. |
 | `speaker` | Personaje (`dreams:tree` apunta a `speakers/tree.json`). |
-| `expression` | Retrato a mostrar (por defecto `neutral`). |
+| `expression` | Reservado para más adelante (por ahora no se muestra). |
 | `text` | La línea. Entran unas 5 líneas de texto en la caja. |
 | `next` | Nodo siguiente. `null` o ausente: termina la conversación. |
 | `choices` | Lista de opciones `{ "text", "next" }`. Si existe, se ignora `next`. |
 
 El texto hace pausas en `,` `;` `:` y pausas largas en `.` `!` `?` y `…`.
+
+## Cinemáticas
+
+Una cámara que se mueve sola mientras los jugadores miran. Se reproduce para **todos a la vez** (o para quienes elijas). Durante la cinemática el jugador no se mueve, no recibe daño, no ve el HUD y aparecen barras negras de cine. Con **Esc** cada jugador puede saltarla.
+
+Todo se maneja con comandos de operador, y las cinemáticas se guardan en el mundo.
+
+### Camino por puntos
+
+Parate donde empieza la cámara, mirando hacia donde querés, y marcá el primer punto. Después andá al siguiente lugar y marcá otro, y así.
+
+```
+/dreams cinematic point add hoja 3     # punto 1 (el tiempo no cuenta en el primero)
+/dreams cinematic point add hoja 4     # punto 2: la cámara tarda 4 s en llegar acá
+/dreams cinematic point add hoja 6     # punto 3: tarda 6 s
+/dreams cinematic preview hoja         # verla solo vos
+/dreams cinematic play hoja            # verla todos
+```
+
+La cámara pasa por todos los puntos con una curva suave, y también interpola hacia dónde mirás. `point undo <nombre>` quita el último punto y `point clear <nombre>` los borra todos.
+
+### Órbita (dar vueltas alrededor de algo)
+
+Mirá el bloque central (por ejemplo, la base del Árbol Madre) y escribí:
+
+```
+/dreams cinematic orbit tree_orbit <radio> <segundos> [altura] [grados] [alturaMirada]
+/dreams cinematic orbit tree_orbit 25 30 12 360 15
+```
+
+Da una vuelta completa (360°) a 25 bloques de distancia, 12 bloques por encima, mirando 15 bloques arriba del centro (la copa).
+
+### Con un diálogo
+
+Poné el nombre en el JSON del diálogo, junto a `start`:
+
+```json
+{ "cinematic": "tree_orbit", "start": "caida", "nodes": { } }
+```
+
+Mientras el diálogo está abierto la cinemática se repite en bucle, y se corta cuando se cierra. Si la cinemática no existe, el diálogo funciona igual, sin cámara.
+
+### Encadenar cosas
+
+`onend` ejecuta un comando cuando la cinemática termina, por ejemplo para abrir el diálogo del árbol justo después de ver nacer a los jugadores:
+
+```
+/dreams cinematic onend hoja dreams dialogue dreams:tree_intro @a
+```
+
+### Resto de comandos
+
+| Comando | Qué hace |
+|---|---|
+| `play <nombre> [jugadores]` | La ven todos, o los que elijas (`@a`, un nombre...) |
+| `preview <nombre>` | Solo para vos |
+| `stop [jugadores]` | Corta la cinemática |
+| `hideplayers <nombre> true` | Oculta a los jugadores mientras dura |
+| `onend <nombre> <comando>` / `onend <nombre> clear` | Comando al terminar |
+| `list`, `info <nombre>`, `remove <nombre>` | Consultar y borrar |
+
+### Límites
+
+- La cámara solo ve lo que el cliente tiene cargado, así que conviene que la cinemática transcurra cerca de los jugadores (dentro de su distancia de renderizado).
+- Los puntos se marcan con comandos; una varita para marcarlos con clic puede venir después.
 
 ## Control de spawn natural (varita)
 
@@ -100,9 +164,11 @@ src/main/java/com/starlevi/dreams/
   network/                    paquete servidor -> cliente que abre el diálogo
   dialogue/                   modelos (Dialogue, Speaker)
   spawn/                      reglas, zonas, persistencia y evento de spawn
+  cinematic/                  cinemáticas: datos, camino, comandos y lado servidor
   item/                       varita de spawn
   client/data/                cargadores de JSON (cliente)
-  client/screen/              DialogueScreen: la pantalla de novela visual
+  client/screen/              DialogueScreen y SpawnControlScreen
+  client/CinematicClient.java la cámara de las cinemáticas
 ```
 
 ## Próximos pasos

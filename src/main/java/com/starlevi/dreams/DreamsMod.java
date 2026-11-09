@@ -1,6 +1,7 @@
 package com.starlevi.dreams;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.starlevi.dreams.cinematic.CinematicCommands;
 import com.starlevi.dreams.item.ModItems;
 import com.starlevi.dreams.network.DreamsNetwork;
 import com.starlevi.dreams.network.SpawnNet;
@@ -51,6 +52,7 @@ public class DreamsMod {
      * /dreams dialogue &lt;id&gt; [jugadores]   abre un dialogo
      * /dreams spawn                       abre el menu de control de spawn
      * /dreams spawn wand                  te da la varita de spawn
+     * /dreams cinematic ...              crea y reproduce cinematicas (ver el README)
      */
     private static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("dreams")
@@ -88,6 +90,7 @@ public class DreamsMod {
                                         player.drop(wand, false);
                                     }
                                     return 1;
-                                }))));
+                                })))
+                .then(CinematicCommands.build()));
     }
 }

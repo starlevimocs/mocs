@@ -1,6 +1,6 @@
 package com.starlevi.dreams.client.screen;
 
-import com.mojang.blaze3d.platform.NativeImage;
+import com.starlevi.dreams.client.CinematicClient;
 import com.starlevi.dreams.client.data.SpeakerManager;
 import com.starlevi.dreams.dialogue.Dialogue;
 import com.starlevi.dreams.dialogue.Speaker;
@@ -13,20 +13,13 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Pantalla de dialogo estilo novela visual: caja de texto abajo, retrato arriba a la izquierda,
@@ -36,7 +29,6 @@ public class DialogueScreen extends Screen {
     private static final int BOX_HEIGHT = 96;
     private static final int MARGIN = 16;
     private static final int PADDING = 12;
-    private static final int PORTRAIT_SIZE = 128;
 
     private static final long BASE_DELAY_MS = 28;
     private static final long COMMA_DELAY_MS = 140;
@@ -44,11 +36,8 @@ public class DialogueScreen extends Screen {
     private static final long BLIP_MIN_INTERVAL_MS = 45;
     private static final int BLIP_EVERY_N_LETTERS = 2;
 
-    private static final int[] NO_TEXTURE = new int[0];
-
     private final Dialogue dialogue;
     private final RandomSource random = RandomSource.create();
-    private final Map<ResourceLocation, int[]> textureSizes = new HashMap<>();
 
     private Dialogue.Node node;
     private Speaker speaker;
@@ -70,6 +59,9 @@ public class DialogueScreen extends Screen {
     protected void init() {
         if (node == null) {
             goTo(dialogue.start());
+            if (dialogue.cinematic() != null) {
+                CinematicClient.requestForDialogue(dialogue.cinematic());
+            }
         } else {
             wrap();
             if (choicesShown) {
@@ -81,6 +73,14 @@ public class DialogueScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        if (dialogue.cinematic() != null) {
+            CinematicClient.dialogueClosed();
+        }
     }
 
     // ---------------------------------------------------------------- flujo
@@ -199,7 +199,6 @@ public class DialogueScreen extends Screen {
         int boxTop = boxBottom - BOX_HEIGHT;
         int accent = 0xFF000000 | speaker.color();
 
-        renderPortrait(g, boxLeft + 8, boxTop - 18, accent);
 
         // caja de texto
         g.fill(boxLeft - 2, boxTop - 2, boxRight + 2, boxBottom + 2, accent);
@@ -233,52 +232,6 @@ public class DialogueScreen extends Screen {
         }
 
         super.render(g, mouseX, mouseY, partialTick);
-    }
-
-    private void renderPortrait(GuiGraphics g, int x, int bottomY, int accent) {
-        int size = Math.min(PORTRAIT_SIZE, bottomY - 8);
-        if (size < 32) {
-            return;
-        }
-        int y = bottomY - size;
-
-        ResourceLocation texture = speaker.portrait(node.expression());
-        int[] dims = texture == null ? null : textureSize(texture);
-        if (dims != null) {
-            int w = Math.max(1, size * dims[0] / dims[1]);
-            g.blit(texture, x, y, w, size, 0.0F, 0.0F, dims[0], dims[1], dims[0], dims[1]);
-        } else {
-            // Sin retrato: un recuadro de color con la inicial del personaje.
-            g.fill(x, y, x + size, y + size, accent);
-            g.fill(x + 2, y + 2, x + size - 2, y + size - 2, 0xFF1A1A26);
-            String initial = speaker.displayName().isEmpty() ? "?" : speaker.displayName().substring(0, 1);
-            g.pose().pushPose();
-            g.pose().translate(x + size / 2.0F, y + size / 2.0F, 0.0F);
-            g.pose().scale(4.0F, 4.0F, 1.0F);
-            g.drawString(font, initial, -font.width(initial) / 2, -font.lineHeight / 2, accent, false);
-            g.pose().popPose();
-        }
-    }
-
-    private int[] textureSize(ResourceLocation texture) {
-        int[] size = textureSizes.get(texture);
-        if (size == null) {
-            size = readTextureSize(texture);
-            textureSizes.put(texture, size);
-        }
-        return size.length == 0 ? null : size;
-    }
-
-    private static int[] readTextureSize(ResourceLocation texture) {
-        Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(texture);
-        if (resource.isEmpty()) {
-            return NO_TEXTURE;
-        }
-        try (InputStream in = resource.get().open(); NativeImage image = NativeImage.read(in)) {
-            return new int[]{image.getWidth(), image.getHeight()};
-        } catch (IOException e) {
-            return NO_TEXTURE;
-        }
     }
 
     // ---------------------------------------------------------------- entrada

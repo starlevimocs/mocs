@@ -1,4 +1,5 @@
 {
+  "cinematic": "tree_orbit",
   "start": "caida",
   "nodes": {
     "caida": {
@@ -23,8 +24,14 @@
       "expression": "sad",
       "text": "Algo anda mal. Mis raíces se enfrían y mis ramas se secan. Antes alguien velaba por mí, pero... se fue.",
       "choices": [
-        { "text": "¿Quién se fue?", "next": "quien" },
-        { "text": "¿Qué puedo hacer yo?", "next": "ayuda" }
+        {
+          "text": "¿Quién se fue?",
+          "next": "quien"
+        },
+        {
+          "text": "¿Qué puedo hacer yo?",
+          "next": "ayuda"
+        }
       ]
     },
     "quien": {
