@@ -53,7 +53,7 @@ public final class Anim {
         return CACHE.computeIfAbsent(name, n -> {
             try {
                 Optional<Resource> res = Minecraft.getInstance().getResourceManager()
-                        .getResource(new ResourceLocation(StarInteractions.MOD_ID, "animations/" + n + ".json"));
+                        .getResource(new ResourceLocation(StarInteractions.MOD_ID, "star_poses/" + n + ".json"));
                 if (res.isEmpty()) {
                     return Optional.empty();
                 }
