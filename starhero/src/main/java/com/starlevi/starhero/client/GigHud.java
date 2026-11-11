@@ -20,6 +20,28 @@ public final class GigHud {
         long now = Util.getMillis();
 
         if (GigClient.active()) {
+            // destello en los cortes de camara y borde de color que late con la musica
+            float flash = StarCamera.cutFlash();
+            if (flash > 0.01F) {
+                g.fill(0, 0, w, h, ((int) (flash * 38) << 24) | 0xFFFFFF);
+            }
+            double beatNow = GigClient.beat(now);
+            if (beatNow >= 0 && !GigClient.finale()) {
+                float ph = (float) (beatNow - Math.floor(beatNow));
+                float pulse = (float) Math.exp(-ph * 5) * GigClient.hype();
+                int rgb = Mth.hsvToRgb((float) ((beatNow / 16.0) % 1.0), 0.8F, 1F) & 0xFFFFFF;
+                int a = (int) (pulse * 70);
+                if (a > 2) {
+                    int edge = h / 5;
+                    g.fillGradient(0, 0, w, edge, (a << 24) | rgb, rgb);
+                    g.fillGradient(0, h - edge, w, h, rgb, (a << 24) | rgb);
+                }
+                if (GigClient.hype() > 0.88F) {
+                    Component fire = Component.translatable("hud.starhero.on_fire").withStyle(ChatFormatting.BOLD);
+                    int fw = font.width(fire);
+                    g.drawString(font, fire, (w - fw) / 2, 32, 0xFF000000 | Mth.hsvToRgb((now % 1200) / 1200F, 0.6F, 1F), true);
+                }
+            }
             // titulo arriba al centro
             Component top = Component.literal("★ STAR HERO ★").withStyle(ChatFormatting.BOLD);
             int tw = font.width(top);

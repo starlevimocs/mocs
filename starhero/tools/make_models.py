@@ -178,147 +178,232 @@ def save(path, data):
         json.dump(data, f, indent=1)
 
 
+
+# ---------------------------------------------------------------- formas redondas (octogonos con cubos girados)
+T8 = 0.4142  # tan(22.5 grados)
+
+
+def cyl_y(m, cx, cz, r, y0, y1, mat, top=None):
+    """Cilindro vertical (eje Y) de 8 lados."""
+    w = r * T8
+    faces = {"all": mat, "up": top or mat}
+    m.box([cx - w, y0, cz - r], [cx + w, y1, cz + r], faces)
+    m.box([cx - r, y0, cz - w], [cx + r, y1, cz + w], faces)
+    for a in (45, -45):
+        m.box([cx - w, y0, cz - r], [cx + w, y1, cz + r], faces, rot={"angle": a, "axis": "y", "origin": [cx, (y0 + y1) / 2, cz]})
+
+
+def cyl_z(m, cx, cy, r, z0, z1, mat, front=None):
+    """Cilindro acostado (eje Z) de 8 lados."""
+    w = r * T8
+    faces = {"all": mat, "north": front or mat}
+    m.box([cx - w, cy - r, z0], [cx + w, cy + r, z1], faces)
+    m.box([cx - r, cy - w, z0], [cx + r, cy + w, z1], faces)
+    for a in (45, -45):
+        m.box([cx - w, cy - r, z0], [cx + w, cy + r, z1], faces, rot={"angle": a, "axis": "z", "origin": [cx, cy, (z0 + z1) / 2]})
+
 # ---------------------------------------------------------------- guitarra electrica
 def guitar(body="red_gloss", guard="white_pearl", strings=6, bass=False):
     m = Model()
     z0, z1 = 7.0, 9.6       # frente / espalda del cuerpo
-    side = {"all": body}
-    # cuerpo (se va angostando en escalones, como una guitarra de verdad)
-    m.box([13, 2, z0], [19.5, 14, z1], side)        # parte de abajo, la mas ancha
-    m.box([19.5, 3.5, z0], [20.5, 12.5, z1], side)  # borde redondeado
-    m.box([9.5, 3.8, z0], [13, 12.2, z1], side)     # cintura
-    m.box([5.5, 3, z0], [9.5, 13, z1], side)        # parte de arriba
-    m.box([2.5, 11, z0], [5.5, 13.6, z1], side)     # cuerno de arriba
-    m.box([3.5, 2.6, z0], [5.5, 4.6, z1], side)     # cuerno de abajo
-    # golpeador (pickguard) apenas adelante
-    m.box([7, 4.6, z0 - 0.15], [16.5, 11.4, z0], {"north": guard, "all": guard})
-    m.box([16.5, 5.4, z0 - 0.15], [18, 10.6, z0], {"north": guard, "all": guard})
+    # silueta del cuerpo, columna por columna (x, [abajo, arriba]); los cuernos van aparte
+    outline = [
+        (5.5, 2.8, 13.6), (6.5, 3.2, 13.3), (7.5, 3.6, 12.9), (8.5, 3.9, 12.5), (9.5, 3.9, 12.2),
+        (10.5, 3.7, 12.2), (11.5, 3.3, 12.5), (12.5, 2.8, 13.0), (13.5, 2.3, 13.5), (14.5, 2.0, 13.9),
+        (15.5, 1.9, 14.1), (16.5, 2.0, 14.1), (17.5, 2.3, 13.8), (18.5, 2.9, 13.2), (19.5, 3.9, 12.2),
+    ]
+    for x, lo, hi in outline:
+        m.box([x, lo, z0], [x + 1.0, hi, z1], body)
+        # canto redondeado: una franja mas fina adelante y atras
+        m.box([x, lo + 0.35, z0 - 0.12], [x + 1.0, hi - 0.35, z0], body)
+    m.box([20.5, 5.2, z0], [21.0, 10.8, z1], body)
+    # cuernos (el de arriba mas largo)
+    for x, lo, hi in [(2.5, 11.6, 13.0), (3.5, 11.1, 13.5), (4.5, 10.7, 13.7)]:
+        m.box([x, lo, z0], [x + 1.0, hi, z1], body)
+    for x, lo, hi in [(3.7, 3.0, 4.2), (4.5, 2.7, 4.8)]:
+        m.box([x, lo, z0], [x + 1.0, hi, z1], body)
+    # golpeador (pickguard)
+    for x, lo, hi in [(6.6, 5.0, 11.2), (8.0, 4.7, 11.4), (10.0, 4.5, 11.5), (13.0, 4.3, 11.2), (16.0, 4.8, 10.6)]:
+        m.box([x, lo, z0 - 0.3], [x + (2.0 if x < 10 else 3.0) if x < 16 else x + 1.6, hi, z0 - 0.12], guard)
     # microfonos
-    pk = [10.2, 12.8, 15.2] if not bass else [11.5, 14.6]
+    pk = [9.6, 12.4, 15.0] if not bass else [11.0, 14.4]
     for x in pk:
-        w = 0.9 if not bass else 1.4
-        m.box([x, 5.6, z0 - 0.45], [x + w, 10.4, z0 - 0.15], "black_gloss")
-        for k in range(3):  # tornillitos de los microfonos
-            m.box([x + 0.25, 6.1 + k * 1.5, z0 - 0.55], [x + w - 0.25, 6.5 + k * 1.5, z0 - 0.45], "chrome")
-    # puente y cordal
-    m.box([17.2, 5.4, z0 - 0.6], [18.4, 10.6, z0 - 0.15], "chrome")
+        w = 0.9 if not bass else 1.5
+        m.box([x, 5.6, z0 - 0.6], [x + w, 10.4, z0 - 0.3], "black_gloss")
+        for k in range(strings):
+            y = 5.95 + k * (4.1 / max(1, strings - 1)) - 0.15
+            m.box([x + 0.3, y, z0 - 0.68], [x + w - 0.3, y + 0.3, z0 - 0.6], "chrome")
+    # puente, selletas y cordal
+    m.box([17.0, 5.4, z0 - 0.7], [18.3, 10.6, z0 - 0.3], "chrome")
+    m.box([18.3, 6.0, z0 - 0.5], [18.9, 10.0, z0 - 0.3], "gray")
+    if not bass:
+        # palanca de tremolo
+        m.box([17.4, 4.2, z0 - 1.0], [17.7, 5.6, z0 - 0.7], "chrome")
+        m.box([13.4, 3.9, z0 - 1.0], [17.7, 4.2, z0 - 0.8], "chrome")
+        m.box([13.0, 3.7, z0 - 1.05], [13.6, 4.4, z0 - 0.75], "white_pearl")
     # perillas y selector
-    for i, (x, y) in enumerate([(16.4, 3.1), (18.2, 3.6), (19.4, 4.9)]):
-        m.box([x, y, z0 - 0.7], [x + 0.9, y + 0.9, z0], "cream" if not bass else "black_gloss")
-    m.box([15.6, 11.5, z0 - 0.5], [16.6, 12.2, z0], "black_gloss")
-    # mastil y diapason
+    for x, y in [(15.9, 3.0), (17.7, 3.4), (19.1, 4.8)]:
+        m.box([x, y, z0 - 0.85], [x + 0.9, y + 0.9, z0 - 0.3], "cream" if not bass else "chrome")
+        m.box([x + 0.3, y + 0.3, z0 - 0.95], [x + 0.6, y + 0.6, z0 - 0.85], "black_gloss")
+    m.box([15.0, 11.6, z0 - 0.75], [16.2, 12.0, z0 - 0.3], "black_gloss")
+    m.box([15.4, 11.4, z0 - 1.1], [15.7, 12.2, z0 - 0.75], "white_pearl")
+    # ficha del cable
+    m.box([19.2, 2.2, z0 + 0.6], [19.9, 2.9, z0 + 1.4], "chrome")
+    # mastil (con el lomo redondeado) y diapason
     nl = -10.0 if not bass else -12.5
-    m.box([nl, 7.0, 7.6], [5.6, 9.0, 9.0], "maple")
-    m.box([nl, 6.85, 7.15], [6.0, 9.15, 7.6], {"all": "rosewood"})
+    m.box([nl, 7.0, 7.6], [5.8, 9.0, 8.7], "maple")
+    m.box([nl, 7.3, 8.7], [5.8, 8.7, 9.1], "maple")
+    m.box([nl, 6.85, 7.15], [6.2, 9.15, 7.6], "rosewood")
+    m.box([5.8, 6.6, 7.6], [7.0, 9.4, 9.4], "maple")   # talon
     # trastes
-    x = 5.0
+    x = 5.2
     gap = 1.9
     while x > nl + 0.6:
-        m.box([x, 6.85, 7.05], [x + 0.22, 9.15, 7.15], "chrome")
+        m.box([x, 6.85, 7.03], [x + 0.2, 9.15, 7.15], "chrome")
         x -= gap
         gap *= 0.94
-    # marcadores del diapason
-    for xm in (-1.1, 1.8, -4.4, -7.4):
+    for xm in (2.4, -0.9, -4.2, -7.2):
         if xm > nl + 1:
-            m.box([xm, 7.85, 7.08], [xm + 0.45, 8.15, 7.15], "white_pearl")
-    # clavijero (cabeza) con un poco de angulo
-    hl = nl - 5.5
-    m.box([hl, 6.4, 7.7], [nl, 9.9, 8.8], "maple" if not bass else body)
-    m.box([hl + 0.8, 9.9, 7.7], [nl - 0.6, 10.6, 8.8], "maple" if not bass else body)
-    m.box([hl - 0.6, 7.2, 7.7], [hl, 9.6, 8.8], "maple" if not bass else body)
-    # clavijas
-    n_tuners = strings
-    for i in range(n_tuners):
-        tx = hl + 0.4 + i * ((nl - hl - 0.8) / max(1, n_tuners - 1)) - 0.3
-        m.box([tx, 10.0, 7.95], [tx + 0.6, 11.2, 8.55], "chrome")
-        m.box([tx + 0.05, 7.6 + (i % 2) * 0.9, 7.45], [tx + 0.55, 8.1 + (i % 2) * 0.9, 7.7], "chrome")
-    # cuerdas (finitas, por delante de todo)
+            m.box([xm, 7.8, 7.08], [xm + 0.5, 8.2, 7.15], "white_pearl")
+    m.box([nl - 0.35, 6.8, 7.0], [nl, 9.2, 7.6], "white_pearl")   # cejuela
+    # clavijero con forma (mas ancho en la punta)
+    hl = nl - 5.6
+    head = "maple" if not bass else body
+    cols = [(nl - 1.4, 6.6, 9.5), (nl - 2.8, 6.3, 10.0), (nl - 4.2, 6.2, 10.4), (hl, 6.5, 10.6)]
+    for x, lo, hi in cols:
+        m.box([x, lo, 7.7], [x + 1.4, hi, 8.7], head)
+    m.box([hl - 0.5, 7.4, 7.7], [hl, 10.2, 8.7], head)
+    m.box([hl + 0.6, 8.6, 7.6], [hl + 3.2, 9.4, 7.7], "black_gloss", shade=False)  # logo
+    # clavijas: 6 en linea (guitarra) o 2+2 (bajo)
+    for i in range(strings):
+        tx = hl + 0.3 + i * ((nl - hl - 1.2) / max(1, strings - 1))
+        up = (not bass) or i < 2
+        y0 = 10.2 if up else 5.0
+        m.box([tx, y0 if up else y0, 7.9], [tx + 0.55, (y0 + 1.5) if up else 6.4, 8.5], "chrome")
+        m.box([tx - 0.25, (y0 + 1.1) if up else (y0 - 0.1), 7.8], [tx + 0.8, (y0 + 1.7) if up else (y0 + 0.5), 8.6], "chrome")
+        m.box([tx + 0.05, 7.4 + (i % 3) * 0.6, 7.45], [tx + 0.5, 7.85 + (i % 3) * 0.6, 7.7], "chrome")
+    # cuerdas
     for i in range(strings):
         y = 7.15 + i * (1.7 / max(1, strings - 1))
-        m.box([nl - 0.3, y, 6.32], [17.6, y + 0.1, 6.42], "string", shade=False)
-    # boton de la correa
-    m.box([20.5, 7.6, 8.0], [21.0, 8.4, 8.6], "chrome")
+        th = 0.08 + (0.05 if bass else 0.0) + 0.02 * (strings - i) / strings
+        m.box([nl - 0.3, y, 6.3], [17.6, y + th, 6.3 + th], "string", shade=False)
+    # botones de la correa
+    m.box([21.0, 7.6, 8.0], [21.5, 8.4, 8.6], "chrome")
+    m.box([2.2, 12.0, 8.0], [2.5, 12.6, 8.6], "chrome")
     return m.fit_x()
 
 
 # ---------------------------------------------------------------- microfono
 def microphone():
     m = Model()
-    m.box([7.1, 0, 7.1], [8.9, 8.6, 8.9], "black_matte")       # mango
-    m.box([6.9, 6.2, 6.9], [9.1, 7.0, 9.1], "chrome")          # anillo
-    m.box([7.3, -1.2, 7.3], [8.7, 0, 8.7], "gray")              # cable
-    m.box([7.0, 1.6, 6.85], [9.0, 2.2, 7.1], "led_green", shade=False)  # luz de encendido
-    # cabeza (esfera de rejilla, hecha con tres cubos cruzados)
-    m.box([6.3, 9.0, 6.6], [9.7, 12.6, 9.4], "chrome")
-    m.box([6.6, 8.7, 6.3], [9.4, 12.9, 9.7], "chrome")
-    m.box([6.6, 9.3, 6.6], [9.4, 13.4, 9.4], "chrome")
-    m.box([6.15, 10.4, 7.3], [9.85, 11.2, 8.7], "black_gloss")  # aro del medio
+    cyl_y(m, 8, 8, 0.95, 0, 8.4, "black_matte")                 # mango
+    cyl_y(m, 8, 8, 1.15, 6.4, 7.2, "chrome")                    # anillo
+    cyl_y(m, 8, 8, 0.75, -1.4, 0, "gray")                       # ficha del cable
+    m.box([7.5, 2.0, 6.95], [8.5, 3.2, 7.1], "gray")             # interruptor
+    m.box([7.7, 2.6, 6.9], [8.3, 3.0, 6.95], "led_green", shade=False)
+    # cabeza de rejilla: esfera hecha con tres aros octogonales
+    cyl_y(m, 8, 8, 1.35, 8.4, 9.2, "gray")
+    cyl_y(m, 8, 8, 1.9, 9.2, 12.6, "chrome")
+    cyl_y(m, 8, 8, 1.45, 12.6, 13.4, "chrome")
+    cyl_y(m, 8, 8, 2.02, 10.6, 11.3, "black_gloss")              # aro del medio
+    return m
+
+
+# ---------------------------------------------------------------- palillo de bateria
+def drumstick():
+    m = Model()
+    m.box([7.6, 0, 7.6], [8.4, 9.5, 8.4], "maple")
+    m.box([7.5, 9.5, 7.5], [8.5, 10.6, 8.5], "cream")   # punta
+    m.box([7.55, 0, 7.55], [8.45, 2.4, 8.45], "red_dark")  # empunadura
     return m
 
 
 # ---------------------------------------------------------------- bateria
 def drum(m, x0, x1, y0, y1, z0, z1, shell="sparkle_red", top=True):
-    """Tambor redondeado: dos cubos cruzados + parche + aro cromado."""
-    dx, dz = (x1 - x0) * 0.15, (z1 - z0) * 0.15
-    m.box([x0, y0, z0 + dz], [x1, y1, z1 - dz], shell)
-    m.box([x0 + dx, y0, z0], [x1 - dx, y1, z1], shell)
+    """Tambor de 8 lados con parche, aros cromados y torres de afinacion."""
+    cx, cz = (x0 + x1) / 2, (z0 + z1) / 2
+    r = min(x1 - x0, z1 - z0) / 2
+    cyl_y(m, cx, cz, r, y0, y1, shell)
     if top:
-        m.box([x0 + dx * 0.5, y1, z0 + dz * 0.5], [x1 - dx * 0.5, y1 + 0.2, z1 - dz * 0.5], "drum_head")
-        m.box([x0, y1 - 0.4, z0 + dz], [x1, y1 + 0.25, z0 + dz + 0.3], "chrome")
-        m.box([x0, y1 - 0.4, z1 - dz - 0.3], [x1, y1 + 0.25, z1 - dz], "chrome")
+        cyl_y(m, cx, cz, r * 0.93, y1, y1 + 0.18, "drum_head")
+    cyl_y(m, cx, cz, r * 1.05, y1 - 0.35, y1 + 0.05, "chrome")
+    cyl_y(m, cx, cz, r * 1.05, y0, y0 + 0.35, "chrome")
+    for a in range(4):
+        dx = r * 1.0 * math.cos(math.pi / 4 + a * math.pi / 2)
+        dz = r * 1.0 * math.sin(math.pi / 4 + a * math.pi / 2)
+        m.box([cx + dx - 0.25, y0 + 0.6, cz + dz - 0.25], [cx + dx + 0.25, y1 - 0.6, cz + dz + 0.25], "chrome")
 
 
 def pole(m, x, z, y0, y1, w=0.5):
     m.box([x - w / 2, y0, z - w / 2], [x + w / 2, y1, z + w / 2], "chrome")
+    for a in (45, -45):   # tripode
+        m.box([x - 0.15, y0, z - 1.6], [x + 0.15, y0 + 0.3, z + 1.6], "chrome", rot={"angle": a, "axis": "y", "origin": [x, y0, z]})
 
 
-def cymbal(m, cx, cz, y, r, mat="brass"):
-    m.box([cx - r, y, cz - r * 0.7], [cx + r, y + 0.25, cz + r * 0.7], mat)
-    m.box([cx - r * 0.7, y, cz - r], [cx + r * 0.7, y + 0.25, cz + r], mat)
-    m.box([cx - 0.6, y + 0.25, cz - 0.6], [cx + 0.6, y + 0.6, cz + 0.6], mat)
+def cymbal(m, cx, cz, y, r, mat="brass", tilt=0):
+    rot = lambda: ({"angle": tilt, "axis": "x", "origin": [cx, y, cz]} if tilt else None)
+    w = r * T8
+    m.box([cx - w, y, cz - r], [cx + w, y + 0.22, cz + r], mat, rot=rot())
+    m.box([cx - r, y, cz - w], [cx + r, y + 0.22, cz + w], mat, rot=rot())
+    if not tilt:
+        for a in (45, -45):
+            m.box([cx - w, y, cz - r], [cx + w, y + 0.22, cz + r], mat, rot={"angle": a, "axis": "y", "origin": [cx, y, cz]})
+    else:
+        m.box([cx - r * 0.72, y, cz - r * 0.72], [cx + r * 0.72, y + 0.22, cz + r * 0.72], mat, rot=rot())
+    m.box([cx - 0.7, y + 0.2, cz - 0.7], [cx + 0.7, y + 0.6, cz + 0.7], mat, rot=rot())   # campana
+    m.box([cx - 0.2, y + 0.6, cz - 0.2], [cx + 0.2, y + 1.0, cz + 0.2], "black_matte")    # mariposa
 
 
 def drum_kit():
     m = Model()
-    # bombo: acostado, el parche con el logo mira al publico (-Z)
-    m.box([3, 1.2, 2], [13, 8.8, 9.5], "sparkle_red")
-    m.box([4.2, 0.2, 2], [11.8, 9.8, 9.5], "sparkle_red")
-    m.box([4.4, 1.4, 1.75], [11.6, 8.6, 2], "drum_head")             # parche delantero
+    # bombo acostado: el parche con el logo mira al publico (-Z)
+    cyl_z(m, 8, 5, 4.9, 2, 9.5, "sparkle_red")
+    cyl_z(m, 8, 5, 4.5, 1.78, 2.0, "drum_head", front="drum_head")
+    for z in (1.86, 9.3):   # aros de madera (el de adelante queda detras del parche, se ve el borde)
+        cyl_z(m, 8, 5, 5.15, z, z + 0.5, "wood_dark")
     # logo: disco violeta con una estrella amarilla de 8 puntas
-    m.box([5.6, 2.8, 1.62], [10.4, 7.2, 1.75], "purple", shade=False)
-    m.box([6.2, 2.2, 1.62], [9.8, 7.8, 1.75], "purple", shade=False)
-    m.box([7.6, 3.0, 1.55], [8.4, 7.0, 1.62], "yellow", shade=False)
-    m.box([6.0, 4.6, 1.55], [10.0, 5.4, 1.62], "yellow", shade=False)
+    cyl_z(m, 8, 5, 2.6, 1.66, 1.78, "purple", front="purple")
+    m.box([7.6, 3.0, 1.58], [8.4, 7.0, 1.66], "yellow", shade=False)
+    m.box([6.0, 4.6, 1.58], [10.0, 5.4, 1.66], "yellow", shade=False)
     for a in (45, -45):
-        m.box([7.65, 3.4, 1.55], [8.35, 6.6, 1.62], "yellow", rot={"angle": a, "axis": "z", "origin": [8, 5, 1.6]}, shade=False)
-    for z in (1.6, 9.5):
-        m.box([2.8, 1.0, z], [13.2, 9.0, z + 0.4], "chrome")
-    m.box([3.5, 0, 3], [4.0, 1.2, 3.5], "chrome")   # patas del bombo
-    m.box([12.0, 0, 3], [12.5, 1.2, 3.5], "chrome")
-    # pedal
-    m.box([7.2, 0, 9.5], [8.8, 0.6, 13], "black_matte")
-    # toms de arriba
-    drum(m, 3.2, 7.6, 10.2, 13.6, 3.5, 7.5)
-    drum(m, 8.4, 12.8, 10.2, 13.6, 3.5, 7.5)
-    m.box([7.6, 9.8, 5.0], [8.4, 11.6, 6.0], "chrome")  # soporte
+        m.box([7.65, 3.4, 1.58], [8.35, 6.6, 1.66], "yellow", rot={"angle": a, "axis": "z", "origin": [8, 5, 1.62]}, shade=False)
+    for x in (3.4, 12.6):   # patas del bombo
+        m.box([x - 0.2, 0, 2.6], [x + 0.2, 2.2, 3.0], "chrome")
+    # pedal del bombo
+    m.box([7.0, 0, 9.5], [9.0, 0.35, 13.2], "black_matte")
+    m.box([7.3, 0.35, 10.2], [8.7, 0.7, 13.0], "chrome", rot={"angle": 22.5, "axis": "x", "origin": [8, 0.35, 13.0]})
+    m.box([7.8, 0.4, 9.5], [8.2, 4.2, 9.9], "chrome")
+    cyl_z(m, 8, 4.4, 0.7, 9.1, 9.6, "cream")
+    # toms de arriba, inclinados hacia el baterista
+    drum(m, 3.0, 7.6, 10.6, 14.0, 3.4, 8.0)
+    drum(m, 8.4, 13.0, 10.6, 14.0, 3.4, 8.0)
+    m.box([7.7, 9.8, 5.2], [8.3, 12.2, 5.8], "chrome")
+    m.box([6.6, 11.6, 5.3], [9.4, 12.0, 5.7], "chrome")
     # tambor (caja) a la izquierda del baterista
-    pole(m, 1.6, 12.0, 0, 8.6)
-    m.box([0.0, 0, 11.6], [3.2, 0.4, 12.4], "chrome")
-    drum(m, -1.4, 4.6, 8.6, 10.6, 9.6, 14.6, shell="chrome")
-    # hi-hat
-    pole(m, -4.0, 11.0, 0, 13.2)
-    m.box([-5.4, 0, 10.6], [-2.6, 0.4, 11.4], "chrome")
-    cymbal(m, -4.0, 11.0, 12.2, 3.0)
-    cymbal(m, -4.0, 11.0, 12.7, 3.0)
+    pole(m, 1.6, 12.1, 0, 8.6)
+    drum(m, -1.4, 4.6, 8.6, 10.8, 9.1, 15.1, shell="chrome")
+    # hi-hat con pedal
+    pole(m, -4.4, 11.0, 0, 13.6, 0.4)
+    cymbal(m, -4.4, 11.0, 12.2, 3.1)
+    cymbal(m, -4.4, 11.0, 12.75, 3.1)
+    m.box([-5.0, 0, 12.0], [-3.8, 0.4, 14.6], "black_matte")
     # tom de piso a la derecha
-    drum(m, 12.0, 17.6, 3.0, 9.0, 9.6, 14.8)
-    for x, z in ((12.4, 10.0), (17.0, 10.0), (12.4, 14.2)):
-        pole(m, x, z, 0, 3.0, 0.4)
-    # platillos de choque y ride
-    pole(m, -3.0, 3.0, 0, 17.2)
-    cymbal(m, -3.0, 3.0, 17.0, 4.4)
-    pole(m, 19.0, 5.0, 0, 15.2)
-    cymbal(m, 19.0, 5.0, 15.0, 4.6)
+    drum(m, 12.2, 18.2, 3.2, 9.4, 9.2, 15.2)
+    for x, z in ((12.6, 9.8), (17.8, 9.8), (12.6, 14.6), (17.8, 14.6)):
+        m.box([x - 0.18, 0, z - 0.18], [x + 0.18, 4.0, z + 0.18], "chrome")
+    # platillos: crash a la izquierda, ride a la derecha, splash chico al centro
+    pole(m, -3.0, 3.0, 0, 17.6, 0.45)
+    cymbal(m, -3.0, 3.0, 17.4, 4.6, tilt=-22.5)
+    pole(m, 19.4, 5.0, 0, 15.4, 0.45)
+    cymbal(m, 19.4, 5.0, 15.2, 4.9, tilt=-22.5)
+    m.box([7.8, 14.0, 4.2], [8.2, 16.6, 4.6], "chrome")
+    cymbal(m, 8.0, 4.4, 16.6, 2.2)
+    # banqueta
+    cyl_y(m, 8, 17.5, 2.4, 6.0, 7.4, "black_matte")
+    cyl_y(m, 8, 17.5, 2.5, 5.8, 6.1, "chrome")
+    m.box([7.7, 0.3, 17.2], [8.3, 5.8, 17.8], "chrome")
+    for a in (45, -45):
+        m.box([7.8, 0, 15.2], [8.2, 0.35, 19.8], "chrome", rot={"angle": a, "axis": "y", "origin": [8, 0.2, 17.5]})
     return m
 
 
@@ -353,8 +438,28 @@ def keyboard():
         m.box([-3.8 + k * 1.4, 16.8, 6.85], [-3.0 + k * 1.4, 17.3, 7.0], col, shade=False)
     for k in range(4):
         m.box([13.0 + k * 1.6, 16.6, 6.9], [13.9 + k * 1.6, 17.4, 7.0], "chrome")
-    # ruedas de pitch
-    m.box([-4.7, 15.8, 3.2], [-4.2, 16.6, 5.0], "chrome")
+    # ruedas de pitch y modulacion
+    m.box([-4.75, 15.8, 3.2], [-4.3, 16.7, 4.9], "chrome")
+    m.box([-4.75, 15.8, 5.2], [-4.3, 16.6, 6.8], "gray")
+    # laterales de madera, perillas, deslizadores y parlantes
+    for x in (-5.4, 21.0):
+        m.box([x, 13.9, 2.5], [x + 0.4, 17.8, 10.1], "wood_dark")
+    for k in range(5):
+        cyl_y(m, 13.4 + k * 1.5, 8.6, 0.42, 17.6, 18.25, "cream")
+    for k in range(4):
+        m.box([-3.4 + k * 1.2, 17.6, 7.6], [-3.1 + k * 1.2, 17.7, 9.6], "black_key")
+        m.box([-3.55 + k * 1.2, 17.6, 8.0 + (k % 3) * 0.5], [-2.95 + k * 1.2, 17.95, 8.5 + (k % 3) * 0.5], "chrome")
+    for x in (2.2, 11.6):
+        m.box([x, 17.6, 7.6], [x + 1.9, 17.68, 9.6], "grille")
+    m.box([4.5, 17.6, 7.4], [11.5, 17.7, 9.7], "black_matte")
+    m.box([4.9, 17.7, 7.7], [11.1, 17.78, 9.4], "screen", shade=False)
+    m.box([8.5, 14.6, 10.0], [12.0, 15.3, 10.08], "gold", shade=False)   # logo atras
+    # atril con una partitura
+    m.box([7.7, 17.6, 9.6], [8.3, 20.2, 9.9], "black_matte")
+    m.box([4.6, 19.4, 9.3], [11.4, 23.4, 9.5], "cream", rot={"angle": 22.5, "axis": "x", "origin": [8, 19.4, 9.4]})
+    for k in range(4):
+        m.box([5.2, 20.2 + k * 0.7, 9.22], [10.8, 20.32 + k * 0.7, 9.3], "black_key",
+              rot={"angle": 22.5, "axis": "x", "origin": [8, 19.4, 9.4]}, shade=False)
     return m
 
 
@@ -376,6 +481,16 @@ def amplifier():
     for x in (1, 14.2):                                             # esquineros
         for y in (0, 13.2):
             m.box([x - 0.1, y, 2.9], [x + 0.9, y + 0.9, 3.8], "chrome")
+    for x in (1.0, 14.1):                                           # esquineros de atras y patas
+        for y in (0, 13.2):
+            m.box([x - 0.1, y, 12.2], [x + 0.9, y + 0.9, 13.1], "chrome")
+    for x in (2.0, 12.6):
+        for z in (4.0, 11.0):
+            m.box([x, -0.0, z], [x + 1.4, 0.3, z + 1.2], "rubber")
+    for k in range(5):                                              # rejilla de ventilacion con valvulas encendidas
+        m.box([3.4 + k * 2.0, 14.0, 9.6], [4.6 + k * 2.0, 14.06, 12.0], "orange", shade=False)
+    m.box([10.4, 12.5, 2.6], [10.8, 12.9, 2.8], "chrome")           # entrada del cable
+    m.box([11.6, 12.5, 2.6], [12.0, 12.9, 2.8], "chrome")
     m.box([5, 14, 7.2], [11, 14.7, 8.8], "black_matte")             # manija
     m.box([4.6, 14, 7.6], [5.2, 15.2, 8.4], "black_matte")
     m.box([10.8, 14, 7.6], [11.4, 15.2, 8.4], "black_matte")
@@ -429,6 +544,7 @@ def build():
     MODELS["microphone"] = (microphone(), display_small())
     MODELS["drum_kit"] = (drum_kit(), display_big(0.5))
     MODELS["keyboard"] = (keyboard(), display_big(0.55))
+    MODELS["drumstick"] = (drumstick(), display_small())
     for name, (m, disp) in MODELS.items():
         clamp_check(m, name)
         save(os.path.join(RES, "models", "item", name + ".json"), m.json(disp))
@@ -486,6 +602,8 @@ def preview(tex, amp):
                 for x, y, z in q:
                     if rot["axis"] == "x":
                         y, z = oy + (y - oy) * math.cos(a) - (z - oz) * math.sin(a), oz + (y - oy) * math.sin(a) + (z - oz) * math.cos(a)
+                    elif rot["axis"] == "y":
+                        x, z = ox + (x - ox) * math.cos(a) + (z - oz) * math.sin(a), oz - (x - ox) * math.sin(a) + (z - oz) * math.cos(a)
                     elif rot["axis"] == "z":
                         x, y = ox + (x - ox) * math.cos(a) - (y - oy) * math.sin(a), oy + (x - ox) * math.sin(a) + (y - oy) * math.cos(a)
                     rq.append((x, y, z))

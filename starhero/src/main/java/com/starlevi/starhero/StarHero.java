@@ -48,6 +48,9 @@ public final class StarHero {
     public static final RegistryObject<Item> DRUM_KIT = instrument(Instrument.DRUMS);
     public static final RegistryObject<Item> KEYBOARD = instrument(Instrument.KEYS);
 
+    /** Palillos: los dibuja el baterista mientras toca. */
+    public static final RegistryObject<Item> DRUMSTICK = ITEMS.register("drumstick", () -> new Item(new Item.Properties()));
+
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.starhero"))
             .icon(() -> new ItemStack(GUITAR.get()))

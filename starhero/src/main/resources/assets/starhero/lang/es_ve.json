@@ -59,5 +59,7 @@
  "gui.starhero.band": "Tu banda",
  "gui.starhero.no_song_chosen": "Sin canción elegida",
  "gui.starhero.npc": "aldeano",
- "gui.starhero.hint": "Para sumar aldeanos: dales un instrumento con clic derecho. Tocan si están cerca del amplificador."
+ "gui.starhero.hint": "Para sumar aldeanos: dales un instrumento con clic derecho. Tocan si están cerca del amplificador.",
+ "item.starhero.drumstick": "Palillo de batería",
+ "hud.starhero.on_fire": "¡EL PÚBLICO ESTÁ EN LLAMAS!"
 }

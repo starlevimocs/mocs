@@ -26,7 +26,20 @@ public final class GigClient {
         public final long[] laneHit = new long[8];
         public long lastHit;
         public int lastLane;
+        public int strokes;
         int lastSub = Integer.MIN_VALUE;
+
+        // ---- coreografia de este cuadro (la calcula StarPoses.update, suavizada)
+        public long frameTime;
+        public final float[] handL = {5, 12, -2};
+        public final float[] handR = {-5, 12, -2};
+        public float bodyX, bodyY, bodyZ;
+        public float headX, headY, headZ;
+        public float legA, legSpread, legYaw;
+        public boolean sitting;
+        /** desplazamiento de todo el cuerpo: al costado, arriba, al frente (bloques) y giro (grados). */
+        public float ox, oy, oz, oyaw;
+        public float guitarAngle = 0.42F;
 
         Performer(Net.Member m) {
             this.entityId = m.entityId();
@@ -40,6 +53,8 @@ public final class GigClient {
             laneHit[lane] = now;
             lastHit = now;
             lastLane = lane;
+            strokes++;
+            StageFx.onHit(this);
         }
     }
 
@@ -72,9 +87,13 @@ public final class GigClient {
     static int lastPressed = -1;
     static int sendTimer;
 
-    // cartel del final
+    // cartel del final y saludo de la banda
     static Net.GigEnd ending;
     static long endingAt;
+    static boolean finale;
+    static long finaleUntil;
+    static boolean cameraOwner;
+    static long lastBeatIndex = Long.MIN_VALUE;
 
     private GigClient() {
     }
@@ -148,6 +167,9 @@ public final class GigClient {
         }
         cubStarted = false;
         resultSent = false;
+        finale = false;
+        cameraOwner = localPerformer;
+        lastBeatIndex = Long.MIN_VALUE;
         lastPoll = null;
         lastFlash = new long[0];
         lastHits = 0;
@@ -183,13 +205,21 @@ public final class GigClient {
     static void end(Net.GigEnd msg) {
         ending = msg;
         endingAt = Util.getMillis();
+        hype = msg.hype();
         if (cubStarted) {
             CubOsuBridge.stop();
         }
-        active = false;
-        localPerformer = false;
         cubStarted = false;
-        PERFORMERS.clear();
+        localPerformer = false;
+        if (active) {
+            // la banda saluda unos segundos antes de volver a la normalidad
+            finale = true;
+            finaleUntil = endingAt + 5500;
+        }
+    }
+
+    public static boolean finale() {
+        return active && finale;
     }
 
     // ================================================================ cada tick
@@ -205,7 +235,23 @@ public final class GigClient {
             return;
         }
         long now = Util.getMillis();
-        if (!localPerformer) {
+        if (finale && now > finaleUntil) {
+            active = false;
+            finale = false;
+            cameraOwner = false;
+            PERFORMERS.clear();
+            return;
+        }
+        // efectos al compas (luces, pirotecnia, humo)
+        long beatIndex = (long) Math.floor(beat(now));
+        if (beatIndex != lastBeatIndex) {
+            lastBeatIndex = beatIndex;
+            if (beatIndex >= 0 || finale) {
+                StageFx.onBeat(beatIndex);
+            }
+        }
+        StageFx.tick(now);
+        if (!localPerformer || finale) {
             return;
         }
         if (!cubStarted) {

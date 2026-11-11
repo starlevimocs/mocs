@@ -33,6 +33,17 @@ public class InstrumentLayer<T extends LivingEntity, M extends HumanoidModel<T>>
         return STACKS.computeIfAbsent(i, Instrument::stack);
     }
 
+    private static ItemStack sticks;
+
+    private static ItemStack sticks() {
+        if (sticks == null) {
+            net.minecraft.world.item.Item item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
+                    new net.minecraft.resources.ResourceLocation("starhero", "drumstick"));
+            sticks = item == null ? ItemStack.EMPTY : new ItemStack(item);
+        }
+        return sticks;
+    }
+
     private static float px(float v) {
         return v / 16F;
     }
@@ -54,43 +65,56 @@ public class InstrumentLayer<T extends LivingEntity, M extends HumanoidModel<T>>
             return;
         }
         M model = getParentModel();
+        GigClient.Performer p = GigClient.performer(entity.getId());
+        if (p == null) {
+            return;
+        }
+        // lo que esta apoyado en el piso no sube ni baja con el musico (rebote, sentarse)
+        float lift = p.oy / (entity instanceof net.minecraft.world.entity.player.Player ? 0.9375F : 1F);
         ps.pushPose();
         switch (instrument) {
-            case GUITAR -> {
+            case GUITAR, BASS -> {
+                boolean bass = instrument == Instrument.BASS;
+                float[] at = bass ? StarPoses.BASS_AT : StarPoses.GUITAR_AT;
+                float scale = bass ? StarPoses.BASS_SCALE : StarPoses.GUITAR_SCALE;
                 model.body.translateAndRotate(ps);
-                float[] at = StarPoses.GUITAR_AT;
                 ps.translate(px(at[0]), px(at[1]), px(at[2]));
-                ps.mulPose(Axis.ZP.rotation(Mth.PI - StarPoses.GUITAR_ANGLE));
+                ps.mulPose(Axis.ZP.rotation(Mth.PI - p.guitarAngle));
                 ps.mulPose(Axis.YP.rotation(-0.12F));
-                ps.scale(0.48F, 0.48F, 0.48F);
-                anchor(ps, 14.6F, 8.0F, 8.3F);
-            }
-            case BASS -> {
-                model.body.translateAndRotate(ps);
-                float[] at = StarPoses.BASS_AT;
-                ps.translate(px(at[0]), px(at[1]), px(at[2]));
-                ps.mulPose(Axis.ZP.rotation(Mth.PI - StarPoses.BASS_ANGLE));
-                ps.mulPose(Axis.YP.rotation(-0.12F));
-                ps.scale(0.46F, 0.46F, 0.46F);
-                anchor(ps, 17.1F, 8.0F, 8.3F);
+                ps.scale(scale, scale, scale);
+                anchor(ps, bass ? 17.6F : 15.1F, 8.0F, 8.3F);
             }
             case VOICE -> {
                 model.rightArm.translateAndRotate(ps);
-                ps.translate(px(-1.0F), px(9.6F), px(-0.4F));
+                ps.translate(px(-1.0F), px(9.4F), px(-0.6F));
                 ps.mulPose(Axis.XP.rotation(-Mth.HALF_PI));
-                ps.scale(0.55F, 0.55F, 0.55F);
+                ps.scale(0.8F, 0.8F, 0.8F);
                 anchor(ps, 8.0F, 3.0F, 8.0F);
             }
             case DRUMS -> {
-                ps.translate(0, px(24), px(-11));
+                // palillos en las dos manos (siguen la linea del brazo hasta el parche)
+                ItemStack stick = sticks();
+                for (int side = 0; side < 2 && !stick.isEmpty(); side++) {
+                    ps.pushPose();
+                    (side == 0 ? model.rightArm : model.leftArm).translateAndRotate(ps);
+                    ps.translate(px(side == 0 ? -1.0F : 1.0F), px(9.0F), px(-0.3F));
+                    ps.mulPose(Axis.XP.rotation(Mth.PI));
+                    ps.mulPose(Axis.ZP.rotation(Mth.PI));
+                    ps.scale(0.9F, 0.9F, 0.9F);
+                    anchor(ps, 8.0F, 1.0F, 8.0F);
+                    Minecraft.getInstance().getItemRenderer().renderStatic(stick, ItemDisplayContext.NONE, light,
+                            OverlayTexture.NO_OVERLAY, ps, buffers, entity.level(), entity.getId());
+                    ps.popPose();
+                }
+                ps.translate(0, px(24) + lift, px(StarPoses.KIT_Z));
                 ps.mulPose(Axis.ZP.rotation(Mth.PI));
-                ps.scale(0.95F, 0.95F, 0.95F);
+                ps.scale(StarPoses.KIT_SCALE, 1.0F, StarPoses.KIT_SCALE);
                 anchor(ps, 8.0F, 0.0F, 8.0F);
             }
             case KEYS -> {
-                ps.translate(0, px(24), px(-8));
+                ps.translate(0, px(24) + lift, px(StarPoses.KEYS_Z));
                 ps.mulPose(Axis.XP.rotation(Mth.PI));
-                ps.scale(0.75F, 0.75F, 0.75F);
+                ps.scale(StarPoses.KEYS_SCALE, StarPoses.KEYS_SCALE_Y, StarPoses.KEYS_SCALE);
                 anchor(ps, 8.0F, 0.0F, 6.0F);
             }
         }

@@ -28,6 +28,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public final class ClientEvents {
     private static LivingEntity rendering;
     private static HumanoidModel<?> renderingModel;
+    private static int pushed = Integer.MIN_VALUE;
 
     private ClientEvents() {
     }
@@ -96,16 +97,39 @@ public final class ClientEvents {
             }
         }
 
-        @SubscribeEvent
+        @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOWEST)
         public static void renderPre(RenderLivingEvent.Pre<?, ?> event) {
             rendering = event.getEntity();
             renderingModel = event.getRenderer().getModel() instanceof HumanoidModel<?> h ? h : null;
+            // la coreografia mueve el cuerpo entero: pasos, saltos, giros, sentarse
+            GigClient.Performer p = GigClient.performer(rendering.getId());
+            if (p != null && renderingModel != null && !(Minecraft.getInstance().screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen)) {
+                StarPoses.update(p);
+                net.minecraft.world.phys.Vec3 f = GigClient.forward();
+                net.minecraft.world.phys.Vec3 s = GigClient.side();
+                com.mojang.blaze3d.vertex.PoseStack ps = event.getPoseStack();
+                ps.pushPose();
+                ps.translate(f.x * p.oz + s.x * p.ox, p.oy, f.z * p.oz + s.z * p.ox);
+                ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(p.oyaw));
+                pushed = rendering.getId();
+            }
+        }
+
+        @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.HIGHEST)
+        public static void renderPost(RenderLivingEvent.Post<?, ?> event) {
+            if (pushed == event.getEntity().getId()) {
+                event.getPoseStack().popPose();
+                pushed = Integer.MIN_VALUE;
+            }
+            rendering = null;
+            renderingModel = null;
         }
 
         @SubscribeEvent
-        public static void renderPost(RenderLivingEvent.Post<?, ?> event) {
-            rendering = null;
-            renderingModel = null;
+        public static void lights(net.minecraftforge.client.event.RenderLevelStageEvent event) {
+            if (event.getStage() == net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+                StageFx.renderLights(event.getPoseStack(), event.getCamera().getPosition(), event.getPartialTick());
+            }
         }
 
         @SubscribeEvent
