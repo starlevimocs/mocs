@@ -1,0 +1,25 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "QQQ",
+  "BRB",
+  "I I"
+ ],
+ "key": {
+  "Q": {
+   "item": "minecraft:quartz"
+  },
+  "B": {
+   "item": "minecraft:black_dye"
+  },
+  "R": {
+   "item": "minecraft:redstone"
+  },
+  "I": {
+   "item": "minecraft:iron_ingot"
+  }
+ },
+ "result": {
+  "item": "starhero:keyboard"
+ }
+}

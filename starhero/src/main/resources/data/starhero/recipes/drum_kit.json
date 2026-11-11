@@ -1,0 +1,25 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "NLN",
+  "PRP",
+  "N N"
+ ],
+ "key": {
+  "N": {
+   "item": "minecraft:iron_ingot"
+  },
+  "L": {
+   "item": "minecraft:leather"
+  },
+  "P": {
+   "tag": "minecraft:planks"
+  },
+  "R": {
+   "item": "minecraft:red_dye"
+  }
+ },
+ "result": {
+  "item": "starhero:drum_kit"
+ }
+}

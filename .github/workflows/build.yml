@@ -6,6 +6,8 @@ on:
     paths-ignore:
       - 'mca/**'
       - '.github/workflows/mca.yml'
+      - 'starhero/**'
+      - '.github/workflows/starhero.yml'
   workflow_dispatch:
 
 permissions:

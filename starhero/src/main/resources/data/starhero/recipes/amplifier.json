@@ -1,0 +1,28 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "WWW",
+  "IRI",
+  "PNP"
+ ],
+ "key": {
+  "W": {
+   "item": "minecraft:black_wool"
+  },
+  "I": {
+   "item": "minecraft:iron_ingot"
+  },
+  "R": {
+   "item": "minecraft:redstone"
+  },
+  "P": {
+   "tag": "minecraft:planks"
+  },
+  "N": {
+   "item": "minecraft:note_block"
+  }
+ },
+ "result": {
+  "item": "starhero:amplifier"
+ }
+}

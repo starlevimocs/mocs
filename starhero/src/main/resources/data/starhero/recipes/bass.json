@@ -1,0 +1,25 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "pattern": [
+  "  S",
+  "PN ",
+  "BP "
+ ],
+ "key": {
+  "S": {
+   "item": "minecraft:string"
+  },
+  "P": {
+   "tag": "minecraft:planks"
+  },
+  "N": {
+   "item": "minecraft:iron_nugget"
+  },
+  "B": {
+   "item": "minecraft:blue_dye"
+  }
+ },
+ "result": {
+  "item": "starhero:bass"
+ }
+}

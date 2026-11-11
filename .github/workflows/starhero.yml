@@ -1,0 +1,45 @@
+name: Compilar Star Hero
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'starhero/**'
+      - '.github/workflows/starhero.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.8
+
+      - name: Compilar Star Hero
+        run: gradle -p starhero build --no-daemon --console=plain
+
+      - name: Guardar el jar como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: starhero
+          path: starhero/build/libs/starhero-*.jar
+          if-no-files-found: error
+
+      - name: Publicar en Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Ultima version
+          files: starhero/build/libs/starhero-*.jar
+          prerelease: true
