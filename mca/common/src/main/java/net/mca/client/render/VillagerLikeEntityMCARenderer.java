@@ -36,6 +36,20 @@ public class VillagerLikeEntityMCARenderer<T extends MobEntity & VillagerLike<T>
      * paquetes de armaduras (Just 3D Armors y el port de 1.21) igual que al jugador. Si EMF la cambio, la
      * pieza extra de MCA para el pecho no se dibuja (la textura 3D no tiene ese pedazo).
      */
+    /**
+     * Dreams: el cuerpo del aldeano recien se dibuja (y EMF recien lo anima) en la capa de piel. La armadura
+     * copia la pose del cuerpo, asi que tiene que dibujarse despues: se la pasa al final de la lista de capas.
+     * Las clases hijas lo llaman al terminar de agregar sus capas.
+     */
+    protected void armorLast() {
+        for (int i = 0; i < features.size(); i++) {
+            if (features.get(i) instanceof ArmorFeatureRenderer) {
+                features.add(features.remove(i));
+                return;
+            }
+        }
+    }
+
     private VillagerEntityBaseModelMCA<T> createArmorModel(EntityRendererFactory.Context ctx, boolean outer, float modelSize) {
         if (Config.getInstance().useAnimatedPlayerModel) {
             try {

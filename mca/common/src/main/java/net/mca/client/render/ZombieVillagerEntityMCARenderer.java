@@ -20,6 +20,7 @@ public class ZombieVillagerEntityMCARenderer extends VillagerLikeEntityMCARender
         addFeature(new FaceLayer<>(this, createModel(VillagerEntityModelMCA.bodyData(new Dilation(0.01F))).hideWears(), "zombie"));
         addFeature(new ClothingLayer<>(this, createModel(VillagerEntityModelMCA.bodyData(new Dilation(0.075F))), "zombie"));
         addFeature(new HairLayer<>(this, createModel(VillagerEntityModelMCA.hairData(new Dilation(0.1F)))));
+        armorLast();
     }
 
     private static VillagerEntityModelMCA<ZombieVillagerEntityMCA> createModel(ModelData data) {

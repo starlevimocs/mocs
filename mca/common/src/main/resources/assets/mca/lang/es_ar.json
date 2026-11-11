@@ -1003,5 +1003,17 @@
   "gui.dreams.action.hold_hand": "Ir de la mano",
   "gui.dreams.action.carry_back": "Llevar en la espalda",
   "gui.dreams.action.carry_arms": "Alzar en brazos",
-  "gui.dreams.action.release": "Soltar"
+  "gui.dreams.action.release": "Soltar",
+  "gui.dreams.hint.answers": "[1-9] responder  ·  [Tab] historial  ·  [Esc] salir",
+  "gui.dreams.hint.idle": "[Espacio] continuar  ·  [Tab] historial  ·  [Esc] salir",
+  "gui.dreams.history": "Historial de la conversación",
+  "gui.dreams.history.empty": "Todavía no dijeron nada.",
+  "gui.dreams.relation.bad": "Te evita",
+  "gui.dreams.relation.stranger": "Desconocidos",
+  "gui.dreams.relation.known": "Conocidos",
+  "gui.dreams.relation.friend": "Amigos",
+  "gui.dreams.relation.close": "Muy cercanos",
+  "gui.dreams.relation.soulmate": "Almas gemelas",
+  "gui.dreams.last_chance": "Última reacción: %s",
+  "gui.dreams.genes": "Genes"
 }

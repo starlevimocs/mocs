@@ -39,7 +39,7 @@ public final class DreamsAttach {
     }
 
     public static boolean isAttachedTo(VillagerEntityMCA villager, Entity player) {
-        return villager.dreamsAttach != NONE && villager.getVehicle() == player;
+        return villager.dreamsAttach != NONE && villager.dreamsAttachTo == player.getId();
     }
 
     /** Engancha al aldeano con el jugador en ese modo (si ya estaba igual, lo suelta). */
@@ -49,27 +49,34 @@ public final class DreamsAttach {
             return;
         }
         // un solo aldeano enganchado a la vez
-        for (Entity e : player.getPassengerList()) {
-            if (e != villager && e instanceof VillagerEntityMCA other && other.dreamsAttach != NONE) {
-                release(other);
-            }
+        for (VillagerEntityMCA other : player.getWorld().getEntitiesByClass(VillagerEntityMCA.class, player.getBoundingBox().expand(16),
+                v -> v != villager && v.dreamsAttach != NONE && v.dreamsAttachTo == player.getId())) {
+            release(other);
         }
-        if (villager.getVehicle() != null && villager.getVehicle() != player) {
+        if (villager.dreamsAttach != NONE) {
+            release(villager);
+        }
+        if (villager.getVehicle() != null) {
             villager.stopRiding();
         }
         villager.getNavigation().stop();
-        if (villager.getVehicle() != player) {
-            villager.startRiding(player, true);
-        }
         villager.dreamsAttach = mode;
+        villager.dreamsAttachTo = player.getId();
+        if (mode == HAND) {
+            // de la mano: no va montado; camina de verdad al lado del jugador (asi EMF lo anima caminando)
+            position(villager, player);
+        } else {
+            villager.startRiding(player, true);
+            player.networkHandler.sendPacket(new EntityPassengersSetS2CPacket(player));
+        }
         villager.calculateDimensions();
-        player.networkHandler.sendPacket(new EntityPassengersSetS2CPacket(player));
         broadcast(villager);
     }
 
     public static void release(VillagerEntityMCA villager) {
         Entity vehicle = villager.getVehicle();
         villager.dreamsAttach = NONE;
+        villager.dreamsAttachTo = -1;
         if (vehicle instanceof PlayerEntity) {
             villager.stopRiding();
         }
@@ -80,12 +87,23 @@ public final class DreamsAttach {
         broadcast(villager);
     }
 
-    /** Servidor, cada tick del aldeano. */
+    private static PlayerEntity partner(VillagerEntityMCA villager) {
+        return villager.getWorld().getEntityById(villager.dreamsAttachTo) instanceof PlayerEntity p ? p : null;
+    }
+
+    /** Servidor, cada tick del aldeano (antes de moverse). */
     public static void serverTick(VillagerEntityMCA villager) {
         if (villager.dreamsAttach == NONE) {
             return;
         }
-        if (!(villager.getVehicle() instanceof PlayerEntity) || villager.isSleeping()) {
+        if (villager.dreamsAttach == HAND) {
+            PlayerEntity p = partner(villager);
+            if (p == null || !p.isAlive() || p.isSneaking() || p.hasVehicle() || villager.isSleeping()
+                    || p.squaredDistanceTo(villager) > 12 * 12) {
+                release(villager);
+                return;
+            }
+        } else if (!(villager.getVehicle() instanceof PlayerEntity) || villager.isSleeping()) {
             release(villager);
             return;
         }
@@ -95,11 +113,22 @@ public final class DreamsAttach {
         }
     }
 
+    /** Servidor, al final del tick del aldeano: de la mano queda exactamente al lado del jugador. */
+    public static void afterTick(VillagerEntityMCA villager) {
+        if (villager.dreamsAttach == HAND) {
+            PlayerEntity p = partner(villager);
+            if (p != null) {
+                position(villager, p);
+                villager.setOnGround(p.isOnGround());
+            }
+        }
+    }
+
     private static void broadcast(VillagerEntityMCA villager) {
         if (!(villager.getWorld() instanceof ServerWorld world)) {
             return;
         }
-        DreamsAttachMessage msg = new DreamsAttachMessage(villager.getId(), villager.dreamsAttach);
+        DreamsAttachMessage msg = new DreamsAttachMessage(villager.getId(), villager.dreamsAttach, villager.dreamsAttachTo);
         for (ServerPlayerEntity p : world.getPlayers()) {
             if (p.squaredDistanceTo(villager) < 96 * 96) {
                 NetworkHandler.sendToPlayer(msg, p);

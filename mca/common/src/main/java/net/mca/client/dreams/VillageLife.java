@@ -33,6 +33,12 @@ public final class VillageLife {
             "Mañana tengo que trabajar temprano.", "¿Y vos qué opinás?", "Sí, sí, tenés razón.",
             "Escuché que vieron algo raro en el bosque.", "¡Qué buena idea!"
     };
+    private static final String[] TALKS = {"talk", "talk2", "talk3"};
+    private static final String[] STARE_LINES = {"¿Sí?", "¿Me buscabas?", "¿Pasa algo?", "¿Qué mirás?", "Hola, hola.", "¿Necesitás algo?"};
+    private static final String[] WELCOME_LINES = {"¡Volviste!", "¡Por fin! Te extrañé.", "¡Mirá quién llegó!", "¡Qué bueno verte de nuevo!"};
+    private static final Map<UUID, Long> STARE = new HashMap<>();
+    private static final Map<UUID, Long> REACTED = new HashMap<>();
+    private static final Map<UUID, Boolean> WAS_FAR = new HashMap<>();
     private static int clock;
 
     private VillageLife() {
@@ -57,7 +63,12 @@ public final class VillageLife {
 
             // gestos mientras habla
             if (VillagerVoice.isSpeaking(v) && !DreamsPoses.isAnimating(v)) {
-                DreamsPoses.startSolo(v, RANDOM.nextBoolean() ? "talk" : "talk2");
+                DreamsPoses.startSolo(v, TALKS[RANDOM.nextInt(TALKS.length)]);
+                continue;
+            }
+
+            // reacciones a lo que hace el jugador: si te lo quedas mirando, si volves a casa
+            if (reactions(client, player, v, now)) {
                 continue;
             }
 
@@ -102,9 +113,17 @@ public final class VillageLife {
                 if (partner != null && !DreamsPoses.isAnimating(v) && !DreamsPoses.isAnimating(partner)) {
                     String line = CHATTER[RANDOM.nextInt(CHATTER.length)];
                     VillagerVoice.speakAmbient(v, Text.literal(line), line);
-                    DreamsPoses.startSolo(v, RANDOM.nextBoolean() ? "talk" : "talk2");
-                    if (RANDOM.nextFloat() < 0.6F) {
+                    DreamsPoses.startSolo(v, TALKS[RANDOM.nextInt(TALKS.length)]);
+                    // el otro reacciona: asiente, se rie, se sorprende...
+                    float r = RANDOM.nextFloat();
+                    if (r < 0.45F) {
                         DreamsPoses.startSolo(partner, "nod");
+                    } else if (r < 0.62F) {
+                        DreamsPoses.startSolo(partner, "laugh");
+                    } else if (r < 0.72F) {
+                        DreamsPoses.startSolo(partner, "surprised");
+                    } else if (r < 0.80F) {
+                        DreamsPoses.startSolo(partner, "shrug");
                     }
                     long pause = 20L * (4 + RANDOM.nextInt(6));
                     NEXT_CHAT.put(v.getUuid(), now + pause);
@@ -137,6 +156,67 @@ public final class VillageLife {
             }
         }
         return null;
+    }
+
+    /** Te quedas mirandolo -> reacciona segun su personalidad. Volves despues de estar lejos -> te recibe (si te quiere). */
+    private static boolean reactions(MinecraftClient client, ClientPlayerEntity player, VillagerEntityMCA v, long now) {
+        if (DreamsPoses.isAnimating(v) || net.mca.client.gui.InteractScreen.isTalkingTo(v.getUuid()) || client.currentScreen != null) {
+            return false;
+        }
+        UUID id = v.getUuid();
+        double dist = v.squaredDistanceTo(player);
+        int hearts = v.getVillagerBrain().getMemoriesForPlayer(player).getHearts();
+
+        // bienvenida
+        boolean far = dist > 16 * 16;
+        Boolean wasFar = WAS_FAR.get(id);
+        if (far) {
+            WAS_FAR.put(id, true);
+        } else if (dist < 6 * 6 && Boolean.TRUE.equals(wasFar)) {
+            WAS_FAR.put(id, false);
+            Long last = REACTED.get(id);
+            if (hearts >= 60 && v.canSee(player) && (last == null || now - last > 20 * 90)) {
+                REACTED.put(id, now);
+                DreamsPoses.startSolo(v, "welcome");
+                String line = WELCOME_LINES[RANDOM.nextInt(WELCOME_LINES.length)];
+                VillagerVoice.speakAmbient(v, Text.literal(line), line);
+                return true;
+            }
+        }
+
+        // mirada fija
+        if (client.targetedEntity == v && dist < 5 * 5) {
+            Long since = STARE.get(id);
+            if (since == null) {
+                STARE.put(id, now);
+            } else if (now - since > 34) {
+                Long last = REACTED.get(id);
+                if (last == null || now - last > 20 * 25) {
+                    REACTED.put(id, now);
+                    STARE.remove(id);
+                    String gesture = switch (v.getVillagerBrain().getPersonality()) {
+                        case SHY, SENSITIVE -> "shy";
+                        case FLIRTY -> hearts >= 20 ? "flirty" : "wave";
+                        case GRUMPY -> "hips";
+                        case GLOOMY -> "shrug";
+                        case CONFIDENT -> "hips";
+                        case WITTY, PEPPY -> "laugh";
+                        case ODD -> "look_around";
+                        default -> "wave";
+                    };
+                    if (hearts < -10) {
+                        gesture = "angry";
+                    }
+                    DreamsPoses.startSolo(v, gesture);
+                    String line = STARE_LINES[RANDOM.nextInt(STARE_LINES.length)];
+                    VillagerVoice.speakAmbient(v, Text.literal(line), line);
+                    return true;
+                }
+            }
+        } else {
+            STARE.remove(id);
+        }
+        return false;
     }
 
     private static boolean isMoving(Entity e) {
@@ -183,6 +263,38 @@ public final class VillageLife {
     /** Elige un gesto de ocio: el animo pesa mas, la personalidad le da el toque propio. */
     private static String pickIdle(VillagerEntityMCA v) {
         List<String> pool = new ArrayList<>();
+        long dayTime = v.getWorld().getTimeOfDay() % 24000L;
+        // bajo la lluvia se tapa
+        if (v.getWorld().isRaining() && v.getWorld().isSkyVisible(v.getBlockPos().up())) {
+            return RANDOM.nextFloat() < 0.75F ? "rain_cover" : "look_sky";
+        }
+        // los chicos juegan
+        AgeState age = v.getAgeState();
+        if (age == AgeState.CHILD || age == AgeState.TEEN) {
+            add(pool, age == AgeState.CHILD ? 6 : 2, "kid_play");
+            add(pool, 2, "cheer", "look_around", "laugh");
+        }
+        // en horario de trabajo, cada uno a lo suyo
+        if (age == AgeState.ADULT && dayTime > 2000 && dayTime < 9500) {
+            String path = net.minecraft.registry.Registries.VILLAGER_PROFESSION.getId(v.getProfession()).getPath();
+            switch (path) {
+                case "armorer", "toolsmith", "weaponsmith", "mason" -> add(pool, 5, "hammer");
+                case "cleric" -> add(pool, 5, "pray");
+                case "librarian", "cartographer" -> add(pool, 5, "read");
+                case "farmer" -> add(pool, 4, "wipe_brow", "harvest");
+                case "shepherd", "butcher", "leatherworker" -> add(pool, 4, "pet");
+                case "fisherman" -> add(pool, 4, "look_sky", "wipe_brow");
+                case "fletcher" -> add(pool, 4, "point", "look_around");
+                case "guard", "archer" -> add(pool, 4, "salute", "look_around");
+                default -> {
+                }
+            }
+        }
+        // al mediodia y a la tardecita, comen algo
+        if ((dayTime > 5500 && dayTime < 7000) || (dayTime > 11000 && dayTime < 12000)) {
+            add(pool, 5, "eat");
+        }
+        add(pool, 1, "dust_off", "look_sky");
         String mood = v.getVillagerBrain().getMood().getName();
         switch (mood) {
             case "depressed", "sad" -> add(pool, 4, "sad", "scratch_head");

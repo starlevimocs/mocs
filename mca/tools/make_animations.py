@@ -467,3 +467,111 @@ fi = [(0, [0, 0, 0]), (0.5, [-50, -10, 0]), (2.0, [-48, -10, 0]), (2.2, [-80, -1
 solo("fish", 4.0, {"right_arm": {"rotation": kf(fi)},
                    "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.5, [-40, 30, 0]), (2.0, [-40, 30, 0]), (2.2, [-55, 35, 0]), (2.6, [-42, 30, 0]), (4.0, [0, 0, 0])])},
                    "head": {"rotation": held([14, 0, 0], 0.5, 3.6, 4.0)}}, blend_in=0.4, blend_out=0.4)
+
+
+# ================================================================== Dreams 3: mas humanos
+# taparse de la lluvia
+solo("rain_cover", 3.2, {
+    "right_arm": {"rotation": held([-165, -35, 0], 0.4, 2.8, 3.2)},
+    "left_arm": {"rotation": held([-150, 30, 0], 0.5, 2.7, 3.2)},
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.4, [14, 0, 0]), (1.5, [-22, 10, 0]), (2.2, [14, 0, 0]), (3.2, [0, 0, 0])])},
+    "body": {"rotation": held([10, 0, 0], 0.4, 2.8, 3.2)},
+}, blend_in=0.4, blend_out=0.5)
+# comer algo: la mano va a la boca tres veces
+ea = [(0, [0, 0, 0])]
+eh = [(0, [0, 0, 0])]
+for i in range(3):
+    t0 = 0.3 + i * 0.75
+    ea += [(t0, [-60, -20, 0]), (t0 + 0.25, [-128, -32, 0]), (t0 + 0.5, [-70, -22, 0])]
+    eh += [(t0 + 0.25, [10, 0, 0]), (t0 + 0.5, [-3, 0, 0])]
+ea.append((2.8, [0, 0, 0]))
+eh.append((2.8, [0, 0, 0]))
+solo("eat", 2.8, {"right_arm": {"rotation": kf(ea)}, "head": {"rotation": kf(eh)},
+                  "left_arm": {"rotation": held([-45, 25, 0], 0.3, 2.4, 2.8)}})
+# sacudirse el polvo del hombro
+du = [(0, [0, 0, 0]), (0.3, [-95, 60, 0])]
+for i in range(4):
+    du.append((0.45 + i * 0.17, [-95 + (12 if i % 2 else -6), 60, 0]))
+du.append((1.6, [0, 0, 0]))
+solo("dust_off", 1.6, {"right_arm": {"rotation": kf(du)}, "head": {"rotation": held([10, 30, 0], 0.3, 1.2, 1.6)}})
+# mirar el cielo con la mano de visera
+solo("look_sky", 3.0, {
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-38, 12, 0]), (1.6, [-40, -14, 0]), (2.4, [-36, 6, 0]), (3.0, [0, 0, 0])])},
+    "right_arm": {"rotation": held([-150, -38, 0], 0.6, 2.4, 3.0)},
+    "body": {"rotation": held([-6, 0, 0], 0.6, 2.4, 3.0)},
+}, blend_in=0.4, blend_out=0.5)
+# brazos abiertos: bienvenida
+solo("welcome", 2.0, {
+    "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.35, [-80, 0, 70]), (1.3, [-75, 0, 62]), (2.0, [0, 0, 0])])},
+    "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.35, [-80, 0, -70]), (1.3, [-75, 0, -62]), (2.0, [0, 0, 0])])},
+    "head": {"rotation": held([-10, 0, 6], 0.35, 1.4, 2.0)},
+    "root": {"position": kf([(0, [0, 0, 0]), (0.3, [0, 1.8, 0]), (0.55, [0, 0, 0]), (2.0, [0, 0, 0])])},
+})
+# senalar
+solo("point", 1.8, {
+    "right_arm": {"rotation": held([-92, -12, 0], 0.3, 1.4, 1.8)},
+    "head": {"rotation": held([0, -10, 0], 0.3, 1.4, 1.8)},
+    "body": {"rotation": held([0, -10, 0], 0.3, 1.4, 1.8)},
+})
+# hablar con las palmas abiertas, contando con los dedos
+t3r = [(0, [0, 0, 0]), (0.3, [-55, 10, 28]), (0.8, [-70, 20, 20]), (1.3, [-50, 5, 30]), (1.9, [-65, 15, 22]), (2.6, [0, 0, 0])]
+t3l = [(0, [0, 0, 0]), (0.4, [-50, -10, -28]), (0.9, [-62, -22, -18]), (1.4, [-48, -5, -30]), (2.0, [-60, -12, -22]), (2.6, [0, 0, 0])]
+solo("talk3", 2.6, {"right_arm": {"rotation": kf(t3r)}, "left_arm": {"rotation": kf(t3l)},
+                    "head": {"rotation": kf([(0, [0, 0, 0]), (0.5, [4, 8, 4]), (1.2, [-4, -8, -4]), (1.9, [5, 6, 2]), (2.6, [0, 0, 0])])},
+                    "body": {"rotation": kf([(0, [0, 0, 0]), (0.9, [2, 5, 0]), (1.8, [2, -5, 0]), (2.6, [0, 0, 0])])}})
+# los chicos juegan: saltitos con los brazos como avion
+kp_root = [(0, [0, 0, 0])]
+for i in range(5):
+    kp_root += [(0.2 + i * 0.5, [0, 0, 0]), (0.45 + i * 0.5, [0, 3.2, 0])]
+kp_root.append((2.9, [0, 0, 0]))
+solo("kid_play", 2.9, {
+    "root": {"position": kf(kp_root)},
+    "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.3, [0, 0, 80]), (1.0, [0, 0, 100]), (1.7, [0, 0, 70]), (2.4, [0, 0, 95]), (2.9, [0, 0, 0])])},
+    "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.3, [0, 0, -80]), (1.0, [0, 0, -60]), (1.7, [0, 0, -100]), (2.4, [0, 0, -75]), (2.9, [0, 0, 0])])},
+    "body": {"rotation": kf([(0, [0, 0, 0]), (0.8, [0, 0, 10]), (1.6, [0, 0, -10]), (2.4, [0, 0, 8]), (2.9, [0, 0, 0])])},
+    "head": {"rotation": held([-12, 0, 0], 0.3, 2.5, 2.9)},
+})
+# ---- oficios
+# martillar (herreros, albaniles)
+hm_a = [(0, [0, 0, 0])]
+for i in range(4):
+    t0 = 0.2 + i * 0.55
+    hm_a += [(t0 + 0.22, [-120, -10, 0]), (t0 + 0.36, [-48, -14, 0])]
+hm_a.append((2.6, [0, 0, 0]))
+solo("hammer", 2.6, {"right_arm": {"interpolation": "linear", "rotation": kf(hm_a)},
+                     "left_arm": {"rotation": held([-45, 25, 0], 0.2, 2.2, 2.6)},
+                     "body": {"rotation": held([14, 0, 0], 0.2, 2.2, 2.6)},
+                     "head": {"rotation": held([18, 0, 0], 0.2, 2.2, 2.6)}})
+# rezar (clerigos)
+solo("pray", 3.4, {
+    "right_arm": {"rotation": held([-78, -42, 0], 0.5, 2.9, 3.4)},
+    "left_arm": {"rotation": held([-78, 42, 0], 0.5, 2.9, 3.4)},
+    "head": {"rotation": held([26, 0, 0], 0.5, 2.9, 3.4)},
+    "body": {"rotation": held([8, 0, 0], 0.5, 2.9, 3.4)},
+}, blend_in=0.5, blend_out=0.5)
+# leer (bibliotecarios, cartografos): sostiene un libro y pasa la pagina
+solo("read", 3.6, {
+    "left_arm": {"rotation": held([-58, 28, 0], 0.4, 3.2, 3.6)},
+    "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.4, [-58, -28, 0]), (1.6, [-58, -28, 0]), (1.85, [-70, 8, 0]), (2.1, [-58, -28, 0]), (3.2, [-58, -28, 0]), (3.6, [0, 0, 0])])},
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.4, [26, 8, 0]), (1.6, [26, -8, 0]), (2.2, [26, 8, 0]), (3.2, [26, -6, 0]), (3.6, [0, 0, 0])])},
+}, blend_in=0.4, blend_out=0.4)
+# secarse la frente (granjeros)
+solo("wipe_brow", 2.0, {
+    "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.4, [-150, -52, 0]), (1.0, [-150, -30, 0]), (1.4, [-150, -52, 0]), (2.0, [0, 0, 0])])},
+    "head": {"rotation": held([-8, 0, 6], 0.4, 1.5, 2.0)},
+    "left_arm": {"rotation": held([10, 0, -30], 0.4, 1.5, 2.0)},
+})
+# saludo militar (guardias)
+solo("salute", 1.8, {
+    "right_arm": {"rotation": held([-140, -62, 0], 0.25, 1.4, 1.8)},
+    "head": {"rotation": held([-4, 0, 0], 0.25, 1.4, 1.8)},
+    "body": {"rotation": held([-4, 0, 0], 0.25, 1.4, 1.8)},
+})
+# acariciar un animal (pastores): se agacha y mueve la mano
+solo("pet", 2.6, {
+    "body": {"rotation": held([34, 0, 0], 0.5, 2.1, 2.6)},
+    "head": {"rotation": held([14, 0, 0], 0.5, 2.1, 2.6), "position": held([0, -1.8, -4.5], 0.5, 2.1, 2.6)},
+    "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.5, [-50, 0, 0]), (0.9, [-40, -14, 0]), (1.3, [-52, 10, 0]), (1.7, [-40, -14, 0]), (2.1, [-50, 0, 0]), (2.6, [0, 0, 0])]),
+                  "position": held([0, -1.4, -4.2], 0.5, 2.1, 2.6)},
+    "left_arm": {"rotation": held([20, 0, -8], 0.5, 2.1, 2.6), "position": held([0, -1.4, -4.2], 0.5, 2.1, 2.6)},
+}, blend_in=0.45, blend_out=0.45)

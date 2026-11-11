@@ -180,6 +180,8 @@ public class BreedableRelationship extends Relationship<VillagerEntityMCA> {
             if (response == Response.BEST) {
                 entity.playSurprisedSound();
             }
+            // Dreams: se nota cuanto le gusto
+            net.mca.server.dreams.DreamsAnimations.gesture(entity, response == Response.BEST ? "cheer" : response == Response.BETTER ? "clap" : "bow");
 
             //take the gift
             getGiftSaturation().add(stack);
@@ -196,6 +198,7 @@ public class BreedableRelationship extends Relationship<VillagerEntityMCA> {
     private void rejectGift(PlayerEntity player, String dialogue) {
         entity.getWorld().sendEntityStatus(entity, Status.MCA_VILLAGER_NEG_INTERACTION);
         entity.sendChatMessage(player, dialogue);
+        net.mca.server.dreams.DreamsAnimations.gesture(entity, "no");
     }
 
     private boolean handleSpecialCaseGift(ServerPlayerEntity player, ItemStack stack) {

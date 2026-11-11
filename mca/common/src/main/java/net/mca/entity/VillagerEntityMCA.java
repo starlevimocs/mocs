@@ -122,6 +122,8 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
 
     /** Dreams: 0 = suelto, 1 = de la mano, 2 = en brazos, 3 = en la espalda (ver DreamsAttach). No se guarda. */
     public int dreamsAttach;
+    /** Dreams: id (de entidad) del jugador al que esta enganchado. */
+    public int dreamsAttachTo = -1;
     private final VillagerDimensions.Mutable dimensions = new VillagerDimensions.Mutable(AgeState.UNASSIGNED);
 
     private GameProfile gameProfile;
@@ -570,6 +572,11 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
         if (getVehicle() instanceof PlayerEntity) {
             return super.damage(source, 0.0f);
         }
+        // Dreams: de la mano puede quedar pegado a una pared; no se ahoga ni se lastima al caer
+        if (dreamsAttach != 0 && (source.isOf(net.minecraft.entity.damage.DamageTypes.IN_WALL)
+                || source.isOf(net.minecraft.entity.damage.DamageTypes.FALL) || source.isOf(net.minecraft.entity.damage.DamageTypes.CRAMMING))) {
+            return false;
+        }
 
         // you can't hit babies!
         // TODO: Verify the `isUnblockable` replacement for 1.19.4, ensure same behavior
@@ -786,6 +793,10 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
             net.mca.server.dreams.DreamsAttach.serverTick(this);
         }
         super.tick();
+        if (!getWorld().isClient) {
+            // Dreams: de la mano -> despues de moverse, queda justo al lado del jugador
+            net.mca.server.dreams.DreamsAttach.afterTick(this);
+        }
 
         // update visual age
         int age = getTrackedValue(GROWTH_AMOUNT);
@@ -891,14 +902,6 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
         if (vehicle instanceof PlayerEntity player && dreamsAttach != 0) {
             // Dreams: de la mano / en brazos / en la espalda
             net.mca.server.dreams.DreamsAttach.position(this, player);
-            if (isClient() && dreamsAttach == net.mca.server.dreams.DreamsAttach.HAND) {
-                // camina al mismo paso que el jugador
-                net.mca.mixin.MixinDreamsLimbAnimator from = (net.mca.mixin.MixinDreamsLimbAnimator) (Object) player.limbAnimator;
-                net.mca.mixin.MixinDreamsLimbAnimator to = (net.mca.mixin.MixinDreamsLimbAnimator) (Object) this.limbAnimator;
-                to.dreams$setPrevSpeed(from.dreams$getPrevSpeed());
-                to.dreams$setSpeed(from.dreams$getSpeed());
-                to.dreams$setPos(from.dreams$getPos());
-            }
             if (vehicle.isSneaking()) {
                 stopRiding();
             }

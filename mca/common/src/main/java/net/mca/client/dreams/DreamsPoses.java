@@ -112,31 +112,48 @@ public final class DreamsPoses {
         });
     }
 
+    /** jugador (id) -> aldeano (id) que lleva de la mano, en brazos o en la espalda. */
+    private static final Map<Integer, Integer> HELD = new HashMap<>();
+
     /** De la mano / en brazos / en la espalda (lo manda el servidor). */
-    public static void setAttach(int villagerId, int mode) {
+    public static void setAttach(int villagerId, int mode, int playerId) {
         MinecraftClient client = MinecraftClient.getInstance();
         client.execute(() -> {
+            HELD.values().removeIf(v -> v == villagerId);
+            if (mode != 0 && playerId >= 0) {
+                HELD.put(playerId, villagerId);
+            }
             if (client.world != null && client.world.getEntityById(villagerId) instanceof net.mca.entity.VillagerEntityMCA v) {
                 v.dreamsAttach = mode;
+                v.dreamsAttachTo = playerId;
                 v.calculateDimensions();
             }
         });
     }
 
+    private static net.minecraft.entity.player.PlayerEntity partner(net.mca.entity.VillagerEntityMCA v) {
+        return v.getWorld().getEntityById(v.dreamsAttachTo) instanceof net.minecraft.entity.player.PlayerEntity p ? p : null;
+    }
+
     private static int attachMode(Entity entity) {
-        if (entity instanceof net.mca.entity.VillagerEntityMCA v && v.dreamsAttach != 0
-                && v.getVehicle() instanceof net.minecraft.entity.player.PlayerEntity) {
-            return v.dreamsAttach;
+        if (entity instanceof net.mca.entity.VillagerEntityMCA v && v.dreamsAttach != 0) {
+            if (v.dreamsAttach == net.mca.server.dreams.DreamsAttach.HAND) {
+                return partner(v) != null ? v.dreamsAttach : 0;
+            }
+            if (v.getVehicle() instanceof net.minecraft.entity.player.PlayerEntity) {
+                return v.dreamsAttach;
+            }
         }
         return 0;
     }
 
     private static int carriedMode(Entity entity) {
         if (entity instanceof net.minecraft.entity.player.PlayerEntity) {
-            for (Entity e : entity.getPassengerList()) {
-                int m = attachMode(e);
-                if (m != 0) {
-                    return m;
+            Integer id = HELD.get(entity.getId());
+            if (id != null) {
+                Entity v = entity.getWorld().getEntityById(id);
+                if (v instanceof net.mca.entity.VillagerEntityMCA m && m.dreamsAttachTo == entity.getId()) {
+                    return attachMode(v);
                 }
             }
         }
@@ -208,6 +225,25 @@ public final class DreamsPoses {
             return;
         }
         int mode = attachMode(entity);
+        if (mode == net.mca.server.dreams.DreamsAttach.HAND) {
+            // de la mano: se dibuja exactamente al lado del jugador (el servidor lo lleva ahi, pero con algo de
+            // retraso; en pantalla nunca se separan) y mirando para el mismo lado
+            net.minecraft.entity.player.PlayerEntity pl = partner((net.mca.entity.VillagerEntityMCA) entity);
+            float b = MathHelper.lerpAngleDegrees(tickDelta, pl.prevBodyYaw, pl.bodyYaw);
+            double rad = Math.toRadians(b);
+            Vec3d p = pl.getLerpedPos(tickDelta);
+            Vec3d target = p.add(-Math.cos(rad) * net.mca.server.dreams.DreamsAttach.HAND_SIDE, 0, -Math.sin(rad) * net.mca.server.dreams.DreamsAttach.HAND_SIDE);
+            Vec3d actual = entity.getLerpedPos(tickDelta);
+            matrices.push();
+            PUSHED.put(entity.getId(), true);
+            matrices.translate(target.x - actual.x, target.y - actual.y, target.z - actual.z);
+            float rel = MathHelper.clamp(MathHelper.wrapDegrees(entity.headYaw - b), -60, 60);
+            entity.bodyYaw = b;
+            entity.prevBodyYaw = b;
+            entity.headYaw = b + rel;
+            entity.prevHeadYaw = b + rel;
+            return;
+        }
         if (mode == net.mca.server.dreams.DreamsAttach.ARMS || mode == net.mca.server.dreams.DreamsAttach.BACK) {
             // en brazos: de costado y recostado; en la espalda: apenas inclinado hacia adelante
             net.mca.entity.VillagerEntityMCA v = (net.mca.entity.VillagerEntityMCA) entity;
@@ -359,16 +395,10 @@ public final class DreamsPoses {
         int mode = attachMode(entity);
         float pt = MinecraftClient.getInstance().getTickDelta();
         if (mode == net.mca.server.dreams.DreamsAttach.HAND) {
-            // camina normal (como el jugador, que le pasa el paso), con la mano izquierda agarrada
-            net.mca.entity.VillagerEntityMCA v = (net.mca.entity.VillagerEntityMCA) entity;
-            float pos = entity.limbAnimator.getPos(pt) / (0.2F + v.getRawScaleFactor());
-            float speed = Math.min(1.0F, entity.limbAnimator.getSpeed(pt));
-            resetSeat(m);
-            float swing = MathHelper.cos(pos * 0.6662F) * 1.4F * speed;
-            set(m.rightLeg, swing, 0, 0);
-            set(m.leftLeg, -swing, 0, 0);
-            set(m.rightArm, MathHelper.cos(pos * 0.6662F + MathHelper.PI) * speed, 0, 0.05F);
-            set(m.leftArm, MathHelper.cos(pos * 0.6662F) * speed * 0.3F, 0, -0.15F);
+            // camina con su animacion normal (la de EMF / Fresh Animations); solo cambia la mano que va agarrada
+            m.leftArm.pitch *= 0.3F;
+            m.leftArm.yaw = 0;
+            m.leftArm.roll = -0.15F;
         } else if (mode == net.mca.server.dreams.DreamsAttach.ARMS) {
             resetSeat(m);
             // piernas colgando sobre un brazo, un brazo alrededor del cuello, mirando al jugador
@@ -445,6 +475,135 @@ public final class DreamsPoses {
             int tw = client.textRenderer.getWidth(hearts);
             context.drawText(client.textRenderer, hearts, -tw / 2, -4, (ha << 24) | 0xFF6F9A, false);
             context.getMatrices().pop();
+        }
+    }
+
+    // ------------------------------------------------------------------ vida: mirada y postura
+
+    private static final Map<Entity, double[]> LOOK = new java.util.WeakHashMap<>();
+    private static final Map<ModelPart, float[]> WRITTEN = new java.util.WeakHashMap<>();
+
+    /** Suma a un hueso, pero una sola vez por pose (si nadie lo volvio a calcular desde la ultima vez, no repite). */
+    private static void add(ModelPart part, float pitch, float yaw, float roll) {
+        float[] w = WRITTEN.get(part);
+        if (w != null && part.pitch == w[0] && part.yaw == w[1] && part.roll == w[2]) {
+            return;
+        }
+        part.pitch += pitch;
+        part.yaw += yaw;
+        part.roll += roll;
+        if (w == null) {
+            w = new float[3];
+            WRITTEN.put(part, w);
+        }
+        w[0] = part.pitch;
+        w[1] = part.yaw;
+        w[2] = part.roll;
+    }
+
+    /**
+     * Lo que hace que un aldeano parezca una persona: la postura cambia con el animo y la personalidad (triste:
+     * cabeza gacha y hombros caidos; seguro: pecho afuera; timido: mira al piso...) y, cuando un jugador esta
+     * cerca, lo mira a los ojos (un rato si, un rato no; siempre si le estan hablando o lo estan mirando).
+     * Va encima de la pose normal y de EMF, igual que las interacciones.
+     */
+    public static void applyLife(net.mca.entity.VillagerEntityMCA v, BipedEntityModel<?> m) {
+        if (guiRender || v.isSleeping() || v.getVillagerBrain().isPanicking() || attachMode(v) > net.mca.server.dreams.DreamsAttach.HAND) {
+            return;
+        }
+        Active a = current(v);
+        if (a != null && a.anchored) {
+            return;
+        }
+        // ---- postura
+        float head = 0, body = 0, arms = 0;
+        switch (v.getVillagerBrain().getMood().getName()) {
+            case "depressed" -> {
+                head += 0.28F;
+                body += 0.10F;
+            }
+            case "sad" -> {
+                head += 0.18F;
+                body += 0.06F;
+            }
+            case "unhappy" -> head += 0.06F;
+            case "happy" -> head -= 0.05F;
+            case "overjoyed" -> {
+                head -= 0.08F;
+                body -= 0.03F;
+            }
+            default -> {
+            }
+        }
+        switch (v.getVillagerBrain().getPersonality()) {
+            case SHY -> head += 0.08F;
+            case GLOOMY -> head += 0.07F;
+            case GRUMPY -> head += 0.04F;
+            case LAZY -> body += 0.07F;
+            case CONFIDENT, ATHLETIC -> {
+                body -= 0.05F;
+                head -= 0.04F;
+                arms += 0.07F;
+            }
+            default -> {
+            }
+        }
+        // respira: los hombros suben y bajan apenas
+        float breath = MathHelper.sin((v.age + MinecraftClient.getInstance().getTickDelta()) * 0.09F + v.getId()) * 0.012F;
+        if (a == null) {
+            add(m.body, body + breath, 0, 0);
+            add(m.rightArm, 0, 0, arms + breath * 2);
+            add(m.leftArm, 0, 0, -arms - breath * 2);
+        }
+
+        // ---- mirada
+        MinecraftClient client = MinecraftClient.getInstance();
+        double[] st = LOOK.computeIfAbsent(v, k -> new double[]{0, 0, 0, 0});   // yaw, pitch, peso, ultimo ms
+        long now = net.minecraft.util.Util.getMeasuringTimeMs();
+        float dt = (float) Math.min(0.1, Math.max(0, (now - st[3]) / 1000.0));
+        if (st[3] == 0) {
+            dt = 0;
+        }
+        st[3] = now;
+        float want = 0, wy = 0, wp = 0;
+        net.minecraft.entity.player.PlayerEntity pl = v.getWorld().getClosestPlayer(v, 6.5);
+        if (pl != null && !pl.isSpectator()) {
+            Vec3d eye = v.getEyePos();
+            Vec3d to = pl.getEyePos().subtract(eye);
+            float bodyYaw = v.bodyYaw;
+            float yawTo = (float) (MathHelper.atan2(to.z, to.x) * 180 / Math.PI) - 90F;
+            float rel = MathHelper.wrapDegrees(yawTo - bodyYaw);
+            boolean talking = net.mca.client.gui.InteractScreen.isTalkingTo(v.getUuid());
+            boolean stared = client.targetedEntity == v;
+            // se interesa de a ratos (cada uno a su ritmo); el timido aguanta menos la mirada
+            long cycle = 5200 + (v.getId() % 7) * 450L;
+            float share = v.getVillagerBrain().getPersonality() == net.mca.entity.ai.relationship.Personality.SHY ? 0.3F : 0.6F;
+            boolean interested = ((now + v.getId() * 977L) % cycle) < cycle * share;
+            if (Math.abs(rel) < 95 && (talking || stared || interested)) {
+                want = 1;
+                wy = MathHelper.clamp(rel, -62, 62) * MathHelper.RADIANS_PER_DEGREE;
+                double dist = Math.sqrt(to.x * to.x + to.z * to.z);
+                wp = MathHelper.clamp((float) -(MathHelper.atan2(to.y, dist)), -0.5F, 0.5F);
+            }
+        }
+        float k = dt <= 0 ? 0 : 1 - (float) Math.exp(-dt / 0.18F);
+        st[2] += (want - st[2]) * k;
+        if (want > 0) {
+            st[0] += (wy - st[0]) * k;
+            st[1] += (wp - st[1]) * k;
+        }
+        float w = (float) st[2] * (a != null ? 0.5F : 1);
+        float[] wr = WRITTEN.get(m.head);
+        if (wr == null || m.head.pitch != wr[0] || m.head.yaw != wr[1] || m.head.roll != wr[2]) {
+            m.head.pitch = MathHelper.lerp(w, m.head.pitch + head, (float) st[1] + head * 0.5F);
+            m.head.yaw = MathHelper.lerp(w, m.head.yaw, (float) st[0]);
+            if (wr == null) {
+                wr = new float[3];
+                WRITTEN.put(m.head, wr);
+            }
+            wr[0] = m.head.pitch;
+            wr[1] = m.head.yaw;
+            wr[2] = m.head.roll;
         }
     }
 

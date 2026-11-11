@@ -107,6 +107,9 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
         }
 
         applyVillagerDimensions(villager, villager.isInSneakingPose());
+        if (villager instanceof net.mca.entity.VillagerEntityMCA life) {
+            net.mca.client.dreams.DreamsPoses.applyLife(life, this);
+        }
         net.mca.client.dreams.DreamsPoses.apply(villager, this);
         syncDerivedParts();
         placeBreasts(villager);
@@ -159,6 +162,9 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
             this.leftArm.roll = -waveSideways;
             this.rightArm.pitch = -armRaise;
             this.rightArm.roll = waveSideways;
+        }
+        if (lastVillager instanceof net.mca.entity.VillagerEntityMCA life) {
+            net.mca.client.dreams.DreamsPoses.applyLife(life, this);
         }
         net.mca.client.dreams.DreamsPoses.apply(lastVillager, this);
         syncDerivedParts();

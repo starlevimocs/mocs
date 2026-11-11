@@ -71,6 +71,29 @@ public class InteractScreen extends AbstractDynamicScreen {
     private final long openedAt = Util.getMeasuringTimeMs();
     private long lineStartedAt;
 
+    // Dreams 3: historial, emocion, corazones que suben o bajan
+    private record LogLine(boolean me, String who, String text) {
+    }
+
+    private final List<LogLine> history = new java.util.ArrayList<>();
+    private boolean showHistory;
+    private int historyScroll;
+    private VillagerVoice.Emotion emotion = VillagerVoice.Emotion.NEUTRAL;
+    private int lastHearts = Integer.MIN_VALUE;
+    private int heartDelta;
+    private long heartDeltaAt;
+
+    private void log(boolean me, String text) {
+        if (text == null || text.isBlank()) {
+            return;
+        }
+        history.add(new LogLine(me, me ? player.getName().getString() : villager.asEntity().getName().getString(), text));
+        if (history.size() > 60) {
+            history.remove(0);
+        }
+        historyScroll = 0;
+    }
+
     public InteractScreen(VillagerLike<?> villager) {
         super(Text.literal("Interact"));
         this.villager = villager;
@@ -88,7 +111,9 @@ public class InteractScreen extends AbstractDynamicScreen {
         dialogAnswers = null;
         dialogQuestionText = textRenderer.wrapLines(text, textWidth());
         fullText = text.getString();
-        speech = voice.plan(fullText, VillagerVoice.emotionOf(villager, text));
+        emotion = VillagerVoice.emotionOf(villager, text);
+        speech = voice.plan(fullText, emotion);
+        log(false, fullText);
         net.mca.client.dreams.DreamsPoses.startSolo(villager.asEntity(), fullText.length() % 2 == 0 ? "talk" : "talk2");
         shown = 0;
         pause = 0;
@@ -181,7 +206,7 @@ public class InteractScreen extends AbstractDynamicScreen {
         int row = 0;
         boolean adult = !villager.asEntity().isBaby() && villager.getAgeState() == net.mca.entity.ai.relationship.AgeState.ADULT;
         boolean attached = villager.asEntity() instanceof net.mca.entity.VillagerEntityMCA av && av.dreamsAttach != 0
-                && av.getVehicle() == MinecraftClient.getInstance().player;
+                && MinecraftClient.getInstance().player != null && av.dreamsAttachTo == MinecraftClient.getInstance().player.getId();
         for (var a : current.actions()) {
             if (a.adultOnly() && !adult) {
                 continue;
@@ -274,6 +299,7 @@ public class InteractScreen extends AbstractDynamicScreen {
         }
         chatField.setText("");
         playerLine = text;
+        log(true, text);
         NetworkHandler.sendToServer(new net.mca.network.c2s.DreamsChatMessage(villager.asEntity().getUuid(), text));
     }
 
@@ -291,12 +317,86 @@ public class InteractScreen extends AbstractDynamicScreen {
         drawActionPanel(context);
         super.render(context, mouseX, mouseY, tickDelta);
 
-        drawIcons(context);
         drawTextPopups(context);
+        drawHeartPopup(context);
+        drawHints(context);
+        if (showHistory) {
+            drawHistory(context);
+        }
+    }
+
+    /** "+5 ❤" que sube y se desvanece cuando cambian los corazones. */
+    private void drawHeartPopup(DrawContext context) {
+        int hearts = villager.getVillagerBrain().getMemoriesForPlayer(player).getHearts();
+        long now = Util.getMeasuringTimeMs();
+        if (lastHearts != Integer.MIN_VALUE && hearts != lastHearts) {
+            heartDelta = hearts - lastHearts;
+            heartDeltaAt = now;
+        }
+        lastHearts = hearts;
+        float t = (now - heartDeltaAt) / 1600.0F;
+        if (heartDelta == 0 || t > 1) {
+            return;
+        }
+        String txt = (heartDelta > 0 ? "+" : "") + heartDelta + " \u2764";
+        int alpha = (int) (255 * (1 - t * t));
+        int color = heartDelta > 0 ? 0xFF7FA8 : 0x9A9AA8;
+        MatrixStack m = context.getMatrices();
+        m.push();
+        m.translate(boxX() + 40, boxY() - 60 - t * 26, 0);
+        float sc = 1.6F + 0.3F * (1 - t);
+        m.scale(sc, sc, 1);
+        context.drawTextWithShadow(textRenderer, txt, -textRenderer.getWidth(txt) / 2, 0, (Math.max(8, alpha) << 24) | color);
+        m.pop();
+    }
+
+    private void drawHints(DrawContext context) {
+        if (inGiftMode) {
+            return;
+        }
+        Text hint = Text.translatable(hasAnswers() ? "gui.dreams.hint.answers" : "gui.dreams.hint.idle");
+        context.drawText(textRenderer, hint, boxX() + 6, height - 9, 0x90FFFFFF, false);
+    }
+
+    /** Historial de la conversacion (Tab): lo que dijo cada uno, como en una novela visual. */
+    private void drawHistory(DrawContext context) {
+        int w = Math.min(width - 40, 420);
+        int h = Math.min(height - BOX_HEIGHT - 50, 190);
+        int x = (width - w) / 2;
+        int y = boxY() - h - 22;
+        context.fill(0, 0, width, height, 0x70000000);
+        VnStyle.panel(context, x, y, w, h, 0xF0140F1E, VnStyle.BORDER_HOVER);
+        context.drawTextWithShadow(textRenderer, Text.translatable("gui.dreams.history"), x + 10, y + 7, VnStyle.ACCENT);
+        context.fill(x + 8, y + 19, x + w - 8, y + 20, VnStyle.BORDER);
+        List<OrderedText> lines = new java.util.ArrayList<>();
+        List<Integer> colors = new java.util.ArrayList<>();
+        for (LogLine l : history) {
+            MutableText t = Text.literal(l.who() + ": ").formatted(l.me() ? Formatting.AQUA : Formatting.GOLD)
+                    .append(Text.literal(l.text()).formatted(Formatting.WHITE));
+            for (OrderedText o : textRenderer.wrapLines(t, w - 24)) {
+                lines.add(o);
+                colors.add(l.me() ? 0xFFCFE8FF : VnStyle.TEXT);
+            }
+        }
+        int visible = (h - 30) / 10;
+        historyScroll = Math.max(0, Math.min(historyScroll, Math.max(0, lines.size() - visible)));
+        int start = Math.max(0, lines.size() - visible - historyScroll);
+        int yy = y + 24;
+        for (int i = start; i < Math.min(lines.size(), start + visible); i++) {
+            context.drawTextWithShadow(textRenderer, lines.get(i), x + 12, yy, colors.get(i));
+            yy += 10;
+        }
+        if (history.isEmpty()) {
+            context.drawTextWithShadow(textRenderer, Text.translatable("gui.dreams.history.empty"), x + 12, y + 28, VnStyle.TEXT_DIM);
+        }
     }
 
     @Override
     public boolean mouseScrolled(double x, double y, double d) {
+        if (showHistory) {
+            historyScroll += d > 0 ? 2 : -2;
+            return true;
+        }
         if (d < 0) {
             player.getInventory().selectedSlot = player.getInventory().selectedSlot == 8 ? 0 : player.getInventory().selectedSlot + 1;
         } else if (d > 0) {
@@ -345,6 +445,15 @@ public class InteractScreen extends AbstractDynamicScreen {
             return chatField.keyPressed(keyChar, keyCode, unknown);
         }
 
+        // Dreams: Tab abre y cierra el historial
+        if (keyChar == GLFW.GLFW_KEY_TAB) {
+            showHistory = !showHistory;
+            return true;
+        }
+        if (showHistory && keyChar == GLFW.GLFW_KEY_ESCAPE) {
+            showHistory = false;
+            return true;
+        }
         // Dreams: espacio / enter completan el texto; 1-9 eligen respuesta
         if ((keyChar == GLFW.GLFW_KEY_SPACE || keyChar == GLFW.GLFW_KEY_ENTER) && isTyping()) {
             skipTyping();
@@ -451,64 +560,66 @@ public class InteractScreen extends AbstractDynamicScreen {
             }
         }
 
-        //hearts
-        if (hoveringOverIcon("redHeart")) {
-            int hearts = brain.getMemoriesForPlayer(player).getHearts();
-            drawHoveringIconText(context, Text.literal(hearts + " hearts"), "redHeart");
+        // relacion: nivel, barra de corazones y estado
+        int hearts = brain.getMemoriesForPlayer(player).getHearts();
+        String level = hearts < 0 ? "bad" : hearts < 10 ? "stranger" : hearts < 30 ? "known" : hearts < 60 ? "friend" : hearts < 100 ? "close" : "soulmate";
+        int ry = cy + ch + 3;
+        int rh = 30 + (marriageState != null && marriageState != RelationshipState.SINGLE ? 11 : 0) + (canDrawParentsIcon() ? 11 : 0) + (analysis != null ? 11 : 0);
+        VnStyle.panel(context, cx, ry, cw, rh, VnStyle.PANEL_SOFT, VnStyle.BORDER);
+        context.drawTextWithShadow(textRenderer, Text.translatable("gui.dreams.relation." + level), cx + 8, ry + 5,
+                hearts < 0 ? 0xFF9A9AA8 : hearts >= 100 ? 0xFFFFD34D : 0xFFFF7FA8);
+        String num = hearts + " \u2764";
+        context.drawTextWithShadow(textRenderer, num, cx + cw - 8 - textRenderer.getWidth(num), ry + 5, VnStyle.TEXT_DIM);
+        int bx0 = cx + 8, bx1 = cx + cw - 8, byy = ry + 17;
+        context.fill(bx0, byy, bx1, byy + 5, 0xC0101018);
+        float fill = Math.max(0, Math.min(1, hearts / 100.0F));
+        if (hearts < 0) {
+            context.fill(bx0, byy, bx0 + (int) ((bx1 - bx0) * Math.min(1, -hearts / 100.0F)), byy + 5, 0xFF6A6A78);
+        } else {
+            context.fillGradient(bx0, byy, bx0 + (int) ((bx1 - bx0) * fill), byy + 5, hearts >= 100 ? 0xFFFFE08A : 0xFFFF9FC0, hearts >= 100 ? 0xFFE0A020 : 0xFFE0508A);
         }
-
-        //marriage status
-        if (marriageState != null && hoveringOverIcon("married") && villager instanceof CompassionateEntity<?>) {
+        for (int i = 1; i < 4; i++) {
+            int tx = bx0 + (bx1 - bx0) * i / 4;
+            context.fill(tx, byy, tx + 1, byy + 5, 0x60000000);
+        }
+        int ly = ry + 26;
+        if (marriageState != null && marriageState != RelationshipState.SINGLE && villager instanceof CompassionateEntity<?>) {
             String ms = marriageState.base().getIcon().toLowerCase(Locale.ENGLISH);
-            drawHoveringIconText(context, Text.translatable("gui.interact.label." + ms, spouse), "married");
+            context.drawTextWithShadow(textRenderer, textRenderer.trimToWidth(Text.translatable("gui.interact.label." + ms, spouse), cw - 16).getString(),
+                    cx + 8, ly, 0xFFFFC9DC);
+            ly += 11;
         }
-
-        //parents
-        if (canDrawParentsIcon() && hoveringOverIcon("parents")) {
-            drawHoveringIconText(context, Text.translatable("gui.interact.label.parents",
+        if (canDrawParentsIcon()) {
+            Text parents = Text.translatable("gui.interact.label.parents",
                     father == null ? Text.translatable("gui.interact.label.parentUnknown") : father,
-                    mother == null ? Text.translatable("gui.interact.label.parentUnknown") : mother
-            ), "parents");
+                    mother == null ? Text.translatable("gui.interact.label.parentUnknown") : mother);
+            context.drawTextWithShadow(textRenderer, textRenderer.trimToWidth(parents, cw - 16).getString(), cx + 8, ly, VnStyle.TEXT_DIM);
+            ly += 11;
         }
-
-        //gift
-        if (canDrawGiftIcon() && hoveringOverIcon("gift")) {
-            drawHoveringIconText(context, Text.translatable("gui.interact.label.gift"), "gift");
+        if (analysis != null) {
+            Text last = Text.translatable("gui.dreams.last_chance", analysis.getTotalAsString());
+            context.drawTextWithShadow(textRenderer, last, cx + 8, ly, VnStyle.TEXT_DIM);
+            if (hoveringOver(cx, ly - 2, cw, 11)) {
+                List<Text> lines = new LinkedList<>();
+                lines.add(Text.translatable("analysis.title").formatted(Formatting.GRAY));
+                for (Analysis.AnalysisElement d : analysis) {
+                    lines.add(Text.translatable("analysis." + d.getKey())
+                            .append(Text.literal(": " + (d.isPositive() ? "+" : "") + d.getValue()))
+                            .formatted(d.isPositive() ? Formatting.GREEN : Formatting.RED));
+                }
+                lines.add(Text.translatable("analysis.total").append(": " + analysis.getTotalAsString()));
+                context.drawTooltip(textRenderer, lines, cx + cw + 4, ly + 12);
+            }
         }
-
-        //genes
-        if (hoveringOverIcon("genes")) {
+        // genes: al pasar por el nombre
+        if (hoveringOver(cx, cy, cw, 18) && !inGiftMode) {
             List<Text> lines = new LinkedList<>();
-            lines.add(Text.literal("Genes"));
-
+            lines.add(Text.translatable("gui.dreams.genes").formatted(Formatting.GRAY));
             for (Genetics.Gene gene : villager.getGenetics()) {
-                String key = gene.getType().getTranslationKey();
-                int value = (int)(gene.get() * 100);
-                lines.add(Text.translatable("gene.tooltip", Text.translatable(key), value));
+                lines.add(Text.translatable("gene.tooltip", Text.translatable(gene.getType().getTranslationKey()), (int) (gene.get() * 100)));
             }
-
-            drawHoveringIconText(context, lines, "genes");
+            context.drawTooltip(textRenderer, lines, cx + cw + 4, cy + 12);
         }
-
-        //analysis
-        if (hoveringOverIcon("analysis") && analysis != null) {
-            List<Text> lines = new LinkedList<>();
-            lines.add(Text.translatable("analysis.title").formatted(Formatting.GRAY));
-
-            //summands
-            for (Analysis.AnalysisElement d : analysis) {
-                lines.add(Text.translatable("analysis." + d.getKey())
-                        .append(Text.literal(": " + (d.isPositive() ? "+" : "") + d.getValue()))
-                        .formatted(d.isPositive() ? Formatting.GREEN : Formatting.RED));
-            }
-
-            //total
-            String chance = analysis.getTotalAsString();
-            lines.add(Text.translatable("analysis.total").append(": " + chance));
-
-            drawHoveringIconText(context, lines, "analysis");
-        }
-
     }
 
     //checks if the mouse hovers over a tooltip
@@ -539,7 +650,9 @@ public class InteractScreen extends AbstractDynamicScreen {
         }
         dialogQuestionText = textRenderer.wrapLines(text, textWidth());
         fullText = text.getString();
-        speech = voice.plan(fullText, VillagerVoice.emotionOf(villager, questionText));
+        emotion = VillagerVoice.emotionOf(villager, questionText);
+        speech = voice.plan(fullText, emotion);
+        log(false, fullText);
         // el aldeano gesticula mientras habla
         net.mca.client.dreams.DreamsPoses.startSolo(villager.asEntity(), fullText.length() % 2 == 0 ? "talk" : "talk2");
         shown = 0;
@@ -551,6 +664,7 @@ public class InteractScreen extends AbstractDynamicScreen {
     // ------------------------------------------------------------------ Dreams: novela visual
 
     private void choose(String answer) {
+        log(true, Text.translatable(Question.getTranslationKey(dialogQuestionId, answer)).getString());
         NetworkHandler.sendToServer(new InteractionDialogueMessage(villager.asEntity().getUuid(), dialogQuestionId, answer));
         dialogAnswers = null;
         dialogAnswerHover = null;
@@ -638,6 +752,10 @@ public class InteractScreen extends AbstractDynamicScreen {
         int top = height - (int) (height * 0.55F);
         context.fillGradient(0, top, width, height, 0x00000000, VnStyle.alpha(0xC0080610, open));
         context.fillGradient(0, 0, width, 40, VnStyle.alpha(0x70080610, open), 0x00000000);
+        // bandas de cine que entran al abrir
+        int bar = (int) (12 * open);
+        context.fill(0, 0, width, bar, 0xFF000000);
+        context.fill(0, height - bar, width, height, 0xFF000000);
     }
 
     /**
@@ -651,6 +769,10 @@ public class InteractScreen extends AbstractDynamicScreen {
         int size = Math.max(48, Math.min(125, (int) (height / 2.7F)));
         int px = Math.max((int) (size * 0.42F) + 4, boxX() + 6) + (int) ((1.0F - open) * -40);
         int py = boxY() + 22;
+        if (isTyping()) {
+            // el "sprite" rebota un poquito mientras habla
+            py -= (int) Math.round(Math.abs(Math.sin(Util.getMeasuringTimeMs() / 75.0)) * 1.6);
+        }
 
         float dx = (float) Math.atan((px - mouseX) / 40.0F);
         float dy = (float) Math.atan((py - size * 1.6F - mouseY) / 40.0F);
@@ -694,6 +816,28 @@ public class InteractScreen extends AbstractDynamicScreen {
         int ny = y - 13;
         VnStyle.nameplate(context, nx, ny, nameW, 17, nameColor(), open);
         context.drawTextWithShadow(textRenderer, name, nx + 13, ny + 5, VnStyle.alpha(0xFFFFFFFF, open) | 0x01000000);
+        // insignia de emocion de la linea actual
+        String badge = fullText.trim().endsWith("?") ? "?" : switch (emotion) {
+            case HAPPY -> "\u266a";
+            case SAD -> "\u2026";
+            case ANGRY -> "!!";
+            default -> "";
+        };
+        if (!badge.isEmpty() && dialogQuestionText != null) {
+            int bcol = switch (emotion) {
+                case HAPPY -> 0xFFFFD34D;
+                case SAD -> 0xFF8FB8FF;
+                case ANGRY -> 0xFFFF6A5E;
+                default -> 0xFFE8E2FF;
+            };
+            float pop = Math.min(1.0F, (Util.getMeasuringTimeMs() - lineStartedAt) / 220.0F);
+            MatrixStack bm = context.getMatrices();
+            bm.push();
+            bm.translate(nx + nameW + 9, ny + 8 - 3 * (float) Math.sin(pop * Math.PI), 0);
+            bm.scale(1.3F, 1.3F, 1);
+            context.drawTextWithShadow(textRenderer, badge, -textRenderer.getWidth(badge) / 2, -4, bcol);
+            bm.pop();
+        }
 
         if (playerLine != null) {
             Text you = Text.translatable("gui.dreams.you", playerLine);

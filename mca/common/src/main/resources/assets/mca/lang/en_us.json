@@ -1003,5 +1003,17 @@
   "gui.dreams.action.hold_hand": "Hold hands",
   "gui.dreams.action.carry_back": "Piggyback",
   "gui.dreams.action.carry_arms": "Carry in arms",
-  "gui.dreams.action.release": "Let go"
+  "gui.dreams.action.release": "Let go",
+  "gui.dreams.hint.answers": "[1-9] answer  ·  [Tab] history  ·  [Esc] leave",
+  "gui.dreams.hint.idle": "[Space] continue  ·  [Tab] history  ·  [Esc] leave",
+  "gui.dreams.history": "Conversation history",
+  "gui.dreams.history.empty": "Nothing said yet.",
+  "gui.dreams.relation.bad": "Avoids you",
+  "gui.dreams.relation.stranger": "Strangers",
+  "gui.dreams.relation.known": "Acquaintances",
+  "gui.dreams.relation.friend": "Friends",
+  "gui.dreams.relation.close": "Very close",
+  "gui.dreams.relation.soulmate": "Soulmates",
+  "gui.dreams.last_chance": "Last reaction: %s",
+  "gui.dreams.genes": "Genes"
 }
