@@ -455,9 +455,7 @@ public class InteractScreen extends AbstractDynamicScreen {
 
     /** El aldeano parado a la izquierda, detras de la caja, como el "sprite" del personaje. */
     private void drawPortrait(DrawContext context, int mouseX, int mouseY) {
-        if (!(villager.asEntity() instanceof net.minecraft.entity.LivingEntity living)) {
-            return;
-        }
+        net.minecraft.entity.LivingEntity living = villager.asEntity();
         float open = openProgress();
         int size = Math.max(40, Math.min(90, height / 4));
         int px = boxX() + 34 + (int) ((1.0F - open) * -40);
