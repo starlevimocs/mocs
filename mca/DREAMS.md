@@ -31,3 +31,11 @@ Se distribuye bajo la misma licencia (GPL-3.0, ver `LICENSE`). Compila solo la v
   a tercera persona mientras dura. Opciones nuevas en "Hablar": chocar los cinco, bailar (divertido) y bailar lento.
 - **Aldeanos mas vivos** (`client/dreams/VillageLife.java`): saludan con la mano al pasar, gesticulan al hablar y
   charlan entre ellos cuando estan quietos y de frente.
+
+## Dreams 2
+- **Conversar** (sin IA): árbol de 90 nodos generado por `tools/make_talk.py`; depende de personalidad, ánimo, corazones, relación, profesión y hora; el aldeano también te pregunta cosas y se cansa si hablan mucho.
+- **De la mano / en la espalda / en brazos**: `server/dreams/DreamsAttach` (el aldeano va montado en el jugador y se lo ubica cada tick); poses en `DreamsPoses.applyAttach`, encima de EMF. Se suelta con shift o "Soltar".
+- **Procrear**: animación de pareja `procreate` con fundido a negro (`MixinDreamsInGameHud`).
+- **Gestos**: acción de diálogo `gesture` y gestos de ocio/trabajo en `VillageLife` (`tools/make_animations.py`).
+- **Armaduras 3D**: la armadura del aldeano usa las capas de armadura del jugador, así EMF le pone el modelo 3D.
+- Textos en `es_ar` y líneas de personalidad activas también en español.
