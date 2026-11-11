@@ -24,3 +24,10 @@ Se distribuye bajo la misma licencia (GPL-3.0, ver `LICENSE`). Compila solo la v
   en el jugador, y los dos se ponen de frente. **El servidor tambien tiene que usar este jar.**
 - Con EMF, Starcompat llama a `DreamsPoses.afterEmfAnimation` despues de cada animacion, asi las poses de MCA
   (panico, bebes, interacciones) quedan encima de Fresh Animations.
+- **Animaciones estilo Blockbench** (`client/dreams/anim/DreamsAnimation.java`, archivos en
+  `assets/mca/dreams_animations`, generados con `tools/make_animations.py`): beso, abrazo, cachetada, chocar los
+  cinco, baile lento y baile divertido. Las de pareja usan un ancla comun: el jugador queda quieto, el aldeano se
+  pone enfrente a la distancia justa y los dos se dibujan desde la misma ancla, asi no se separan. La camara pasa
+  a tercera persona mientras dura. Opciones nuevas en "Hablar": chocar los cinco, bailar (divertido) y bailar lento.
+- **Aldeanos mas vivos** (`client/dreams/VillageLife.java`): saludan con la mano al pasar, gesticulan al hablar y
+  charlan entre ellos cuando estan quietos y de frente.

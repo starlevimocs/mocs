@@ -355,6 +355,8 @@ public class InteractScreen extends AbstractDynamicScreen {
         dialogQuestionText = textRenderer.wrapLines(text, textWidth());
         fullText = text.getString();
         speech = voice.plan(fullText, VillagerVoice.emotionOf(villager, questionText));
+        // el aldeano gesticula mientras habla
+        net.mca.client.dreams.DreamsPoses.startSolo(villager.asEntity(), fullText.length() % 2 == 0 ? "talk" : "talk2");
         shown = 0;
         pause = 0;
         lastFrame = Util.getMeasuringTimeMs();

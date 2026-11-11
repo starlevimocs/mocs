@@ -15,17 +15,23 @@ public class DreamsAnimationMessage implements Message {
     private final String type;
     private final int villagerId;
     private final int playerId;
-    private final int duration;
+    private final double ax;
+    private final double ay;
+    private final double az;
+    private final float ayaw;
 
-    public DreamsAnimationMessage(String type, int villagerId, int playerId, int duration) {
+    public DreamsAnimationMessage(String type, int villagerId, int playerId, double ax, double ay, double az, float ayaw) {
         this.type = type;
         this.villagerId = villagerId;
         this.playerId = playerId;
-        this.duration = duration;
+        this.ax = ax;
+        this.ay = ay;
+        this.az = az;
+        this.ayaw = ayaw;
     }
 
     @Override
     public void receive() {
-        net.mca.client.dreams.DreamsPoses.start(type, villagerId, playerId, duration);
+        net.mca.client.dreams.DreamsPoses.startPair(type, villagerId, playerId, ax, ay, az, ayaw);
     }
 }

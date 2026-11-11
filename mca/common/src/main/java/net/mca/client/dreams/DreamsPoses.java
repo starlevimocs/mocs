@@ -1,127 +1,210 @@
 package net.mca.client.dreams;
 
+import net.mca.client.dreams.anim.DreamsAnimation;
 import net.mca.client.model.VillagerEntityBaseModelMCA;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.option.Perspective;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
- * Dreams: poses de las interacciones (beso, abrazo, cachetada) para el aldeano y para el jugador.
+ * Dreams: reproduce las animaciones de MCA (estilo Blockbench) en el aldeano y en el jugador.
  * <p>
- * Se aplican al final de la pose normal, y si EMF / Fresh Animations esta animando el modelo, otra vez despues
- * de EMF (Starcompat llama a {@link #afterEmfAnimation}). Asi las animaciones de EMF siguen funcionando en todo
- * lo demas y la interaccion siempre se ve.
+ * Las de pareja (beso, abrazo, bailes...) usan un "ancla" que manda el servidor: los dos se dibujan en posiciones
+ * calculadas desde esa ancla, asi que siempre quedan juntos y alineados, aunque el servidor los tenga un poco
+ * corridos. Se aplican al final de la pose normal y, si EMF / Fresh Animations esta animando, otra vez despues de
+ * EMF (Starcompat llama a {@link #afterEmfAnimation}); los huesos que la animacion no usa siguen con EMF.
  */
 public final class DreamsPoses {
-    private static final float PI = (float) Math.PI;
+    private static final class Active {
+        final DreamsAnimation anim;
+        final String participant;
+        final long startTick;
+        final boolean anchored;
+        final double ax, ay, az;
+        final float ayaw;
 
-    private static final class Anim {
-        final String type;
-        final int partner;
-        final boolean isVillager;
-        final long start;
-        final int duration;
-
-        Anim(String type, int partner, boolean isVillager, long start, int duration) {
-            this.type = type;
-            this.partner = partner;
-            this.isVillager = isVillager;
-            this.start = start;
-            this.duration = duration;
+        Active(DreamsAnimation anim, String participant, long startTick, boolean anchored, double ax, double ay, double az, float ayaw) {
+            this.anim = anim;
+            this.participant = participant;
+            this.startTick = startTick;
+            this.anchored = anchored;
+            this.ax = ax;
+            this.ay = ay;
+            this.az = az;
+            this.ayaw = ayaw;
         }
     }
 
-    private static final Map<Integer, Anim> ACTIVE = new HashMap<>();
+    private static final Map<Integer, Active> ACTIVE = new HashMap<>();
+    private static final Map<Integer, Boolean> PUSHED = new HashMap<>();
+    private static Perspective savedPerspective;
+    private static boolean localLocked;
 
     private DreamsPoses() {
     }
 
-    public static void start(String type, int villagerId, int playerId, int duration) {
+    // ------------------------------------------------------------------ arrancar
+
+    /** Animacion de pareja que manda el servidor. */
+    public static void startPair(String name, int villagerId, int playerId, double ax, double ay, double az, float ayaw) {
         MinecraftClient client = MinecraftClient.getInstance();
         client.execute(() -> {
             if (client.world == null) {
                 return;
             }
+            Optional<DreamsAnimation> anim = DreamsAnimation.get(name);
+            if (anim.isEmpty()) {
+                return;
+            }
             long now = client.world.getTime();
-            ACTIVE.put(villagerId, new Anim(type, playerId, true, now, duration));
-            if (!"slap".equals(type)) {
-                ACTIVE.put(playerId, new Anim(type, villagerId, false, now, duration));
-            } else {
-                ACTIVE.put(playerId, new Anim("slapped", villagerId, false, now + 5, 14));
+            ACTIVE.put(villagerId, new Active(anim.get(), "villager", now, true, ax, ay, az, ayaw));
+            ACTIVE.put(playerId, new Active(anim.get(), "player", now, true, ax, ay, az, ayaw));
+            if (client.player != null && client.player.getId() == playerId) {
+                localLocked = true;
+                if (anim.get().thirdPerson && savedPerspective == null) {
+                    savedPerspective = client.options.getPerspective();
+                    client.options.setPerspective(Perspective.THIRD_PERSON_BACK);
+                }
             }
         });
     }
 
-    private static Anim current(Entity entity) {
-        Anim a = ACTIVE.get(entity.getId());
+    /** Animacion de una sola persona (saludar, hablar...). No pisa una de pareja. */
+    public static void startSolo(Entity entity, String name) {
+        Active current = ACTIVE.get(entity.getId());
+        if (current != null && current.anchored) {
+            return;
+        }
+        DreamsAnimation.get(name).ifPresent(anim ->
+                ACTIVE.put(entity.getId(), new Active(anim, "self", entity.getWorld().getTime(), false, 0, 0, 0, 0)));
+    }
+
+    public static boolean isAnimating(Entity entity) {
+        return current(entity) != null;
+    }
+
+    public static boolean isLocalPlayerLocked() {
+        return localLocked;
+    }
+
+    private static Active current(Entity entity) {
+        Active a = ACTIVE.get(entity.getId());
         if (a == null || entity.getWorld() == null) {
             return null;
         }
-        long now = entity.getWorld().getTime();
-        if (now > a.start + a.duration) {
+        float t = time(entity, a);
+        if (!a.anim.loop && t > a.anim.length) {
             ACTIVE.remove(entity.getId());
             return null;
         }
-        return now < a.start ? null : a;
+        return a;
     }
 
-    private static float progress(Entity entity, Anim a) {
+    private static float time(Entity entity, Active a) {
         float pt = MinecraftClient.getInstance().getTickDelta();
-        return MathHelper.clamp((entity.getWorld().getTime() - a.start + pt) / a.duration, 0, 1);
+        float t = (entity.getWorld().getTime() - a.startTick + pt) / 20.0F;
+        return a.anim.loop ? t % a.anim.length : t;
     }
 
-    /** 0 -> 1 al empezar, 1 en el medio, 1 -> 0 al terminar. */
-    private static float envelope(float t, float in, float out) {
-        float a = MathHelper.clamp(t / in, 0, 1);
-        float b = MathHelper.clamp((1 - t) / out, 0, 1);
-        float e = Math.min(a, b);
-        return e * e * (3 - 2 * e);
+    /** Cada tick del cliente: libera la camara y el movimiento cuando termina la animacion del jugador. */
+    public static void clientTick(MinecraftClient client) {
+        if (client.player == null) {
+            ACTIVE.clear();
+            localLocked = false;
+            return;
+        }
+        if (localLocked && current(client.player) == null) {
+            localLocked = false;
+            if (savedPerspective != null) {
+                client.options.setPerspective(savedPerspective);
+                savedPerspective = null;
+            }
+        }
     }
 
-    /** Antes de dibujar: los dos se miran de frente mientras dura la animacion. */
-    public static void beforeRender(LivingEntity entity) {
-        Anim a = current(entity);
-        if (a == null || a.type.equals("slapped")) {
+    // ------------------------------------------------------------------ dibujo
+
+    private static Vec3d anchorToWorld(Active a, float[] local) {
+        double yaw = Math.toRadians(a.ayaw);
+        double fx = -Math.sin(yaw), fz = Math.cos(yaw);   // hacia adelante
+        double rx = -Math.cos(yaw), rz = -Math.sin(yaw);  // a la derecha
+        double x = local[0] / 16.0, y = local[1] / 16.0, z = local[2] / 16.0;
+        return new Vec3d(a.ax + fx * z + rx * x, a.ay + y, a.az + fz * z + rz * x);
+    }
+
+    /**
+     * Antes de dibujar: lleva a la entidad a su lugar en la pareja (sin moverla de verdad) y la gira.
+     * Devuelve true si empujo una matriz (hay que sacarla al terminar de dibujar).
+     */
+    public static void beforeRender(LivingEntity entity, float tickDelta, MatrixStack matrices) {
+        Active a = current(entity);
+        if (a == null || !a.anchored) {
             return;
         }
-        Entity partner = entity.getWorld().getEntityById(a.partner);
-        if (partner == null) {
-            return;
-        }
-        if (entity == MinecraftClient.getInstance().player && MinecraftClient.getInstance().options.getPerspective().isFirstPerson()) {
-            return;
-        }
-        double dx = partner.getX() - entity.getX();
-        double dz = partner.getZ() - entity.getZ();
-        float yaw = (float) (MathHelper.atan2(dz, dx) * (180F / Math.PI)) - 90.0F;
-        float e = envelope(progress(entity, a), 0.2F, 0.2F);
-        float body = MathHelper.lerpAngleDegrees(e, entity.bodyYaw, yaw);
+        DreamsAnimation.Bone root = a.anim.bones(a.participant).get("root");
+        float t = time(entity, a);
+        float[] pos = root != null && root.position != null ? root.position.sample(t)
+                : (a.participant.equals("villager") ? new float[]{0, 0, a.anim.distance} : new float[]{0, 0, 0});
+        float rotY = root != null && root.rotation != null ? root.rotation.sample(t)[1]
+                : (a.participant.equals("villager") ? 180 : 0);
+        float w = a.anim.weight(t);
+
+        Vec3d target = anchorToWorld(a, pos);
+        Vec3d actual = entity.getLerpedPos(tickDelta);
+        matrices.push();
+        PUSHED.put(entity.getId(), true);
+        matrices.translate((target.x - actual.x) * w, (target.y - actual.y) * w, (target.z - actual.z) * w);
+
+        float yaw = a.ayaw + rotY;
+        float body = MathHelper.lerpAngleDegrees(w, entity.bodyYaw, yaw);
         entity.bodyYaw = body;
         entity.prevBodyYaw = body;
-        entity.headYaw = MathHelper.lerpAngleDegrees(e, entity.headYaw, yaw);
-        entity.prevHeadYaw = entity.headYaw;
+        entity.headYaw = body;
+        entity.prevHeadYaw = body;
     }
 
-    /** Llamado al final de setAngles (sin EMF) y despues de la animacion de EMF. */
+    public static void afterRender(LivingEntity entity, MatrixStack matrices) {
+        if (PUSHED.remove(entity.getId()) != null) {
+            matrices.pop();
+        }
+    }
+
+    /** Pone los huesos de la animacion encima de la pose actual. */
     public static void apply(LivingEntity entity, BipedEntityModel<?> model) {
-        Anim a = current(entity);
+        Active a = current(entity);
         if (a == null) {
             return;
         }
-        float t = progress(entity, a);
-        switch (a.type) {
-            case "kiss" -> kiss(model, t, a.isVillager);
-            case "hug" -> hug(model, t);
-            case "slap" -> slap(model, t);
-            case "slapped" -> slapped(model, t);
-            default -> {
+        float t = time(entity, a);
+        float w = a.anim.weight(t);
+        for (Map.Entry<String, DreamsAnimation.Bone> e : a.anim.bones(a.participant).entrySet()) {
+            ModelPart part = part(model, e.getKey());
+            if (part == null) {
+                continue;
+            }
+            DreamsAnimation.Bone bone = e.getValue();
+            if (bone.rotation != null) {
+                float[] r = bone.rotation.sample(t);
+                part.pitch = MathHelper.lerp(w, part.pitch, r[0] * MathHelper.RADIANS_PER_DEGREE);
+                part.yaw = MathHelper.lerp(w, part.yaw, r[1] * MathHelper.RADIANS_PER_DEGREE);
+                part.roll = MathHelper.lerp(w, part.roll, r[2] * MathHelper.RADIANS_PER_DEGREE);
+            }
+            if (bone.position != null) {
+                float[] p = bone.position.sample(t);
+                part.pivotX += p[0] * w;
+                part.pivotY -= p[1] * w;
+                part.pivotZ += p[2] * w;
             }
         }
         if (model instanceof PlayerEntityModel<?> p) {
@@ -136,6 +219,18 @@ public final class DreamsPoses {
         }
     }
 
+    private static ModelPart part(BipedEntityModel<?> m, String bone) {
+        return switch (bone) {
+            case "head" -> m.head;
+            case "body" -> m.body;
+            case "right_arm" -> m.rightArm;
+            case "left_arm" -> m.leftArm;
+            case "right_leg" -> m.rightLeg;
+            case "left_leg" -> m.leftLeg;
+            default -> null; // "root" se usa en beforeRender
+        };
+    }
+
     /**
      * Starcompat lo llama (por reflexion) cada vez que EMF termina de animar el modelo de la entidad que se esta
      * dibujando. Para los aldeanos de MCA tambien vuelve a poner sus poses propias (panico, bebes, pechos).
@@ -146,53 +241,5 @@ public final class DreamsPoses {
         } else if (model instanceof BipedEntityModel<?> biped) {
             apply(entity, biped);
         }
-    }
-
-    private static void lerp(ModelPart part, float e, float pitch, float yaw, float roll) {
-        part.pitch = MathHelper.lerp(e, part.pitch, pitch);
-        part.yaw = MathHelper.lerp(e, part.yaw, yaw);
-        part.roll = MathHelper.lerp(e, part.roll, roll);
-    }
-
-    private static void kiss(BipedEntityModel<?> m, float t, boolean villager) {
-        float e = envelope(t, 0.25F, 0.2F);
-        float side = villager ? 1 : -1; // inclinan la cabeza para lados opuestos
-        m.body.pitch += 0.16F * e;
-        m.head.pitch = MathHelper.lerp(e, m.head.pitch, 0.12F);
-        m.head.roll = MathHelper.lerp(e, m.head.roll, 0.22F * side);
-        m.head.yaw = MathHelper.lerp(e, m.head.yaw, 0.0F);
-        // una mano en el hombro del otro
-        lerp(villager ? m.leftArm : m.rightArm, e, -1.35F, villager ? 0.35F : -0.35F, 0.0F);
-        m.head.pivotZ = MathHelper.lerp(e, m.head.pivotZ, -0.8F);
-    }
-
-    private static void hug(BipedEntityModel<?> m, float t) {
-        float e = envelope(t, 0.2F, 0.2F);
-        float sway = (float) Math.sin(t * PI * 3) * 0.05F * e;
-        m.body.pitch += 0.1F * e;
-        m.body.yaw += sway;
-        lerp(m.rightArm, e, -1.45F, -0.55F, 0.15F);
-        lerp(m.leftArm, e, -1.45F, 0.55F, -0.15F);
-        m.head.roll = MathHelper.lerp(e, m.head.roll, 0.15F);
-        m.head.pitch = MathHelper.lerp(e, m.head.pitch, 0.25F);
-    }
-
-    private static void slap(BipedEntityModel<?> m, float t) {
-        // brazo atras, y despues un golpe rapido hacia el costado
-        float wind = envelope(t, 0.3F, 0.7F);
-        float hit = MathHelper.clamp((t - 0.35F) / 0.2F, 0, 1);
-        float back = 1 - MathHelper.clamp((t - 0.7F) / 0.3F, 0, 1);
-        m.rightArm.pitch = MathHelper.lerp(wind * back, m.rightArm.pitch, -1.5F);
-        m.rightArm.yaw = MathHelper.lerp(back, m.rightArm.yaw, 0.9F - 1.6F * hit);
-        m.rightArm.roll = MathHelper.lerp(wind * back, m.rightArm.roll, -0.3F);
-        m.body.yaw += (0.25F - 0.5F * hit) * back;
-    }
-
-    private static void slapped(BipedEntityModel<?> m, float t) {
-        // la cabeza se va de costado por el golpe y vuelve
-        float e = (float) Math.sin(MathHelper.clamp(t, 0, 1) * PI) * (1 - t * 0.3F);
-        m.head.yaw += 0.7F * e;
-        m.head.roll += -0.2F * e;
-        m.body.yaw += 0.12F * e;
     }
 }

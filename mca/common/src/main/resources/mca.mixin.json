@@ -35,7 +35,7 @@
     "client.MixinArmorFeatureRenderer", "client.MixinGameRenderer", "client.MixinHeldItemFeatureRenderer",
     "client.MixinLivingEntityRenderer", "client.MixinPlayerEntityClient",
     "client.MixinPlayerEntityRenderer", "client.MixinSoundLoader", "client.MixinTranslationStorage",
-    "client.MixinDreamsPlayerModel", "client.MixinDreamsLivingEntityRenderer"
+    "client.MixinDreamsPlayerModel", "client.MixinDreamsLivingEntityRenderer", "client.MixinDreamsKeyboardInput"
   ],
   "injectors": {
     "defaultRequire": 1

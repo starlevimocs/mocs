@@ -776,6 +776,9 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
 
     @Override
     public void tick() {
+        if (!getWorld().isClient) {
+            net.mca.server.dreams.DreamsAnimations.tick(this);
+        }
         super.tick();
 
         // update visual age

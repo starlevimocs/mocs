@@ -235,6 +235,16 @@ public final class VillagerVoice {
         BURSTS.add(new Burst(voice, speech, villager.asEntity()));
     }
 
+    /** true mientras el aldeano esta diciendo una frase en el mundo. */
+    public static boolean isSpeaking(Entity entity) {
+        for (Burst b : BURSTS) {
+            if (b.entity == entity) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static void tick() {
         Iterator<Burst> it = BURSTS.iterator();
         while (it.hasNext()) {

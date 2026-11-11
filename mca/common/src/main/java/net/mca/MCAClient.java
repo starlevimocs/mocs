@@ -71,6 +71,8 @@ public class MCAClient {
         }
 
         SpeechManager.INSTANCE.tick(client);
+        net.mca.client.dreams.DreamsPoses.clientTick(client);
+        net.mca.client.dreams.VillageLife.tick(client);
     }
 
     public static void addPlayerData(UUID uuid, VillagerEntityMCA villager) {

@@ -151,6 +151,38 @@
       ]
     },
     {
+      "name": "high_five",
+      "results": [
+        {
+          "actions": {
+            "next": "high_five"
+          }
+        }
+      ]
+    },
+    {
+      "name": "dance_fun",
+      "constraints": "!kids",
+      "results": [
+        {
+          "actions": {
+            "next": "dance_fun"
+          }
+        }
+      ]
+    },
+    {
+      "name": "dance_slow",
+      "constraints": "!kids,adult",
+      "results": [
+        {
+          "actions": {
+            "next": "dance_slow"
+          }
+        }
+      ]
+    },
+    {
       "name": "flirt",
       "constraints": "!kids,adult",
       "results": [
