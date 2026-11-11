@@ -70,6 +70,9 @@ public final class CinematicPose {
     /** Llamado por el hook de EMF al terminar cada animacion. */
     static void afterEmfAnimation() {
         reapply();
+        if (entity != null && model != null) {
+            ArtifactsPose.apply(entity, model);
+        }
         if (model != null) {
             PoseKeeper.capture(model);
         }
