@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.starlevi.dreams.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "EmfModelPartRootMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
