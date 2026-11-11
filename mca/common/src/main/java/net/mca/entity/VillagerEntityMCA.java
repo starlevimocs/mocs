@@ -1275,7 +1275,6 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
         super.onTrackedDataSet(par);
     }
 
-    @Override
     public net.minecraft.inventory.SimpleInventory getDreamsOutfit() {
         return dreamsOutfit;
     }
@@ -1301,6 +1300,7 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
         return super.isPushable();
     }
 
+    @Override
     public SimpleInventory getInventory() {
         return inventory;
     }
