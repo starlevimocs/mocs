@@ -3,6 +3,7 @@ package com.starlevi.starcompat.client;
 import com.starlevi.starcompat.StarCompat;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.PlayerModel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -79,11 +80,29 @@ public final class CinematicPose {
             float ageInTicks = entity.tickCount + partialTick;
             stationPose.invoke(model, entity, 0.0F, 0.0F, ageInTicks, 0.0F, 0.0F,
                     new CallbackInfo("setupAnim", false));
+            syncSecondLayer(model);
         } catch (Throwable t) {
             StarCompat.LOGGER.warn("[Starcompat] Error al reaplicar la pose de Cinematic; se desactiva", t);
             stationPose = null;
         } finally {
             applying = false;
+        }
+    }
+
+    /**
+     * La segunda capa de la skin (sombrero, chaqueta, mangas y pantalon) la mueve Fresh Animations por separado,
+     * copiando la pose que EMF le dio al cuerpo. Como Cinematic cambia el cuerpo despues, la segunda capa quedaba
+     * en la pose vieja (por ejemplo, adelantada al sentarse en la fogata). Aca se la vuelve a pegar al cuerpo,
+     * igual que hace Minecraft sin EMF.
+     */
+    private static void syncSecondLayer(HumanoidModel<?> humanoid) {
+        humanoid.hat.copyFrom(humanoid.head);
+        if (humanoid instanceof PlayerModel<?> player) {
+            player.jacket.copyFrom(player.body);
+            player.leftSleeve.copyFrom(player.leftArm);
+            player.rightSleeve.copyFrom(player.rightArm);
+            player.leftPants.copyFrom(player.leftLeg);
+            player.rightPants.copyFrom(player.rightLeg);
         }
     }
 
