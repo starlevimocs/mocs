@@ -1,0 +1,72 @@
+{
+  "duration": 24,
+  "lock": false,
+  "hide_hud": false,
+  "letterbox": true,
+  "camera": [],
+  "events": [
+    {
+      "t": 0.2,
+      "type": "sound",
+      "sound": "minecraft:item.trident.thunder",
+      "volume": 1.0,
+      "pitch": 0.5
+    },
+    {
+      "t": 0.3,
+      "type": "shake",
+      "strength": 1.0,
+      "duration": 2.5
+    },
+    {
+      "t": 0.3,
+      "type": "flash",
+      "color": "#d8ccff",
+      "in": 0.05,
+      "hold": 0.05,
+      "out": 0.9
+    },
+    {
+      "t": 0.3,
+      "type": "effect",
+      "effect": "sky_crack",
+      "pos": [
+        0,
+        110,
+        40
+      ],
+      "size": 90,
+      "grow": 4,
+      "duration": 23,
+      "fade_out": 4
+    },
+    {
+      "t": 2.0,
+      "type": "effect",
+      "effect": "sky_rings",
+      "pos": [
+        0,
+        110,
+        40
+      ],
+      "size": 120,
+      "grow": 6,
+      "duration": 18,
+      "color": "#b9a2ff",
+      "fade_out": 4
+    },
+    {
+      "t": 4.5,
+      "type": "sound",
+      "sound": "minecraft:entity.lightning_bolt.thunder",
+      "volume": 0.8,
+      "pitch": 0.6
+    },
+    {
+      "t": 4.5,
+      "type": "shake",
+      "strength": 0.5,
+      "duration": 1.5
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "duration": 40,
+  "lock": false,
+  "hide_hud": false,
+  "letterbox": true,
+  "camera": [],
+  "events": [
+    {
+      "t": 0.5,
+      "type": "sound",
+      "sound": "minecraft:block.portal.trigger",
+      "volume": 0.7,
+      "pitch": 0.5
+    },
+    {
+      "t": 0.5,
+      "type": "effect",
+      "effect": "black_hole",
+      "pos": [
+        0,
+        140,
+        60
+      ],
+      "size": 70,
+      "duration": 39,
+      "fade_in": 6,
+      "fade_out": 5
+    },
+    {
+      "t": 3,
+      "type": "shake",
+      "strength": 0.4,
+      "duration": 6
+    },
+    {
+      "t": 8,
+      "type": "text",
+      "text": "Algo mira desde arriba",
+      "duration": 4
+    }
+  ]
+}

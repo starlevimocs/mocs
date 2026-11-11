@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.starlevi.starvfx.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "starvfx.refmap.json",
+  "client": [
+    "CameraMixin",
+    "HumanoidModelMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
