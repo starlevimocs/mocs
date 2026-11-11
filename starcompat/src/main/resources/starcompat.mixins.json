@@ -4,7 +4,8 @@
   "package": "com.starlevi.starcompat.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "ModelPartCopyScaleMixin"
+    "ModelPartCopyScaleMixin",
+    "StarPackPortPaxiMixin"
   ],
   "injectors": {
     "defaultRequire": 0
