@@ -121,6 +121,11 @@ public final class Config extends CommonConfig {
     public String inworldAIToken = "";
     public Map<UUID, String> inworldAIResourceNames = new HashMap<>();
 
+    // Dreams: voces tipo bip en vez de TTS
+    public boolean enableBipVoices = true;
+    // Dreams: los aldeanos usan el modelo del jugador para que EMF / Fresh Animations los animen
+    public boolean useAnimatedPlayerModel = true;
+
     // TTS
     public boolean enableOnlineTTS = false;
     public String onlineTTSModel = "default";

@@ -19,9 +19,22 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
     final VillagerDimensions.Mutable dimensions = new VillagerDimensions.Mutable(AgeState.ADULT);
     float breastSize;
 
+    // Dreams: datos del ultimo setAngles, para volver a aplicar las poses propias de MCA despues de EMF
+    protected T lastVillager;
+    protected float lastAnimationProgress;
+    private final float[][] babyPose = new float[7][6];
+
     public VillagerEntityBaseModelMCA(ModelPart root) {
+        this(root, root);
+    }
+
+    /**
+     * Dreams: {@code root} puede ser el modelo del jugador (para que EMF / Fresh Animations lo animen) y
+     * {@code extras} el arbol propio de MCA de donde salen los pechos.
+     */
+    public VillagerEntityBaseModelMCA(ModelPart root, ModelPart extras) {
         super(root);
-        this.breasts = root.getChild(BREASTS);
+        this.breasts = extras.getChild(BREASTS);
     }
 
     public static ModelData getModelData(Dilation dilation) {
@@ -90,6 +103,63 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
         }
 
         applyVillagerDimensions(villager, villager.isInSneakingPose());
+
+        lastVillager = villager;
+        lastAnimationProgress = animationProgress;
+        if (villager.getAgeState() == AgeState.BABY) {
+            savePose(babyPose);
+        }
+    }
+
+    private ModelPart[] mainParts() {
+        return new ModelPart[]{head, hat, body, rightArm, leftArm, rightLeg, leftLeg};
+    }
+
+    private void savePose(float[][] into) {
+        ModelPart[] parts = mainParts();
+        for (int i = 0; i < parts.length; i++) {
+            ModelPart p = parts[i];
+            into[i][0] = p.pivotX; into[i][1] = p.pivotY; into[i][2] = p.pivotZ;
+            into[i][3] = p.pitch; into[i][4] = p.yaw; into[i][5] = p.roll;
+        }
+    }
+
+    private void loadPose(float[][] from) {
+        ModelPart[] parts = mainParts();
+        for (int i = 0; i < parts.length; i++) {
+            ModelPart p = parts[i];
+            p.pivotX = from[i][0]; p.pivotY = from[i][1]; p.pivotZ = from[i][2];
+            p.pitch = from[i][3]; p.yaw = from[i][4]; p.roll = from[i][5];
+        }
+    }
+
+    /**
+     * Dreams: corre la animacion de EMF (si hay) y despues vuelve a poner lo que es propio de MCA:
+     * bebes con su balanceo, brazos en panico, y pechos / ropa siguiendo al cuerpo animado.
+     */
+    protected void applyEmfAnimation() {
+        if (lastVillager == null || !net.mca.client.dreams.EmfBridge.animate(lastVillager, this)) {
+            return;
+        }
+        if (lastVillager.getAgeState() == AgeState.BABY) {
+            loadPose(babyPose);
+        } else if (lastVillager.getVillagerBrain().isPanicking()) {
+            float toRadians = (float)Math.PI / 180;
+            float armRaise = (((float)Math.sin(lastAnimationProgress / 5) * 30 - 180)
+                    + ((float)Math.sin(lastAnimationProgress / 3) * 3)) * toRadians;
+            float waveSideways = ((float)Math.sin(lastAnimationProgress / 2) * 12 - 17) * toRadians;
+            this.leftArm.pitch = armRaise;
+            this.leftArm.roll = -waveSideways;
+            this.rightArm.pitch = -armRaise;
+            this.rightArm.roll = waveSideways;
+        }
+        applyVillagerDimensions(lastVillager, lastVillager.isInSneakingPose());
+        syncDerivedParts();
+    }
+
+    /** Partes que copian a otras (segunda capa de ropa). */
+    protected void syncDerivedParts() {
+        hat.copyTransform(head);
     }
 
     @Override
@@ -106,6 +176,7 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
 
     @Override
     public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
+        applyEmfAnimation();
         renderCommon(matrices, vertices, light, overlay, red, green, blue, alpha);
     }
 

@@ -21,14 +21,30 @@ public class VillagerEntityModelMCA<T extends LivingEntity & VillagerLike<T>> ex
     private boolean wearsHidden;
 
     public VillagerEntityModelMCA(ModelPart tree) {
-        super(tree);
+        this(tree, tree);
+    }
+
+    /** Dreams: ver {@link VillagerEntityBaseModelMCA#VillagerEntityBaseModelMCA(ModelPart, ModelPart)}. */
+    public VillagerEntityModelMCA(ModelPart tree, ModelPart extras) {
+        super(tree, extras);
         bodyWear = tree.getChild(EntityModelPartNames.JACKET);
         leftArmwear = tree.getChild("left_sleeve");
         rightArmwear = tree.getChild("right_sleeve");
         leftLegwear = tree.getChild("left_pants");
         rightLegwear = tree.getChild("right_pants");
 
-        breastsWear = tree.getChild(BREASTPLATE);
+        breastsWear = extras.getChild(BREASTPLATE);
+    }
+
+    @Override
+    protected void syncDerivedParts() {
+        super.syncDerivedParts();
+        leftLegwear.copyTransform(leftLeg);
+        rightLegwear.copyTransform(rightLeg);
+        leftArmwear.copyTransform(leftArm);
+        rightArmwear.copyTransform(rightArm);
+        bodyWear.copyTransform(body);
+        breastsWear.copyTransform(breasts);
     }
 
     //

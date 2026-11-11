@@ -148,6 +148,22 @@ public abstract class AbstractDynamicScreen extends Screen {
         public Button getApiButton() {
             return apiButton;
         }
+
+        /** Dreams: boton estilo novela visual (panel oscuro, borde dorado al pasar el mouse). */
+        @Override
+        public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+            boolean hover = active && isHovered();
+            int fill = active ? (hover ? 0xF0262033 : VnStyle.PANEL_SOFT) : 0x90181421;
+            int border = active ? (hover ? VnStyle.BORDER_HOVER : VnStyle.BORDER) : 0x40E8D8B0;
+            VnStyle.panel(context, getX(), getY(), getWidth(), getHeight(), VnStyle.alpha(fill, alpha), VnStyle.alpha(border, alpha));
+            if (hover) {
+                context.fill(getX() + 2, getY() + 3, getX() + 4, getY() + getHeight() - 3, VnStyle.ACCENT);
+            }
+            int color = active ? (hover ? VnStyle.ACCENT : VnStyle.TEXT) : VnStyle.TEXT_DIM;
+            net.minecraft.client.font.TextRenderer font = net.minecraft.client.MinecraftClient.getInstance().textRenderer;
+            context.drawCenteredTextWithShadow(font, getMessage(), getX() + getWidth() / 2,
+                    getY() + (getHeight() - 8) / 2, VnStyle.alpha(color, alpha) | 0x01000000);
+        }
     }
 
     private enum Alignment {

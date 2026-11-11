@@ -88,6 +88,16 @@ public class SpeechManager {
         if (villager.isSpeechImpaired()) return;
         if (villager.isToYoungToSpeak()) return;
 
+        // Dreams: bips en lugar de TTS. Si la conversacion esta abierta, los bips los pone la pantalla.
+        if (Config.getInstance().enableBipVoices) {
+            if (!net.mca.client.gui.InteractScreen.isTalkingTo(sender)) {
+                String text = translatable && Language.getInstance().hasTranslation(phrase)
+                        ? Language.getInstance().get(phrase) : phrase;
+                net.mca.client.dreams.VillagerVoice.speakAmbient(villager, text);
+            }
+            return;
+        }
+
         float pitch = villager.getSoundPitch();
         float gene = villager.getGenetics().getGene(Genetics.VOICE_TONE);
 
@@ -130,6 +140,7 @@ public class SpeechManager {
     private boolean firstRun = true;
 
     public void tick(MinecraftClient client) {
+        net.mca.client.dreams.VillagerVoice.tick();
         if (client.world != null) {
             long time = client.world.getTime();
             if (Math.abs(time - lastHealthCheckTime) > 1200) {
