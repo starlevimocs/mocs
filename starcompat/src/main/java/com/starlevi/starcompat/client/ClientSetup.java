@@ -24,7 +24,7 @@ public final class ClientSetup {
 
     private static void onClientSetup(FMLClientSetupEvent event) {
         ModList mods = ModList.get();
-        if (mods.isLoaded("entity_model_features") && mods.isLoaded("cinematic")) {
+        if (mods.isLoaded("entity_model_features")) {
             event.enqueueWork(EmfCinematicHook::register);
         }
     }

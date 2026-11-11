@@ -14,13 +14,12 @@ final class EmfCinematicHook extends EMFAnimationApi.EMFAnimationHook {
     }
 
     static void register() {
-        if (!CinematicPose.available()) {
-            StarCompat.LOGGER.warn("[Starcompat] Cinematic Interactions cambio por dentro; la compatibilidad con EMF queda apagada");
-            return;
-        }
         try {
             EMFAnimationApi.registerAnimationHook(new EmfCinematicHook());
-            StarCompat.LOGGER.info("[Starcompat] Compatibilidad Cinematic Interactions + EMF activa");
+            StarCompat.LOGGER.info("[Starcompat] Hook de EMF activo (la ropa y accesorios siguen la pose animada)");
+            if (CinematicPose.available()) {
+                StarCompat.LOGGER.info("[Starcompat] Compatibilidad Cinematic Interactions + EMF activa");
+            }
         } catch (Throwable t) {
             StarCompat.LOGGER.warn("[Starcompat] No se pudo registrar el hook de EMF", t);
         }
@@ -28,6 +27,6 @@ final class EmfCinematicHook extends EMFAnimationApi.EMFAnimationHook {
 
     @Override
     public void onAnimationEnd(AnimationContext context, boolean wasCancelledByHook) {
-        CinematicPose.reapply();
+        CinematicPose.afterEmfAnimation();
     }
 }

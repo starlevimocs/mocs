@@ -68,7 +68,14 @@ public final class CinematicPose {
     }
 
     /** Llamado por el hook de EMF al terminar cada animacion. */
-    static void reapply() {
+    static void afterEmfAnimation() {
+        reapply();
+        if (model != null) {
+            PoseKeeper.capture(model);
+        }
+    }
+
+    private static void reapply() {
         if (applying || entity == null || model == null || stationPose == null) {
             return;
         }
@@ -126,6 +133,7 @@ public final class CinematicPose {
     private static void clear() {
         entity = null;
         model = null;
+        PoseKeeper.clear();
     }
 
 }
