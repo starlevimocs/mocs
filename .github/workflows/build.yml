@@ -1,4 +1,4 @@
-name: Compilar mod
+name: Compilar mods
 
 on:
   push:
@@ -23,14 +23,19 @@ jobs:
         with:
           gradle-version: 8.8
 
-      - name: Compilar
+      - name: Compilar Dreams
         run: gradle build --no-daemon
+
+      - name: Compilar Starcompat
+        run: gradle -p starcompat build --no-daemon
 
       - name: Guardar el jar como artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: dreams-jar
-          path: build/libs/*.jar
+          name: jars
+          path: |
+            build/libs/*.jar
+            starcompat/build/libs/*.jar
           if-no-files-found: error
 
       - name: Publicar en Releases (ultima version)
@@ -39,6 +44,8 @@ jobs:
         with:
           tag_name: latest
           name: Ultima version
-          body: Jar compilado automaticamente desde el ultimo commit de main.
-          files: build/libs/*.jar
+          body: Jars compilados automaticamente desde el ultimo commit de main (Dreams y Starcompat).
+          files: |
+            build/libs/*.jar
+            starcompat/build/libs/*.jar
           prerelease: true
