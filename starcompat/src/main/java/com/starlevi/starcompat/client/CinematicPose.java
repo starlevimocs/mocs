@@ -31,6 +31,9 @@ public final class CinematicPose {
 
     private static LivingEntity entity;
     private static HumanoidModel<?> model;
+    // cualquier entidad viva que se este dibujando (para el MCA de Dreams)
+    private static LivingEntity anyEntity;
+    private static EntityModel<?> anyModel;
     private static float partialTick;
     private static boolean applying;
 
@@ -69,6 +72,9 @@ public final class CinematicPose {
 
     /** Llamado por el hook de EMF al terminar cada animacion. */
     static void afterEmfAnimation() {
+        if (anyEntity != null) {
+            McaBridge.afterEmfAnimation(anyEntity, anyModel);
+        }
         reapply();
         if (entity != null && model != null) {
             ArtifactsPose.apply(entity, model);
@@ -119,12 +125,16 @@ public final class CinematicPose {
     @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
     public static void onRenderPre(RenderLivingEvent.Pre<?, ?> event) {
         EntityModel<?> current = event.getRenderer().getModel();
+        anyEntity = event.isCanceled() ? null : event.getEntity();
+        anyModel = event.isCanceled() ? null : current;
         if (!event.isCanceled() && event.getEntity() instanceof Player && current instanceof HumanoidModel<?> humanoid) {
             entity = event.getEntity();
             model = humanoid;
             partialTick = event.getPartialTick();
         } else {
-            clear();
+            entity = null;
+            model = null;
+            PoseKeeper.clear();
         }
     }
 
@@ -136,6 +146,8 @@ public final class CinematicPose {
     private static void clear() {
         entity = null;
         model = null;
+        anyEntity = null;
+        anyModel = null;
         PoseKeeper.clear();
     }
 

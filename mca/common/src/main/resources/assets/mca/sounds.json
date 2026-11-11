@@ -265,5 +265,101 @@
     "sounds": [
       "mca:silent"
     ]
+  },
+  "dreams.voice.low_a": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/low_a",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.low_e": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/low_e",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.low_i": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/low_i",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.low_o": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/low_o",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.low_u": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/low_u",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.low_m": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/low_m",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.high_a": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/high_a",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.high_e": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/high_e",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.high_i": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/high_i",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.high_o": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/high_o",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.high_u": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/high_u",
+        "stream": false
+      }
+    ]
+  },
+  "dreams.voice.high_m": {
+    "sounds": [
+      {
+        "name": "mca:dreams/voice/high_m",
+        "stream": false
+      }
+    ]
   }
 }

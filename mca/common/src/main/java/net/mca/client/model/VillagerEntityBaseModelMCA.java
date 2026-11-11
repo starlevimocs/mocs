@@ -103,6 +103,9 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
         }
 
         applyVillagerDimensions(villager, villager.isInSneakingPose());
+        net.mca.client.dreams.DreamsPoses.apply(villager, this);
+        syncDerivedParts();
+        placeBreasts(villager);
 
         lastVillager = villager;
         lastAnimationProgress = animationProgress;
@@ -134,11 +137,11 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
     }
 
     /**
-     * Dreams: corre la animacion de EMF (si hay) y despues vuelve a poner lo que es propio de MCA:
-     * bebes con su balanceo, brazos en panico, y pechos / ropa siguiendo al cuerpo animado.
+     * Dreams: Starcompat lo llama cuando EMF termina de animar este modelo. Vuelve a poner lo que es propio
+     * de MCA: bebes con su balanceo, brazos en panico, las interacciones, y pechos / ropa siguiendo al cuerpo.
      */
-    protected void applyEmfAnimation() {
-        if (lastVillager == null || !net.mca.client.dreams.EmfBridge.animate(lastVillager, this)) {
+    public void dreamsAfterEmfAnimation() {
+        if (lastVillager == null) {
             return;
         }
         if (lastVillager.getAgeState() == AgeState.BABY) {
@@ -153,8 +156,72 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
             this.rightArm.pitch = -armRaise;
             this.rightArm.roll = waveSideways;
         }
-        applyVillagerDimensions(lastVillager, lastVillager.isInSneakingPose());
+        net.mca.client.dreams.DreamsPoses.apply(lastVillager, this);
         syncDerivedParts();
+        placeBreasts(lastVillager);
+    }
+
+    // --------------------------------------------------------------- Dreams: pechos que siguen al cuerpo
+
+    private static final java.util.Map<net.minecraft.entity.Entity, float[]> PHYSICS = new java.util.WeakHashMap<>();
+
+    /**
+     * Ubica los pechos pegados al cuerpo (posicion y rotacion completas, no solo la inclinacion), con un poco
+     * de fisica: un resorte suave que reacciona a los saltos, al caminar y a los giros del cuerpo, sin exagerar.
+     */
+    protected void placeBreasts(T villager) {
+        float size = getBreastSize();
+        float scaled = size * getDimensions().getBreasts();
+        float sx = scaled * 0.2f + 1.05f;
+        float sy = scaled * 0.75f + 0.75f;
+        float sz = scaled * 0.75f + 0.75f;
+
+        // fisica: x = desplazamiento (rad), v = velocidad
+        float[] st = PHYSICS.computeIfAbsent(villager, k -> new float[]{0, 0, (float) k.getVelocity().y, (float) net.minecraft.util.Util.getMeasuringTimeMs(), 0});
+        float now = (float) net.minecraft.util.Util.getMeasuringTimeMs();
+        float dt = Math.min(0.05f, Math.max(0.0f, (now - st[3]) / 1000.0f));
+        if (dt > 0) {
+            float vy = (float) villager.getVelocity().y;
+            float accel = (vy - st[2]) / Math.max(dt, 0.016f);
+            float bodyTurn = body.pitch - st[4];
+            float walk = (float) Math.sin(lastAnimationProgress * 0.9f) * (float) villager.getVelocity().horizontalLength() * 0.6f;
+            float target = -accel * 0.012f - bodyTurn * 0.4f + walk;
+            float k = 170f, d = 13f;
+            st[1] += (-(st[0] - target) * k - st[1] * d) * dt;
+            st[0] = Math.max(-0.14f, Math.min(0.14f, st[0] + st[1] * dt));
+            st[2] = vy;
+            st[3] = now;
+            st[4] = body.pitch;
+        }
+        float jiggle = size > 0.05f ? st[0] * Math.min(1.0f, size * 1.6f) : 0;
+
+        // posicion sobre el cuerpo (orden de rotacion de Minecraft: Z, Y, X)
+        float ox = 0.25f;
+        float oy = (float) (5.0f - Math.pow(size, 0.5) * 2.5f);
+        float oz = -1.5f + size * 0.25f;
+        float cp = (float) Math.cos(body.pitch), sp = (float) Math.sin(body.pitch);
+        float cyw = (float) Math.cos(body.yaw), syw = (float) Math.sin(body.yaw);
+        float cr = (float) Math.cos(body.roll), sr = (float) Math.sin(body.roll);
+        // X
+        float y1 = oy * cp - oz * sp;
+        float z1 = oy * sp + oz * cp;
+        float x1 = ox;
+        // Y
+        float x2 = x1 * cyw + z1 * syw;
+        float z2 = -x1 * syw + z1 * cyw;
+        float y2 = y1;
+        // Z
+        float x3 = x2 * cr - y2 * sr;
+        float y3 = x2 * sr + y2 * cr;
+
+        for (ModelPart part : getBreastParts()) {
+            part.pivotX = (body.pivotX + x3) / sx;
+            part.pivotY = (body.pivotY + y3 + jiggle * 1.2f) / sy;
+            part.pivotZ = (body.pivotZ + z2) / sz;
+            part.pitch = (float) Math.PI * 0.3f + body.pitch + jiggle;
+            part.yaw = body.yaw;
+            part.roll = body.roll;
+        }
     }
 
     /** Partes que copian a otras (segunda capa de ropa). */
@@ -176,7 +243,6 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
 
     @Override
     public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-        applyEmfAnimation();
         renderCommon(matrices, vertices, light, overlay, red, green, blue, alpha);
     }
 

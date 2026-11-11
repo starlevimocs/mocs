@@ -33,7 +33,8 @@
           ],
           "actions": {
             "next": "hug.success",
-            "positive": 5
+            "positive": 5,
+            "animate": "hug"
           }
         },
         {

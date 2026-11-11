@@ -93,7 +93,8 @@ public class SpeechManager {
             if (!net.mca.client.gui.InteractScreen.isTalkingTo(sender)) {
                 String text = translatable && Language.getInstance().hasTranslation(phrase)
                         ? Language.getInstance().get(phrase) : phrase;
-                net.mca.client.dreams.VillagerVoice.speakAmbient(villager, text);
+                Text source = translatable ? Text.translatable(phrase) : Text.literal(phrase);
+                net.mca.client.dreams.VillagerVoice.speakAmbient(villager, source, text);
             }
             return;
         }

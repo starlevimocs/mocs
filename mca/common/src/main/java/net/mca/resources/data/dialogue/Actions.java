@@ -79,6 +79,10 @@ public class Actions {
 
         register("command", JsonHelper::asString, command -> (villager, player) ->
                 villager.getInteractions().handle(player, command));
+
+        // Dreams: animacion visible entre el aldeano y el jugador ("kiss", "hug", "slap")
+        register("animate", JsonHelper::asString, type -> (villager, player) ->
+                net.mca.server.dreams.DreamsAnimations.play(villager, player, type));
     }
 
     public static <T> void register(String name, BiFunction<JsonElement, String, T> jsonParser, Factory<T> predicate) {

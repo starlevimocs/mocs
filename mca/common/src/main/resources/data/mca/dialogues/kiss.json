@@ -38,7 +38,8 @@
           ],
           "actions": {
             "next": "kiss.success",
-            "positive": 6
+            "positive": 6,
+            "animate": "kiss"
           }
         },
         {
@@ -75,11 +76,11 @@
           "actions": {
             "next": "kiss.slap",
             "negative": 5,
-            "command": "slap"
+            "command": "slap",
+            "animate": "slap"
           }
         }
       ]
     }
   ]
 }
-

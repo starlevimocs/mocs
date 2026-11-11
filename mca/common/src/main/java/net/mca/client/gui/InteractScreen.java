@@ -53,16 +53,18 @@ public class InteractScreen extends AbstractDynamicScreen {
     private static Analysis<?> analysis;
 
     // Dreams: conversacion estilo novela visual
-    private static final int BOX_HEIGHT = 74;
+    private static final int BOX_HEIGHT = 80;
     private static final float CHARS_PER_SECOND = 42.0F;
     private static UUID talkingTo;
 
     private final VillagerVoice voice;
+    private VillagerVoice.Speech speech;
     private String fullText = "";
     private float shown;
     private long lastFrame;
     private int pause;
-    private int lastBipAt = -1;
+    private final long openedAt = Util.getMeasuringTimeMs();
+    private long lineStartedAt;
 
     public InteractScreen(VillagerLike<?> villager) {
         super(Text.literal("Interact"));
@@ -112,6 +114,8 @@ public class InteractScreen extends AbstractDynamicScreen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float tickDelta) {
         advanceText();
+        drawBackdrop(context);
+        drawPortrait(context, mouseX, mouseY);
         drawDialogueBox(context, mouseX, mouseY);
         super.render(context, mouseX, mouseY, tickDelta);
 
@@ -350,10 +354,11 @@ public class InteractScreen extends AbstractDynamicScreen {
         }
         dialogQuestionText = textRenderer.wrapLines(text, textWidth());
         fullText = text.getString();
+        speech = voice.plan(fullText, VillagerVoice.emotionOf(villager, questionText));
         shown = 0;
         pause = 0;
-        lastBipAt = -1;
         lastFrame = Util.getMeasuringTimeMs();
+        lineStartedAt = lastFrame;
     }
 
     // ------------------------------------------------------------------ Dreams: novela visual
@@ -377,7 +382,7 @@ public class InteractScreen extends AbstractDynamicScreen {
     }
 
     private int boxWidth() {
-        return Math.min(width - 40, 440);
+        return Math.min(width - 30, 500);
     }
 
     private int boxX() {
@@ -389,14 +394,14 @@ public class InteractScreen extends AbstractDynamicScreen {
     }
 
     private int textWidth() {
-        return boxWidth() - 28;
+        return boxWidth() - 110;
     }
 
     private boolean insideBox(double x, double y) {
         return x >= boxX() && x <= boxX() + boxWidth() && y >= boxY() && y <= boxY() + BOX_HEIGHT;
     }
 
-    /** Letra por letra, con pausas en la puntuacion y un bip cada dos letras. */
+    /** Letra por letra, con pausas en la puntuacion y una silaba de voz por cada silaba del texto. */
     private void advanceText() {
         long now = Util.getMeasuringTimeMs();
         long elapsed = Math.min(100, now - lastFrame);
@@ -408,21 +413,21 @@ public class InteractScreen extends AbstractDynamicScreen {
             pause -= (int) elapsed;
             return;
         }
+        float speed = speech == null ? 40.0F : VillagerVoice.lettersPerSecond(speech.emotion);
         int before = (int) shown;
-        shown = Math.min(fullText.length(), shown + elapsed * CHARS_PER_SECOND / 1000.0F);
+        shown = Math.min(fullText.length(), shown + elapsed * speed / 1000.0F);
         for (int i = before; i < (int) shown; i++) {
             char c = fullText.charAt(i);
-            if (VillagerVoice.voiced(c) && i - lastBipAt >= 2) {
-                voice.bip();
-                lastBipAt = i;
+            if (speech != null && speech.startsSyllable(i)) {
+                speech.play(i);
             }
             if (c == ',' || c == ';' || c == ':') {
-                pause = 110;
+                pause = 120;
                 shown = i + 1;
                 break;
             }
             if (c == '.' || c == '!' || c == '?' || c == '\u2026') {
-                pause = 260;
+                pause = 280;
                 shown = i + 1;
                 break;
             }
@@ -434,65 +439,105 @@ public class InteractScreen extends AbstractDynamicScreen {
         return gender == Gender.FEMALE ? VnStyle.NAME_FEMALE : gender == Gender.MALE ? VnStyle.NAME_MALE : VnStyle.NAME_OTHER;
     }
 
+    /** 0..1: animacion de entrada de la interfaz. */
+    private float openProgress() {
+        float t = Math.min(1.0F, (Util.getMeasuringTimeMs() - openedAt) / 260.0F);
+        return 1.0F - (1.0F - t) * (1.0F - t) * (1.0F - t);
+    }
+
+    /** Oscurece de a poco la parte de abajo de la pantalla, como en una novela visual. */
+    private void drawBackdrop(DrawContext context) {
+        float open = openProgress();
+        int top = height - (int) (height * 0.55F);
+        context.fillGradient(0, top, width, height, 0x00000000, VnStyle.alpha(0xC0080610, open));
+        context.fillGradient(0, 0, width, 40, VnStyle.alpha(0x70080610, open), 0x00000000);
+    }
+
+    /** El aldeano parado a la izquierda, detras de la caja, como el "sprite" del personaje. */
+    private void drawPortrait(DrawContext context, int mouseX, int mouseY) {
+        if (!(villager.asEntity() instanceof net.minecraft.entity.LivingEntity living)) {
+            return;
+        }
+        float open = openProgress();
+        int size = Math.max(40, Math.min(90, height / 4));
+        int px = boxX() + 34 + (int) ((1.0F - open) * -40);
+        int py = boxY() + 18;
+        net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity(context, px, py, size,
+                px - mouseX, py - size * 1.6F - mouseY, living);
+    }
+
     private void drawDialogueBox(DrawContext context, int mouseX, int mouseY) {
+        float open = openProgress();
         int x = boxX();
-        int y = boxY();
+        int y = boxY() + (int) ((1.0F - open) * 30);
         int w = boxWidth();
+        int textX = x + 92;
 
-        // nombre
+        // caja: degradado, doble borde y adornos en las esquinas
+        VnStyle.box(context, x, y, w, BOX_HEIGHT, open);
+
+        // cartel del nombre, con la cinta del color del aldeano
         Text name = villager.asEntity().getName();
-        int nameW = textRenderer.getWidth(name) + 20;
-        VnStyle.panel(context, x + 10, y - 15, nameW, 17, VnStyle.PANEL, VnStyle.BORDER);
-        context.fill(x + 14, y - 10, x + 16, y - 3, nameColor());
-        context.drawTextWithShadow(textRenderer, name, x + 20, y - 10, nameColor());
-
-        // caja
-        VnStyle.panel(context, x, y, w, BOX_HEIGHT, VnStyle.PANEL, VnStyle.BORDER);
+        int nameW = textRenderer.getWidth(name) + 26;
+        int nx = x + 84;
+        int ny = y - 13;
+        VnStyle.nameplate(context, nx, ny, nameW, 17, nameColor(), open);
+        context.drawTextWithShadow(textRenderer, name, nx + 13, ny + 5, VnStyle.alpha(0xFFFFFFFF, open) | 0x01000000);
 
         dialogAnswerHover = null;
         if (dialogQuestionText == null || fullText.isEmpty()) {
             Text hint = Text.translatable("gui.dreams.vn.choose");
-            context.drawTextWithShadow(textRenderer, hint, x + 14, y + 12, VnStyle.TEXT_DIM);
+            context.drawTextWithShadow(textRenderer, hint, textX, y + 16, VnStyle.alpha(VnStyle.TEXT_DIM, open) | 0x01000000);
             return;
         }
 
         String visible = fullText.substring(0, Math.min(fullText.length(), (int) shown));
         List<OrderedText> lines = textRenderer.wrapLines(StringVisitable.plain(visible), textWidth());
-        int ty = y + 12;
+        int ty = y + 14;
         for (int i = 0; i < Math.min(lines.size(), 5); i++) {
-            context.drawTextWithShadow(textRenderer, lines.get(i), x + 14, ty, VnStyle.TEXT);
+            context.drawTextWithShadow(textRenderer, lines.get(i), textX, ty, VnStyle.TEXT);
             ty += 11;
         }
 
         if (!isTyping()) {
-            // indicador de "listo"
-            if (!hasAnswers() && (Util.getMeasuringTimeMs() / 400) % 2 == 0) {
-                context.drawTextWithShadow(textRenderer, Text.literal("\u25BC"), x + w - 16, y + BOX_HEIGHT - 14, VnStyle.ACCENT);
+            if (!hasAnswers()) {
+                // indicador de "listo" que sube y baja
+                float bob = (float) Math.sin(Util.getMeasuringTimeMs() / 180.0) * 1.5F;
+                context.getMatrices().push();
+                context.getMatrices().translate(0, bob, 0);
+                context.drawTextWithShadow(textRenderer, Text.literal("\u25BC"), x + w - 18, y + BOX_HEIGHT - 16, VnStyle.ACCENT);
+                context.getMatrices().pop();
             }
             drawAnswers(context, mouseX, mouseY);
         }
     }
 
-    /** Respuestas apiladas arriba de la caja, a la derecha, como en una novela visual. */
+    /** Respuestas apiladas arriba de la caja, a la derecha, que entran deslizandose una por una. */
     private void drawAnswers(DrawContext context, int mouseX, int mouseY) {
         if (!hasAnswers()) {
             return;
         }
-        int bw = Math.min(240, boxWidth() - 20);
-        int bx = boxX() + boxWidth() - bw - 10;
-        int by = boxY() - 22 - dialogAnswers.size() * 18;
+        long since = Util.getMeasuringTimeMs() - lineStartedAt;
+        int bw = Math.min(250, boxWidth() - 100);
+        int bx = boxX() + boxWidth() - bw - 6;
+        int by = boxY() - 24 - dialogAnswers.size() * 21;
         for (int i = 0; i < dialogAnswers.size(); i++) {
             String a = dialogAnswers.get(i);
-            int yy = by + i * 18;
-            boolean hover = mouseX >= bx && mouseX <= bx + bw && mouseY >= yy && mouseY <= yy + 16;
-            VnStyle.panel(context, bx, yy, bw, 16, hover ? 0xF0262033 : VnStyle.PANEL_SOFT, hover ? VnStyle.BORDER_HOVER : VnStyle.BORDER);
+            float in = Math.max(0, Math.min(1, (since - fullText.length() * 1000.0F / 40.0F - i * 70) / 180.0F));
+            in = 1.0F - (1.0F - in) * (1.0F - in);
+            int yy = by + i * 21;
+            int xx = bx + (int) ((1.0F - in) * 24);
+            boolean hover = in > 0.9F && mouseX >= xx && mouseX <= xx + bw && mouseY >= yy && mouseY <= yy + 18;
             if (hover) {
-                context.fill(bx + 2, yy + 3, bx + 4, yy + 13, VnStyle.ACCENT);
+                xx -= 4;
                 dialogAnswerHover = a;
             }
-            Text label = Text.literal((i + 1) + ". ").formatted(Formatting.GOLD)
-                    .append(Text.translatable(Question.getTranslationKey(dialogQuestionId, a)));
-            context.drawTextWithShadow(textRenderer, label, bx + 8, yy + 4, hover ? VnStyle.ACCENT : VnStyle.TEXT);
+            VnStyle.choice(context, xx, yy, bw, 18, hover, in);
+            Text number = Text.literal(String.valueOf(i + 1));
+            context.drawTextWithShadow(textRenderer, number, xx + 8, yy + 5, VnStyle.alpha(VnStyle.ACCENT, in) | 0x01000000);
+            Text label = Text.translatable(Question.getTranslationKey(dialogQuestionId, a));
+            context.drawTextWithShadow(textRenderer, label, xx + 20, yy + 5,
+                    VnStyle.alpha(hover ? 0xFFFFFFFF : VnStyle.TEXT, in) | 0x01000000);
         }
     }
 
