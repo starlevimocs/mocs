@@ -120,8 +120,10 @@ public final class CubOsuBridge {
                 if (def == null) {
                     continue;
                 }
+                // el tipo se guarda como "osumania" (y el enum se llama MANIA); las de osu! normal no sirven
                 Object type = field(def, "type");
-                if (type == null || !"mania".equals(strField(type, "id"))) {
+                String typeId = type == null ? "" : (strField(type, "id") + " " + type).toLowerCase();
+                if (!typeId.contains("mania") || name.endsWith("_intro")) {
                     continue;
                 }
                 Object chart = field(def, "mania");
