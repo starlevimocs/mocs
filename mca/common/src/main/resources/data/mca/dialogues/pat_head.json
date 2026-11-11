@@ -1,0 +1,64 @@
+{
+  "auto": true,
+  "answers": [
+    {
+      "results": [
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "pat_head.success",
+            "positive": 3,
+            "animate": "pat_head"
+          },
+          "conditions": [
+            {
+              "chance": 16,
+              "hearts": {
+                "add": -0.1,
+                "max": 1.5,
+                "dividend": 100
+              }
+            },
+            {
+              "chance": 14,
+              "constraints": "!adult"
+            },
+            {
+              "chance": 8,
+              "constraints": "spouse"
+            },
+            {
+              "chance": 4,
+              "personality": "sensitive"
+            },
+            {
+              "chance": 4,
+              "personality": "peppy"
+            }
+          ]
+        },
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "pat_head.fail",
+            "gesture": "angry"
+          },
+          "conditions": [
+            {
+              "chance": 8,
+              "hearts_max": 10
+            },
+            {
+              "chance": 6,
+              "personality": "grumpy"
+            },
+            {
+              "chance": 4,
+              "personality": "confident"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

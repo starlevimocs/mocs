@@ -1,0 +1,56 @@
+{
+  "auto": true,
+  "answers": [
+    {
+      "results": [
+        {
+          "baseChance": 8,
+          "actions": {
+            "next": "toast.success",
+            "positive": 2,
+            "animate": "toast"
+          },
+          "conditions": [
+            {
+              "chance": 12,
+              "hearts": {
+                "add": -0.05,
+                "max": 1.5,
+                "dividend": 100
+              }
+            },
+            {
+              "chance": 6,
+              "personality": "peppy"
+            },
+            {
+              "chance": 5,
+              "personality": "friendly"
+            },
+            {
+              "chance": 5,
+              "time_min": 12000
+            }
+          ]
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "next": "toast.fail",
+            "gesture": "no"
+          },
+          "conditions": [
+            {
+              "chance": 6,
+              "hearts_max": 0
+            },
+            {
+              "chance": 4,
+              "personality": "gloomy"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

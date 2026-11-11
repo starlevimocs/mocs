@@ -43,11 +43,16 @@ public final class DreamsActions {
                     d("talk"), ui("say"), d("chat"), d("joke"), d("story"), d("rumors"),
                     d("rock_paper_scissor"), d("apologize"))),
             new Tab("gestures", "✋", List.of(
-                    c("release", "dreams_release"), d("hug"), d("high_five"), d("hold_hand"), d("carry_back"),
-                    d("dance_fun"), ui("gift"))),
+                    c("release", "dreams_release"), ui("touch"), d("hug"), d("high_five"), d("handshake"), d("fist_bump"),
+                    d("bow_each"), d("pat_head"), d("comfort"), d("forehead_kiss"), d("hold_hand"), d("carry_back"),
+                    ui("gift"))),
+            new Tab("fun", "♪", List.of(
+                    d("dance_fun"), d("toast"), d("photo"), d("tickle"), d("lift_spin"), d("rock_paper_scissor"),
+                    d("joke"))),
             new Tab("romance", "❤", List.of(
-                    c("release", "dreams_release"), dAdult("flirt"), dAdult("kiss"), d("hold_hand"),
-                    dAdult("carry_arms"), dAdult("dance_slow"), ui("gift"), dAdult("procreate"), dAdult("adopt"))),
+                    c("release", "dreams_release"), dAdult("flirt"), dAdult("kiss"), dAdult("cheek_kiss"), d("hold_hand"),
+                    dAdult("carry_arms"), dAdult("dance_slow"), dAdult("dance_tango"), ui("gift"), dAdult("procreate"),
+                    dAdult("adopt"))),
             new Tab("orders", "⚑", List.of(
                     c("follow", "follow"), c("stay", "stay"), c("move", "move"), c("ridehorse", "ridehorse"),
                     c("sethome", "sethome"), c("gohome", "gohome"), c("setworkplace", "setworkplace"),
@@ -58,6 +63,30 @@ public final class DreamsActions {
                     c("trade", "trade"), c("inventory", "inventory"), ui("family"), d("hire"),
                     c("pick_up", "pick_up")))
     );
+
+    private static Boolean touchMod;
+
+    /** El modo toque lo trae el mod Star Interactions; sin el, el boton no aparece. */
+    public static boolean touchAvailable() {
+        if (touchMod == null) {
+            try {
+                Class.forName("com.starlevi.starinteractions.client.TouchClient", false, DreamsActions.class.getClassLoader());
+                touchMod = true;
+            } catch (Throwable t) {
+                touchMod = false;
+            }
+        }
+        return touchMod;
+    }
+
+    /** Pide el modo toque con ese aldeano. */
+    public static void requestTouch(int entityId) {
+        try {
+            Class.forName("com.starlevi.starinteractions.client.TouchClient").getMethod("request", int.class).invoke(null, entityId);
+        } catch (Throwable t) {
+            touchMod = false;
+        }
+    }
 
     private DreamsActions() {
     }

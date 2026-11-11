@@ -300,6 +300,128 @@
         }
       ],
       "constraints": "!kids,adult"
+    },
+    {
+      "name": "handshake",
+      "results": [
+        {
+          "actions": {
+            "next": "handshake"
+          }
+        }
+      ]
+    },
+    {
+      "name": "fist_bump",
+      "results": [
+        {
+          "actions": {
+            "next": "fist_bump"
+          }
+        }
+      ]
+    },
+    {
+      "name": "bow_each",
+      "results": [
+        {
+          "actions": {
+            "next": "bow_each"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pat_head",
+      "results": [
+        {
+          "actions": {
+            "next": "pat_head"
+          }
+        }
+      ]
+    },
+    {
+      "name": "comfort",
+      "results": [
+        {
+          "actions": {
+            "next": "comfort"
+          }
+        }
+      ]
+    },
+    {
+      "name": "forehead_kiss",
+      "results": [
+        {
+          "actions": {
+            "next": "forehead_kiss"
+          }
+        }
+      ]
+    },
+    {
+      "name": "cheek_kiss",
+      "constraints": "!kids,adult",
+      "results": [
+        {
+          "actions": {
+            "next": "cheek_kiss"
+          }
+        }
+      ]
+    },
+    {
+      "name": "tickle",
+      "results": [
+        {
+          "actions": {
+            "next": "tickle"
+          }
+        }
+      ]
+    },
+    {
+      "name": "toast",
+      "results": [
+        {
+          "actions": {
+            "next": "toast"
+          }
+        }
+      ]
+    },
+    {
+      "name": "photo",
+      "results": [
+        {
+          "actions": {
+            "next": "photo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lift_spin",
+      "results": [
+        {
+          "actions": {
+            "next": "lift_spin"
+          }
+        }
+      ]
+    },
+    {
+      "name": "dance_tango",
+      "constraints": "!kids,adult",
+      "results": [
+        {
+          "actions": {
+            "next": "dance_tango"
+          }
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,40 @@
+{
+  "auto": true,
+  "answers": [
+    {
+      "results": [
+        {
+          "baseChance": 16,
+          "actions": {
+            "next": "bow_each.success",
+            "positive": 1,
+            "animate": "bow_each"
+          },
+          "conditions": [
+            {
+              "chance": 4,
+              "personality": "shy"
+            },
+            {
+              "chance": 4,
+              "personality": "confident"
+            }
+          ]
+        },
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "bow_each.fail",
+            "gesture": "no"
+          },
+          "conditions": [
+            {
+              "chance": 4,
+              "hearts_max": -20
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

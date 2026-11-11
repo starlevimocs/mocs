@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.starlevi.starinteractions.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "starinteractions.refmap.json",
+  "client": [
+    "HumanoidModelMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

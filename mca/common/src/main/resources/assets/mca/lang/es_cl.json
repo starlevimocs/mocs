@@ -1015,5 +1015,19 @@
   "gui.dreams.relation.close": "Muy cercanos",
   "gui.dreams.relation.soulmate": "Almas gemelas",
   "gui.dreams.last_chance": "Última reacción: %s",
-  "gui.dreams.genes": "Genes"
+  "gui.dreams.genes": "Genes",
+  "gui.dreams.action.handshake": "Dar la mano",
+  "gui.dreams.action.fist_bump": "Chocar puños",
+  "gui.dreams.action.bow_each": "Reverencia",
+  "gui.dreams.action.pat_head": "Acariciar la cabeza",
+  "gui.dreams.action.comfort": "Consolar",
+  "gui.dreams.action.forehead_kiss": "Beso en la frente",
+  "gui.dreams.action.cheek_kiss": "Beso en la mejilla",
+  "gui.dreams.action.tickle": "Cosquillas",
+  "gui.dreams.action.toast": "Brindar",
+  "gui.dreams.action.photo": "Foto juntos",
+  "gui.dreams.action.lift_spin": "Alzar y girar",
+  "gui.dreams.action.dance_tango": "Bailar tango",
+  "gui.dreams.action.touch": "Tocar (con el mouse)",
+  "gui.dreams.tab.fun": "Diversión"
 }

@@ -575,3 +575,262 @@ solo("pet", 2.6, {
                   "position": held([0, -1.4, -4.2], 0.5, 2.1, 2.6)},
     "left_arm": {"rotation": held([20, 0, -8], 0.5, 2.1, 2.6), "position": held([0, -1.4, -4.2], 0.5, 2.1, 2.6)},
 }, blend_in=0.45, blend_out=0.45)
+
+
+# ================================================================== Star Interactions: mas interacciones de a dos
+# (las usa el fork de MCA con los aldeanos y el mod Star Interactions entre jugadores;
+#  "player" = quien empieza, "villager" = la otra persona)
+
+def pair(name, L, D, a, b, blend_in=0.35, blend_out=0.45, camera=True):
+    data = {"length": L, "blend_in": blend_in, "blend_out": blend_out, "distance": D,
+            "participants": {"player": {"bones": a}, "villager": {"bones": b}}}
+    if camera:
+        data["camera"] = "third_person"
+    save(name, data)
+
+
+def stay(z, yaw=0):
+    return {"position": kf([(0, [0, 0, z])]), "rotation": kf([(0, [0, yaw, 0])])}
+
+
+def h3(pose, t_in, t_out, L):
+    return kf([(0, [0, 0, 0]), (t_in, pose), (t_out, pose), (L, [0, 0, 0])])
+
+
+# ---- apreton de manos
+D = 17
+L = 2.4
+shake = [(0, [0, 0, 0]), (0.45, [-78, -20, 0])] + [(0.6 + i * 0.16, [-78 + (9 if i % 2 else -9), -20, 0]) for i in range(7)] + [(1.9, [-78, -20, 0]), (L, [0, 0, 0])]
+hs = lambda z, yaw: {"root": stay(z, yaw), "right_arm": {"rotation": kf(shake)},
+                     "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [8, 0, 0]), (1.0, [0, 0, 0]), (1.4, [8, 0, 0]), (L, [0, 0, 0])])},
+                     "body": {"rotation": h3([5, 0, 0], 0.45, 1.9, L)}}
+pair("handshake", L, D, hs(0, 0), hs(D, 180), camera=False)
+
+# ---- chocar los punos
+D = 19
+L = 1.6
+bump = [(0, [0, 0, 0]), (0.3, [-40, -10, 0]), (0.5, [-92, -18, 0]), (0.62, [-80, -18, 0]), (0.9, [-150, -10, 20]), (1.2, [-140, -10, 30]), (L, [0, 0, 0])]
+fb = lambda z, yaw: {"root": {"position": kf([(0, [0, 0, z]), (0.5, [0, 0, z + (1.2 if yaw == 0 else -1.2)]), (0.9, [0, 0, z]), (L, [0, 0, z])]),
+                              "rotation": kf([(0, [0, yaw, 0])])},
+                     "right_arm": {"interpolation": "linear", "rotation": kf(bump)},
+                     "head": {"rotation": h3([-8, 0, 6], 0.9, 1.3, L)}}
+pair("fist_bump", L, D, fb(0, 0), fb(D, 180), camera=False)
+
+# ---- acariciar la cabeza
+D = 11
+L = 3.2
+pat = [(0, [0, 0, 0]), (0.5, [-128, -18, 0])] + [(0.7 + i * 0.3, [-128 + (10 if i % 2 else -4), -18 + (8 if i % 2 else -8), 0]) for i in range(7)] + [(L, [0, 0, 0])]
+bob = [(0, [0, 0, 0]), (0.5, [12, 0, 0])] + [(0.7 + i * 0.3, [12 + (5 if i % 2 else 0), 0, 4 if i % 2 else -4]) for i in range(7)] + [(L, [0, 0, 0])]
+pair("pat_head", L, D,
+     {"root": stay(0), "right_arm": {"rotation": kf(pat)}, "head": {"rotation": h3([12, 0, 0], 0.5, 2.8, L)},
+      "body": {"rotation": h3([6, 0, 0], 0.5, 2.8, L)}},
+     {"root": stay(D, 180), "head": {"rotation": kf(bob)}, "body": {"rotation": h3([4, 0, 0], 0.5, 2.8, L)},
+      "right_arm": {"rotation": h3([-12, 0, 10], 0.5, 2.8, L)}, "left_arm": {"rotation": h3([-12, 0, -10], 0.5, 2.8, L)}})
+
+# ---- beso en la frente
+D = 8
+L = 3.2
+pair("forehead_kiss", L, D,
+     {"root": {"position": kf([(0, [0, 0, -1.5]), (0.6, [0, 0, 0]), (2.6, [0, 0, 0]), (L, [0, 0, -1.5])]), "rotation": kf([(0, [0, 0, 0])])},
+      "right_arm": {"rotation": h3([-92, -16, 0], 0.6, 2.6, L)}, "left_arm": {"rotation": h3([-92, 16, 0], 0.6, 2.6, L)},
+      "body": {"rotation": h3([8, 0, 0], 0.6, 2.6, L)},
+      "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [10, 0, 0]), (1.2, [24, 0, 0]), (2.2, [24, 0, 0]), (2.6, [8, 0, 0]), (L, [0, 0, 0])]),
+               "position": kf([(0, [0, 0, 0]), (1.2, [0, 0, 0.9]), (2.2, [0, 0, 0.9]), (L, [0, 0, 0])])}},
+     {"root": {"position": kf([(0, [0, 0, D + 1.5]), (0.6, [0, 0, D]), (2.6, [0, 0, D]), (L, [0, 0, D + 1.5])]), "rotation": kf([(0, [0, 180, 0])])},
+      "right_arm": {"rotation": h3([-36, -22, 4], 0.6, 2.6, L)}, "left_arm": {"rotation": h3([-36, 22, -4], 0.6, 2.6, L)},
+      "head": {"rotation": h3([14, 0, 0], 0.9, 2.4, L)}})
+
+# ---- beso en la mejilla
+D = 8.5
+L = 2.0
+pair("cheek_kiss", L, D,
+     {"root": {"position": kf([(0, [0, 0, -1]), (0.5, [-1.8, 0, 0.4]), (1.3, [-1.8, 0, 0.4]), (L, [0, 0, -1])]), "rotation": kf([(0, [0, 0, 0])])},
+      "head": {"rotation": h3([4, -32, -6], 0.5, 1.3, L), "position": h3([0, 0, 0.8], 0.6, 1.2, L)},
+      "right_arm": {"rotation": h3([-45, -22, 0], 0.5, 1.3, L)}, "body": {"rotation": h3([5, 0, 0], 0.5, 1.3, L)}},
+     {"root": stay(D, 180),
+      "head": {"rotation": kf([(0, [0, 0, 0]), (0.5, [0, 18, 0]), (1.0, [-4, 18, 6]), (1.5, [6, 0, 8]), (L, [0, 0, 0])])},
+      "right_arm": {"rotation": kf([(0, [0, 0, 0]), (1.3, [0, 0, 0]), (1.6, [-120, -40, 0]), (1.85, [-120, -40, 0]), (L, [0, 0, 0])])}})
+
+# ---- tango con caida
+D = 6
+L = 9.0
+def tango(who):
+    me = who == "a"
+    s = 1 if me else -1
+    z0 = 0 if me else D
+    yaw = 0 if me else 180
+    # pasos de costado juntos, vuelta, y la caida
+    posk = [(0, [0, 0, z0]), (1.0, [5, 0, z0]), (2.0, [-5, 0, z0]), (3.0, [5, 0, z0]), (4.0, [0, 0, z0]),
+            (5.0, [0, 0 if me else -3.0, z0 + (1.0 if me else -1.0)]), (7.0, [0, 0 if me else -3.0, z0 + (1.0 if me else -1.0)]),
+            (8.0, [0, 0, z0]), (L, [0, 0, z0])]
+    legs_r = [(0, [0, 0, 0])] + [(0.5 + i * 0.5, [16 if i % 2 == 0 else -10, 0, 0]) for i in range(7)] + [(4.5, [0, 0, 0]), (L, [0, 0, 0])]
+    legs_l = [(0, [0, 0, 0])] + [(0.5 + i * 0.5, [-10 if i % 2 == 0 else 16, 0, 0]) for i in range(7)] + [(4.5, [0, 0, 0]), (L, [0, 0, 0])]
+    if me:
+        bones = {
+            "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-50, -30, 0]), (4.4, [-50, -30, 0]), (5.0, [-62, -34, 0]), (7.0, [-62, -34, 0]), (8.0, [-50, -30, 0]), (L, [0, 0, 0])])},
+            "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-88, 30, -10]), (4.4, [-88, 30, -10]), (5.0, [-70, 26, 0]), (7.0, [-70, 26, 0]), (8.0, [-88, 30, -10]), (L, [0, 0, 0])])},
+            "body": {"rotation": kf([(0, [0, 0, 0]), (0.6, [4, 0, 0]), (4.4, [4, 0, 0]), (5.0, [26, 0, 0]), (7.0, [26, 0, 0]), (8.0, [4, 0, 0]), (L, [0, 0, 0])])},
+            "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [6, 0, -6]), (4.4, [6, 0, -6]), (5.0, [30, 0, 0]), (7.0, [30, 0, 0]), (8.0, [6, 0, 0]), (L, [0, 0, 0])])},
+            "right_leg": {"rotation": kf(legs_r[:-2] + [(5.0, [-28, 0, 0]), (7.0, [-28, 0, 0]), (8.0, [0, 0, 0]), (L, [0, 0, 0])])},
+            "left_leg": {"rotation": kf(legs_l[:-2] + [(5.0, [22, 0, 0]), (7.0, [22, 0, 0]), (8.0, [0, 0, 0]), (L, [0, 0, 0])])},
+        }
+    else:
+        bones = {
+            "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-95, 30, -6]), (4.4, [-95, 30, -6]), (5.0, [-70, 30, 0]), (7.0, [-70, 30, 0]), (8.0, [-95, 30, -6]), (L, [0, 0, 0])])},
+            "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-70, -35, 12]), (4.4, [-70, -35, 12]), (5.0, [-175, 0, 30]), (6.0, [-185, 0, 34]), (7.0, [-175, 0, 30]), (8.0, [-70, -35, 12]), (L, [0, 0, 0])])},
+            "body": {"rotation": kf([(0, [0, 0, 0]), (0.6, [4, 0, 0]), (4.4, [4, 0, 0]), (5.0, [-42, 0, 0]), (7.0, [-42, 0, 0]), (8.0, [4, 0, 0]), (L, [0, 0, 0])])},
+            "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [8, 0, 8]), (4.4, [8, 0, 8]), (5.0, [-30, 0, 0]), (7.0, [-30, 0, 0]), (8.0, [8, 0, 0]), (L, [0, 0, 0])]),
+                     "position": kf([(0, [0, 0, 0]), (4.4, [0, 0, 0]), (5.0, [0, -2.5, -7.5]), (7.0, [0, -2.5, -7.5]), (8.0, [0, 0, 0]), (L, [0, 0, 0])])},
+            "right_leg": {"rotation": kf(legs_l[:-2] + [(5.0, [-58, 0, 0]), (7.0, [-58, 0, 0]), (8.0, [0, 0, 0]), (L, [0, 0, 0])])},
+            "left_leg": {"rotation": kf(legs_r[:-2] + [(5.0, [8, 0, 0]), (7.0, [8, 0, 0]), (8.0, [0, 0, 0]), (L, [0, 0, 0])])},
+        }
+        # al caer hacia atras, los brazos van con el torso
+        for arm in ("left_arm", "right_arm"):
+            bones[arm]["position"] = kf([(0, [0, 0, 0]), (4.4, [0, 0, 0]), (5.0, [0, -2, -6.5]), (7.0, [0, -2, -6.5]), (8.0, [0, 0, 0]), (L, [0, 0, 0])])
+    bones["root"] = {"position": kf(posk), "rotation": kf([(0, [0, yaw, 0])])}
+    return bones
+pair("dance_tango", L, D, tango("a"), tango("b"), blend_in=0.6, blend_out=0.6)
+
+# ---- alzar y girar
+D = 5.5
+L = 5.2
+ts = [i * 0.2 for i in range(int(L / 0.2) + 1)]
+def spin_angle(t):
+    s = min(1, max(0, (t - 1.4) / 2.4))
+    return 360 * (s * s * (3 - 2 * s))
+def lift_y(t):
+    if t < 1.0:
+        return 0
+    if t < 1.5:
+        return 11 * (t - 1.0) / 0.5
+    if t < 3.9:
+        return 11
+    if t < 4.5:
+        return 11 * (1 - (t - 3.9) / 0.6)
+    return 0
+def b_pos(t):
+    a = math.radians(spin_angle(t))
+    # x = derecha de quien empieza, z = hacia adelante; gira con quien la/lo levanta
+    return [-D * math.sin(a), lift_y(t), D * math.cos(a)]
+pair("lift_spin", L, D,
+     {"root": {"position": kf([(0, [0, 0, 0])]), "rotation": kf([(t, [0, spin_angle(t), 0]) for t in ts])},
+      "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.8, [-70, -12, 0]), (1.5, [-150, -10, 0]), (3.9, [-150, -10, 0]), (4.5, [-70, -12, 0]), (L, [0, 0, 0])])},
+      "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.8, [-70, 12, 0]), (1.5, [-150, 10, 0]), (3.9, [-150, 10, 0]), (4.5, [-70, 12, 0]), (L, [0, 0, 0])])},
+      "head": {"rotation": kf([(0, [0, 0, 0]), (1.5, [-28, 0, 0]), (3.9, [-28, 0, 0]), (4.6, [0, 0, 0]), (L, [0, 0, 0])])},
+      "body": {"rotation": kf([(0, [0, 0, 0]), (1.5, [-8, 0, 0]), (3.9, [-8, 0, 0]), (L, [0, 0, 0])])}},
+     {"root": {"position": kf([(t, b_pos(t)) for t in ts]), "rotation": kf([(t, [0, 180 + spin_angle(t), 0]) for t in ts])},
+      "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.8, [-40, -25, 0]), (1.5, [-10, 0, 95]), (3.9, [-10, 0, 100]), (4.5, [-40, -25, 0]), (L, [0, 0, 0])])},
+      "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.8, [-40, 25, 0]), (1.5, [-10, 0, -95]), (3.9, [-10, 0, -100]), (4.5, [-40, 25, 0]), (L, [0, 0, 0])])},
+      "right_leg": {"rotation": kf([(0, [0, 0, 0]), (1.5, [35, 0, 6]), (3.9, [40, 0, 6]), (4.5, [0, 0, 0]), (L, [0, 0, 0])])},
+      "left_leg": {"rotation": kf([(0, [0, 0, 0]), (1.5, [18, 0, -6]), (3.9, [24, 0, -6]), (4.5, [0, 0, 0]), (L, [0, 0, 0])])},
+      "head": {"rotation": kf([(0, [0, 0, 0]), (1.5, [18, 0, 0]), (3.9, [18, 0, 0]), (4.6, [0, 0, 0]), (L, [0, 0, 0])])},
+      "body": {"rotation": kf([(0, [0, 0, 0]), (1.5, [10, 0, 0]), (3.9, [10, 0, 0]), (L, [0, 0, 0])])}},
+     blend_in=0.4, blend_out=0.5)
+
+# ---- brindis
+D = 16
+L = 3.0
+toast = [(0, [0, 0, 0]), (0.5, [-70, -10, 0]), (0.9, [-112, -24, 0]), (1.05, [-104, -24, 0]), (1.5, [-70, -30, 0]), (1.9, [-138, -44, 0]), (2.5, [-138, -44, 0]), (L, [0, 0, 0])]
+tb = lambda z, yaw: {"root": stay(z, yaw), "right_arm": {"rotation": kf(toast)},
+                     "head": {"rotation": kf([(0, [0, 0, 0]), (0.9, [-6, 0, 0]), (1.5, [0, 0, 0]), (1.9, [-24, 0, 0]), (2.5, [-24, 0, 0]), (L, [0, 0, 0])])}}
+pair("toast", L, D, tb(0, 0), tb(D, 180), camera=False)
+
+# ---- pose para la foto: uno al lado del otro, abrazados, con el signo de la paz
+D = 12
+L = 5.0
+pair("photo", L, D,
+     {"root": {"position": kf([(0, [0, 0, 0]), (0.8, [-4.5, 0, 0]), (4.2, [-4.5, 0, 0]), (L, [0, 0, 0])]), "rotation": kf([(0, [0, 0, 0])])},
+      "right_arm": {"rotation": h3([-62, 0, 78], 0.9, 4.2, L)},
+      "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.9, [-150, 0, -28]), (2.0, [-150, 0, -18]), (3.0, [-150, 0, -30]), (4.2, [-150, 0, -24]), (L, [0, 0, 0])])},
+      "head": {"rotation": h3([-4, 0, -12], 0.9, 4.2, L)}, "body": {"rotation": h3([0, 0, -5], 0.9, 4.2, L)}},
+     {"root": {"position": kf([(0, [0, 0, D]), (0.8, [4.5, 0, 0]), (4.2, [4.5, 0, 0]), (L, [0, 0, D])]),
+               "rotation": kf([(0, [0, 180, 0]), (0.8, [0, 360, 0]), (4.2, [0, 360, 0]), (L, [0, 180, 0])])},
+      "left_arm": {"rotation": h3([-62, 0, -78], 0.9, 4.2, L)},
+      "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.9, [-150, 0, 28]), (2.0, [-150, 0, 18]), (3.0, [-150, 0, 30]), (4.2, [-150, 0, 24]), (L, [0, 0, 0])])},
+      "head": {"rotation": h3([-4, 0, 12], 0.9, 4.2, L)}, "body": {"rotation": h3([0, 0, 5], 0.9, 4.2, L)}},
+     blend_in=0.5, blend_out=0.5, camera=False)
+
+# ---- consolar
+D = 8
+L = 4.4
+cpat = [(0, [0, 0, 0]), (0.7, [-85, -30, 0])] + [(1.0 + i * 0.4, [-85 + (8 if i % 2 else -4), -30, 0]) for i in range(7)] + [(L, [0, 0, 0])]
+sob = [(0, [0, 0, 0]), (0.7, [34, 0, 0])] + [(1.0 + i * 0.4, [34 + (4 if i % 2 else 0), 0, 0]) for i in range(7)] + [(L, [0, 0, 0])]
+pair("comfort", L, D,
+     {"root": {"position": kf([(0, [0, 0, -1.5]), (0.7, [-2.5, 0, 0]), (3.8, [-2.5, 0, 0]), (L, [0, 0, -1.5])]), "rotation": kf([(0, [0, 0, 0])])},
+      "right_arm": {"rotation": kf(cpat)}, "left_arm": {"rotation": h3([-70, 30, 0], 0.7, 3.8, L)},
+      "head": {"rotation": h3([14, 20, 6], 0.7, 3.8, L)}, "body": {"rotation": h3([6, 0, 0], 0.7, 3.8, L)}},
+     {"root": {"position": kf([(0, [0, 0, D + 1]), (0.7, [2.5, 0, D - 2]), (3.8, [2.5, 0, D - 2]), (L, [0, 0, D + 1])]), "rotation": kf([(0, [0, 180, 0])])},
+      "head": {"rotation": kf(sob)}, "body": {"rotation": h3([12, 0, 0], 0.7, 3.8, L)},
+      "right_arm": {"rotation": h3([-60, -45, 0], 0.7, 3.8, L)}, "left_arm": {"rotation": h3([-60, 45, 0], 0.7, 3.8, L)}})
+
+# ---- cosquillas
+D = 10
+L = 2.8
+tk_r = [(0, [0, 0, 0]), (0.3, [-62, -14, 0])] + [(0.4 + i * 0.11, [-62 + (8 if i % 2 else -8), -14 + (6 if i % 2 else -6), 0]) for i in range(18)] + [(L, [0, 0, 0])]
+tk_l = [(0, [0, 0, 0]), (0.3, [-62, 14, 0])] + [(0.4 + i * 0.11, [-62 + (-8 if i % 2 else 8), 14 + (-6 if i % 2 else 6), 0]) for i in range(18)] + [(L, [0, 0, 0])]
+sq_b = [(0, [0, 0, 0])] + [(0.4 + i * 0.14, [4, 0, 13 if i % 2 else -13]) for i in range(14)] + [(L, [0, 0, 0])]
+sq_y = [(0, [0, 0, D])] + [(0.4 + i * 0.14, [0, 1.5 if i % 2 else 0, D]) for i in range(14)] + [(L, [0, 0, D])]
+pair("tickle", L, D,
+     {"root": stay(0), "right_arm": {"rotation": kf(tk_r)}, "left_arm": {"rotation": kf(tk_l)},
+      "body": {"rotation": h3([10, 0, 0], 0.3, 2.4, L)}, "head": {"rotation": h3([8, 0, 0], 0.3, 2.4, L)}},
+     {"root": {"position": kf(sq_y), "rotation": kf([(0, [0, 180, 0])])},
+      "body": {"rotation": kf(sq_b)},
+      "head": {"rotation": kf([(0, [0, 0, 0]), (0.4, [-22, 0, 0]), (1.4, [-26, 0, 10]), (2.3, [-22, 0, -10]), (L, [0, 0, 0])])},
+      "right_arm": {"rotation": h3([-45, 35, 0], 0.35, 2.4, L)}, "left_arm": {"rotation": h3([-45, -35, 0], 0.35, 2.4, L)}},
+     camera=False)
+
+# ---- reverencia mutua
+D = 20
+L = 2.4
+bw = lambda z, yaw: {"root": stay(z, yaw), "body": {"rotation": h3([34, 0, 0], 0.5, 1.6, L)},
+                     "head": {"rotation": h3([20, 0, 0], 0.5, 1.6, L), "position": h3([0, -1.6, -3.8], 0.5, 1.6, L)},
+                     "right_arm": {"rotation": h3([-55, -42, 0], 0.5, 1.6, L), "position": h3([0, -1, -2.6], 0.5, 1.6, L)},
+                     "left_arm": {"rotation": h3([28, 0, -5], 0.5, 1.6, L), "position": h3([0, -1, -2.6], 0.5, 1.6, L)}}
+pair("bow_each", L, D, bw(0, 0), bw(D, 180), camera=False)
+
+# ================================================================== gestos nuevos de una persona
+# taparse la cara con la mano
+solo("facepalm", 2.4, {
+    "right_arm": {"rotation": held([-150, -48, 0], 0.4, 1.9, 2.4)},
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.4, [22, 0, 0]), (1.0, [24, 8, 0]), (1.5, [24, -8, 0]), (1.9, [22, 0, 0]), (2.4, [0, 0, 0])])},
+    "body": {"rotation": held([6, 0, 0], 0.4, 1.9, 2.4)},
+})
+# llorar: las dos manos a la cara, hombros que tiemblan
+cr = [(0, [0, 0, 0]), (0.5, [14, 0, 0])] + [(0.7 + i * 0.22, [14 + (4 if i % 2 else 0), 0, 0]) for i in range(12)] + [(3.6, [0, 0, 0])]
+solo("cry", 3.6, {
+    "right_arm": {"rotation": held([-142, -30, 0], 0.5, 3.1, 3.6)}, "left_arm": {"rotation": held([-142, 30, 0], 0.5, 3.1, 3.6)},
+    "head": {"rotation": held([28, 0, 0], 0.5, 3.1, 3.6)}, "body": {"rotation": kf(cr)},
+}, blend_in=0.4, blend_out=0.5)
+# bailar solo
+L = 6.0
+ds_r, ds_l, ds_b, ds_h, ds_root, ds_rl, ds_ll = [], [], [], [], [], [], []
+for i in range(int(L / 0.5) + 1):
+    t = i * 0.5
+    up = i % 2 == 0
+    ds_root.append((t, [2.5 if (i // 2) % 2 == 0 else -2.5, 1.6 if not up else 0, 0]))
+    ds_b.append((t, [5 if not up else 0, 0, 9 if (i // 2) % 2 == 0 else -9]))
+    ds_h.append((t, [8 if not up else -4, 0, 7 if (i // 2) % 2 == 0 else -7]))
+    if (i // 4) % 2 == 0:
+        ds_r.append((t, [-165, 0, 22] if up else [-40, 0, 38]))
+        ds_l.append((t, [-40, 0, -38] if up else [-165, 0, -22]))
+    else:
+        ds_r.append((t, [-90, -30 if up else 20, 0]))
+        ds_l.append((t, [-90, 30 if up else -20, 0]))
+    ds_rl.append((t, [-16 if up else 0, 0, 0]))
+    ds_ll.append((t, [0 if up else -16, 0, 0]))
+for lst in (ds_r, ds_l, ds_b, ds_h, ds_rl, ds_ll):
+    lst[0] = (0, [0, 0, 0])
+    lst[-1] = (L, [0, 0, 0])
+ds_root[0] = (0, [0, 0, 0])
+ds_root[-1] = (L, [0, 0, 0])
+solo("dance_solo", L, {"root": {"position": kf(ds_root)}, "right_arm": {"rotation": kf(ds_r)}, "left_arm": {"rotation": kf(ds_l)},
+                       "body": {"rotation": kf(ds_b)}, "head": {"rotation": kf(ds_h)},
+                       "right_leg": {"rotation": kf(ds_rl)}, "left_leg": {"rotation": kf(ds_ll)}}, blend_in=0.4, blend_out=0.5)
+# sentarse en el piso (se queda hasta que te moves)
+solo("sit_ground", 4.0, {
+    "root": {"position": kf([(0, [0, -10.5, 0])])},
+    "right_leg": {"rotation": kf([(0, [-86, 14, 0])])}, "left_leg": {"rotation": kf([(0, [-86, -14, 0])])},
+    "right_arm": {"rotation": kf([(0, [-38, 0, 0]), (2.0, [-34, 0, 4]), (4.0, [-38, 0, 0])])},
+    "left_arm": {"rotation": kf([(0, [-38, 0, 0]), (2.0, [-34, 0, -4]), (4.0, [-38, 0, 0])])},
+    "body": {"rotation": kf([(0, [4, 0, 0])])},
+}, blend_in=0.5, blend_out=0.3, loop=True)

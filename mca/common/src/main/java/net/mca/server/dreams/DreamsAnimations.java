@@ -24,14 +24,26 @@ public final class DreamsAnimations {
     private record Spec(float distance, int ticks) {
     }
 
-    private static final Map<String, Spec> SPECS = Map.of(
-            "kiss", new Spec(8, 62),
-            "hug", new Spec(5.5F, 70),
-            "slap", new Spec(12, 20),
-            "high_five", new Spec(13, 32),
-            "dance_slow", new Spec(6, 202),
-            "dance_fun", new Spec(15, 160),
-            "procreate", new Spec(5.5F, 140)
+    private static final Map<String, Spec> SPECS = Map.ofEntries(
+            Map.entry("kiss", new Spec(8, 62)),
+            Map.entry("hug", new Spec(5.5F, 70)),
+            Map.entry("slap", new Spec(12, 20)),
+            Map.entry("high_five", new Spec(13, 32)),
+            Map.entry("dance_slow", new Spec(6, 202)),
+            Map.entry("dance_fun", new Spec(15, 160)),
+            Map.entry("procreate", new Spec(5.5F, 140)),
+            Map.entry("handshake", new Spec(17, 50)),
+            Map.entry("fist_bump", new Spec(19, 34)),
+            Map.entry("bow_each", new Spec(20, 50)),
+            Map.entry("pat_head", new Spec(11, 66)),
+            Map.entry("comfort", new Spec(8, 90)),
+            Map.entry("cheek_kiss", new Spec(8.5F, 42)),
+            Map.entry("forehead_kiss", new Spec(8, 66)),
+            Map.entry("dance_tango", new Spec(6, 182)),
+            Map.entry("lift_spin", new Spec(5.5F, 106)),
+            Map.entry("toast", new Spec(16, 62)),
+            Map.entry("photo", new Spec(12, 102)),
+            Map.entry("tickle", new Spec(10, 58))
     );
 
     private record Lock(double x, double y, double z, float yaw, long until) {

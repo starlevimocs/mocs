@@ -1,0 +1,52 @@
+{
+  "auto": true,
+  "answers": [
+    {
+      "results": [
+        {
+          "baseChance": 14,
+          "actions": {
+            "next": "handshake.success",
+            "positive": 1,
+            "animate": "handshake"
+          },
+          "conditions": [
+            {
+              "chance": 5,
+              "personality": "friendly"
+            },
+            {
+              "chance": 4,
+              "personality": "confident"
+            },
+            {
+              "chance": 10,
+              "hearts": {
+                "add": -0.05,
+                "max": 1.5,
+                "dividend": 100
+              }
+            }
+          ]
+        },
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "handshake.fail",
+            "gesture": "no"
+          },
+          "conditions": [
+            {
+              "chance": 5,
+              "hearts_max": -10
+            },
+            {
+              "chance": 3,
+              "personality": "grumpy"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

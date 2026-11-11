@@ -8,6 +8,8 @@ on:
       - '.github/workflows/mca.yml'
       - 'starhero/**'
       - '.github/workflows/starhero.yml'
+      - 'starinteractions/**'
+      - '.github/workflows/starinteractions.yml'
   workflow_dispatch:
 
 permissions:

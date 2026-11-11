@@ -189,7 +189,8 @@ public class InteractScreen extends AbstractDynamicScreen {
         int py = 10;
 
         // pestanas
-        int tw = 36;
+        int tabs = net.mca.client.gui.dreams.DreamsActions.TABS.size();
+        int tw = (184 - (tabs - 1)) / tabs;
         for (int i = 0; i < net.mca.client.gui.dreams.DreamsActions.TABS.size(); i++) {
             var t = net.mca.client.gui.dreams.DreamsActions.TABS.get(i);
             boolean selected = t.id().equals(tab);
@@ -209,6 +210,9 @@ public class InteractScreen extends AbstractDynamicScreen {
                 && MinecraftClient.getInstance().player != null && av.dreamsAttachTo == MinecraftClient.getInstance().player.getId();
         for (var a : current.actions()) {
             if (a.adultOnly() && !adult) {
+                continue;
+            }
+            if (a.id().equals("touch") && (attached || !net.mca.client.gui.dreams.DreamsActions.touchAvailable())) {
                 continue;
             }
             // enganchados: solo "Soltar"; sueltos: no hay nada que soltar
@@ -264,6 +268,11 @@ public class InteractScreen extends AbstractDynamicScreen {
                     case "gift" -> {
                         inGiftMode = true;
                         setLayout("main");
+                    }
+                    case "touch" -> {
+                        int id = villager.asEntity().getId();
+                        close();
+                        net.mca.client.gui.dreams.DreamsActions.requestTouch(id);
                     }
                     case "family" -> MinecraftClient.getInstance().setScreen(new FamilyTreeScreen(uuid));
                     default -> {
