@@ -995,5 +995,8 @@
   "gui.dreams.action.inventory": "Inventario y ropa",
   "gui.dreams.action.family": "Árbol familiar",
   "gui.dreams.action.hire": "Contratar",
-  "gui.dreams.action.pick_up": "Alzar"
+  "gui.dreams.action.pick_up": "Alzar",
+  "tag.block.mca.anvils": "Yunques",
+  "trait.asexual": "Asexual",
+  "traitDescription.asexual": "No siente atracción por ningún género."
 }
