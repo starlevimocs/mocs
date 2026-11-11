@@ -38,6 +38,7 @@ public final class MCAForge {
         ItemsMCA.bootstrap();
         SoundsMCA.bootstrap();
         ParticleTypesMCA.bootstrap();
+        net.mca.screen.dreams.DreamsScreens.bootstrap();
         EntitiesMCA.bootstrap();
         MessagesMCA.bootstrap();
         CriterionMCA.bootstrap();

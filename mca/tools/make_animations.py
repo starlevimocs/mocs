@@ -15,6 +15,7 @@ Formato (lo lee net.mca.client.dreams.anim.DreamsAnimation):
 Huesos: root, head, body, right_arm, left_arm, right_leg, left_leg.
 Rotaciones en grados con los ejes del modelo de Java: x = pitch (positivo = hacia adelante/abajo),
 y = yaw, z = roll. Brazo derecho: x -90 = al frente, z + = hacia afuera. Brazo izquierdo: z - = hacia afuera.
+"position" de un hueso: px, x = derecha, y = arriba, z = hacia adelante.
 "root": posicion en px en el espacio de la pareja (x = derecha del jugador, z = hacia el aldeano) y rotacion y
 (grados). Por defecto el jugador esta en [0,0,0] mirando a 0 y el aldeano en [0,0,distance] mirando a 180.
 Los valores se interpolan suave (catmull-rom); "interpolation": "linear" en el hueso para lineal.
@@ -41,50 +42,61 @@ def mirror(rot):  # izquierda <-> derecha
 
 
 # ------------------------------------------------------------------ beso
-D = 11
+# Cuentas (px): la cabeza mide 8 de profundidad, asi que a 8 px las caras se tocan. El cuerpo mide 4.
+# Brazo: ~10 px desde el hombro.
+D = 8
+def hold(a, b, t_in, t_out, L):
+    return kf([(0, [0, 0, 0]), (t_in, a), (t_out, b), (L, [0, 0, 0])])
+L = 3.0
 save("kiss", {
-    "length": 2.6, "blend_in": 0.45, "blend_out": 0.45, "distance": D, "camera": "third_person",
+    "length": L, "blend_in": 0.35, "blend_out": 0.45, "distance": D, "camera": "third_person",
     "participants": {
         "player": {"bones": {
-            "root": {"position": kf([(0, [0, 0, 0]), (0.6, [0, 0, 1.5]), (2.0, [0, 0, 1.5]), (2.6, [0, 0, 0])])},
-            "body": {"rotation": kf([(0, [0, 0, 0]), (0.6, [9, 0, 0]), (2.0, [9, 0, 0]), (2.6, [0, 0, 0])])},
-            "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [6, 0, -14]), (2.0, [6, 0, -14]), (2.6, [0, 0, 0])])},
-            "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-55, -30, 0]), (2.0, [-55, -30, 0]), (2.6, [0, 0, 0])])},
-            "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-25, 20, 0]), (2.0, [-25, 20, 0]), (2.6, [0, 0, 0])])},
+            # manos en la cintura del aldeano
+            "right_arm": {"rotation": hold([-38, -22, 4], [-36, -22, 4], 0.6, 2.4, L)},
+            "left_arm": {"rotation": hold([-38, 22, -4], [-36, 22, -4], 0.6, 2.4, L)},
+            "body": {"rotation": hold([6, 0, 0], [6, 0, 0], 0.6, 2.4, L)},
+            # cabeza ladeada hacia un lado, cara contra cara
+            "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [4, -10, -16]), (1.4, [6, -12, -18]), (2.4, [5, -10, -16]), (L, [0, 0, 0])]),
+                     "position": kf([(0, [0, 0, 0]), (0.7, [0, 0, 0.6]), (2.3, [0, 0, 0.6]), (L, [0, 0, 0])])},
         }},
         "villager": {"bones": {
-            "root": {"position": kf([(0, [0, 0, D]), (0.6, [0, 0, D - 1.5]), (2.0, [0, 0, D - 1.5]), (2.6, [0, 0, D])]),
+            "root": {"position": kf([(0, [0, 0, D + 1.5]), (0.6, [0, 0, D]), (2.4, [0, 0, D]), (L, [0, 0, D + 1.5])]),
                      "rotation": kf([(0, [0, 180, 0])])},
-            "body": {"rotation": kf([(0, [0, 0, 0]), (0.6, [9, 0, 0]), (2.0, [9, 0, 0]), (2.6, [0, 0, 0])])},
-            "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [6, 0, 14]), (2.0, [6, 0, 14]), (2.6, [0, 0, 0])])},
-            "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-80, 30, -10]), (2.0, [-80, 30, -10]), (2.6, [0, 0, 0])])},
-            "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-20, -15, 0]), (2.0, [-20, -15, 0]), (2.6, [0, 0, 0])])},
-            "right_leg": {"rotation": kf([(0, [0, 0, 0]), (0.7, [0, 0, 0]), (0.9, [-20, 0, 0]), (1.8, [-20, 0, 0]), (2.1, [0, 0, 0])])},
+            # brazos alrededor del cuello del jugador
+            "right_arm": {"rotation": hold([-112, -42, 12], [-110, -42, 12], 0.6, 2.4, L)},
+            "left_arm": {"rotation": hold([-112, 42, -12], [-110, 42, -12], 0.6, 2.4, L)},
+            "body": {"rotation": hold([6, 0, 0], [6, 0, 0], 0.6, 2.4, L)},
+            "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [4, 10, 16]), (1.4, [6, 12, 18]), (2.4, [5, 10, 16]), (L, [0, 0, 0])]),
+                     "position": kf([(0, [0, 0, 0]), (0.7, [0, 0, 0.6]), (2.3, [0, 0, 0.6]), (L, [0, 0, 0])])},
+            # el pie de atras se levanta, como en las peliculas
+            "left_leg": {"rotation": kf([(0, [0, 0, 0]), (0.8, [0, 0, 0]), (1.1, [38, 0, 0]), (2.1, [38, 0, 0]), (2.5, [0, 0, 0])])},
         }},
     }})
 
 # ------------------------------------------------------------------ abrazo
-D = 9
-sway = [(t, [0, 7 * math.sin(t / 3.0 * math.pi * 2), 0]) for t in [0.6 + i * 0.25 for i in range(8)]]
-save("hug", {
-    "length": 3.2, "blend_in": 0.5, "blend_out": 0.5, "distance": D, "camera": "third_person",
-    "participants": {
-        "player": {"bones": {
-            "root": {"position": kf([(0, [0, 0, 0]), (0.6, [0, 0, 1]), (2.6, [0, 0, 1]), (3.2, [0, 0, 0])])},
-            "body": {"rotation": kf([(0, [0, 0, 0])] + [(t, [6, v[1], 0]) for t, v in sway] + [(3.2, [0, 0, 0])])},
-            "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [14, 0, -10]), (2.6, [14, 0, -10]), (3.2, [0, 0, 0])])},
-            "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-82, -38, 10]), (2.6, [-82, -38, 10]), (3.2, [0, 0, 0])])},
-            "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-82, 38, -10]), (2.6, [-82, 38, -10]), (3.2, [0, 0, 0])])},
-        }},
-        "villager": {"bones": {
-            "root": {"position": kf([(0, [0, 0, D]), (0.6, [0, 0, D - 1]), (2.6, [0, 0, D - 1]), (3.2, [0, 0, D])]),
-                     "rotation": kf([(0, [0, 180, 0])])},
-            "body": {"rotation": kf([(0, [0, 0, 0])] + [(t, [6, v[1], 0]) for t, v in sway] + [(3.2, [0, 0, 0])])},
-            "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [14, 0, 10]), (2.6, [14, 0, 10]), (3.2, [0, 0, 0])])},
-            "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-75, -42, 12]), (2.6, [-75, -42, 12]), (3.2, [0, 0, 0])])},
-            "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.6, [-75, 42, -12]), (2.6, [-75, 42, -12]), (3.2, [0, 0, 0])])},
-        }},
-    }})
+# Cada uno corrido un poco a su izquierda, asi las cabezas pasan una al lado de la otra (sobre el hombro).
+D = 5.5
+S = 3.5
+L = 3.4
+sway_t = [0.7 + i * 0.3 for i in range(7)]
+sway = [(t, [5, 6 * math.sin((t - 0.7) / 1.2 * math.pi * 2), 0]) for t in sway_t]
+def hug_side(who):
+    base_z = 0 if who == "player" else D
+    x = -S if who == "player" else S
+    yaw = 0 if who == "player" else 180
+    return {"bones": {
+        "root": {"position": kf([(0, [0, 0, base_z + (-2 if who == "player" else 2)]), (0.6, [x, 0, base_z]), (2.8, [x, 0, base_z]), (L, [0, 0, base_z + (-2 if who == "player" else 2)])]),
+                 "rotation": kf([(0, [0, yaw, 0])])},
+        "body": {"rotation": kf([(0, [0, 0, 0])] + sway + [(L, [0, 0, 0])])},
+        # brazo derecho por debajo del brazo del otro, izquierdo por encima del hombro
+        "right_arm": {"rotation": hold([-72, -58, 10], [-72, -58, 10], 0.6, 2.8, L)},
+        "left_arm": {"rotation": hold([-104, 40, -14], [-104, 40, -14], 0.6, 2.8, L)},
+        # cabeza apoyada de costado
+        "head": {"rotation": hold([12, 28, 10], [12, 28, 10], 0.6, 2.8, L)},
+    }}
+save("hug", {"length": L, "blend_in": 0.45, "blend_out": 0.5, "distance": D, "camera": "third_person",
+             "participants": {"player": hug_side("player"), "villager": hug_side("villager")}})
 
 # ------------------------------------------------------------------ cachetada
 D = 12
@@ -119,7 +131,7 @@ save("high_five", {
     }})
 
 # ------------------------------------------------------------------ baile lento (giran juntos, abrazados)
-D = 8
+D = 6
 L = 10.0
 steps = [i * 0.5 for i in range(int(L / 0.5) + 1)]
 def turn(t):

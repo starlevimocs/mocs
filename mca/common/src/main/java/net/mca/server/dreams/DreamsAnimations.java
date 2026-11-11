@@ -25,11 +25,11 @@ public final class DreamsAnimations {
     }
 
     private static final Map<String, Spec> SPECS = Map.of(
-            "kiss", new Spec(11, 52),
-            "hug", new Spec(9, 64),
+            "kiss", new Spec(8, 62),
+            "hug", new Spec(5.5F, 70),
             "slap", new Spec(12, 20),
             "high_five", new Spec(13, 32),
-            "dance_slow", new Spec(8, 200),
+            "dance_slow", new Spec(6, 202),
             "dance_fun", new Spec(15, 160)
     );
 
@@ -38,7 +38,14 @@ public final class DreamsAnimations {
 
     private static final Map<VillagerEntityMCA, Lock> LOCKS = new WeakHashMap<>();
 
+    /** Lo completa el cliente: true si esa entidad esta en una animacion (para no empujarla). */
+    public static java.util.function.Predicate<net.minecraft.entity.Entity> CLIENT_ANIMATING = e -> false;
+
     private DreamsAnimations() {
+    }
+
+    public static boolean isLocked(VillagerEntityMCA villager) {
+        return LOCKS.containsKey(villager);
     }
 
     public static void play(VillagerEntityMCA villager, PlayerEntity player, String type) {
@@ -74,6 +81,12 @@ public final class DreamsAnimations {
         villager.setHeadYaw(villagerYaw);
         villager.setBodyYaw(villagerYaw);
         LOCKS.put(villager, new Lock(vx, vy, vz, villagerYaw, world.getTime() + spec.ticks()));
+        // sin IA mientras dura: no camina, no se da vuelta, no se va
+        villager.setAiDisabled(true);
+        // el jugador queda en el ancla
+        if (player instanceof ServerPlayerEntity sp) {
+            sp.networkHandler.requestTeleport(anchor.x, anchor.y, anchor.z, yaw, sp.getPitch());
+        }
 
         DreamsAnimationMessage msg = new DreamsAnimationMessage(type, villager.getId(), player.getId(), anchor.x, anchor.y, anchor.z, yaw);
         for (ServerPlayerEntity p : world.getPlayers()) {
@@ -91,6 +104,7 @@ public final class DreamsAnimations {
         }
         if (villager.getWorld().getTime() > lock.until() || villager.isRemoved()) {
             LOCKS.remove(villager);
+            villager.setAiDisabled(false);
             return;
         }
         villager.getNavigation().stop();

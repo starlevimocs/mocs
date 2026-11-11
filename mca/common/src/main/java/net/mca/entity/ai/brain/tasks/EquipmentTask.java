@@ -91,6 +91,17 @@ public class EquipmentTask extends MultiTickTask<VillagerEntityMCA> {
             villager.setStackInHand(villager.getOpposingHand(), ItemStack.EMPTY);
         }
 
+        // Dreams: manos elegidas por el jugador cuando no esta trabajando/peleando
+        if (!wear) {
+            net.minecraft.inventory.SimpleInventory outfit = villager.getDreamsOutfit();
+            if (!outfit.getStack(4).isEmpty()) {
+                villager.equipStack(EquipmentSlot.MAINHAND, outfit.getStack(4));
+            }
+            if (!outfit.getStack(5).isEmpty()) {
+                villager.equipStack(EquipmentSlot.OFFHAND, outfit.getStack(5));
+            }
+        }
+
         //armor
         if (wear || villager.getVillagerBrain().getArmorWear()) {
             equipBestArmor(villager, EquipmentSlot.HEAD, set.getHead());
@@ -102,6 +113,14 @@ public class EquipmentTask extends MultiTickTask<VillagerEntityMCA> {
             villager.equipStack(EquipmentSlot.CHEST, ItemStack.EMPTY);
             villager.equipStack(EquipmentSlot.LEGS, ItemStack.EMPTY);
             villager.equipStack(EquipmentSlot.FEET, ItemStack.EMPTY);
+        }
+
+        // Dreams: la ropa elegida por el jugador siempre se ve puesta
+        net.minecraft.inventory.SimpleInventory outfit = villager.getDreamsOutfit();
+        for (int i = 0; i < 4; i++) {
+            if (!outfit.getStack(i).isEmpty()) {
+                villager.equipStack(net.mca.screen.dreams.VillagerOutfitScreenHandler.SLOTS[i], outfit.getStack(i));
+            }
         }
     }
 }

@@ -117,6 +117,8 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
     private final BreedableRelationship relations = new BreedableRelationship(this);
     private final VillagerCommandHandler interactions = new VillagerCommandHandler(this);
     private final UpdatableInventory inventory = new UpdatableInventory(27);
+    // Dreams: ropa elegida por el jugador (cabeza, pecho, piernas, pies, mano principal, mano secundaria)
+    private final net.minecraft.inventory.SimpleInventory dreamsOutfit = new net.minecraft.inventory.SimpleInventory(6);
     private final VillagerDimensions.Mutable dimensions = new VillagerDimensions.Mutable(AgeState.UNASSIGNED);
 
     private GameProfile gameProfile;
@@ -955,6 +957,7 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
 
         //drop stuff
         InventoryUtils.dropAllItems(this, inventory);
+        InventoryUtils.dropAllItems(this, dreamsOutfit);
 
         //alert family and nearby villagers
         relations.onDeath(cause);
@@ -1207,7 +1210,8 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
     @Nullable
     @Override
     public ScreenHandler createMenu(int i, PlayerInventory playerInventory, PlayerEntity playerEntity) {
-        return GenericContainerScreenHandler.createGeneric9x3(i, playerInventory, inventory);
+        // Dreams: inventorio con ranuras de ropa y manos
+        return new net.mca.screen.dreams.VillagerOutfitScreenHandler(i, playerInventory, inventory, dreamsOutfit, this);
     }
 
     @Override
@@ -1272,6 +1276,31 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
     }
 
     @Override
+    public net.minecraft.inventory.SimpleInventory getDreamsOutfit() {
+        return dreamsOutfit;
+    }
+
+    /** Dreams: pone a la vista la ropa elegida (si hay); lo vacio lo maneja MCA como siempre. */
+    public void applyDreamsOutfit() {
+        net.minecraft.entity.EquipmentSlot[] slots = net.mca.screen.dreams.VillagerOutfitScreenHandler.SLOTS;
+        for (int i = 0; i < slots.length; i++) {
+            ItemStack stack = dreamsOutfit.getStack(i);
+            if (!stack.isEmpty()) {
+                equipStack(slots[i], stack);
+            }
+        }
+    }
+
+    @Override
+    public boolean isPushable() {
+        // Dreams: durante una animacion de pareja no se empujan (si no, se separan)
+        if (getWorld().isClient ? net.mca.server.dreams.DreamsAnimations.CLIENT_ANIMATING.test(this)
+                : net.mca.server.dreams.DreamsAnimations.isLocked(this)) {
+            return false;
+        }
+        return super.isPushable();
+    }
+
     public SimpleInventory getInventory() {
         return inventory;
     }
@@ -1365,6 +1394,18 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
         inventory.clear();
         InventoryUtils.readFromNBT(inventory, nbt);
 
+        dreamsOutfit.clear();
+        if (nbt.contains("DreamsOutfit")) {
+            net.minecraft.nbt.NbtList list = nbt.getList("DreamsOutfit", 10);
+            for (int i = 0; i < list.size(); i++) {
+                NbtCompound c = list.getCompound(i);
+                int slot = c.getByte("Slot");
+                if (slot >= 0 && slot < dreamsOutfit.size()) {
+                    dreamsOutfit.setStack(slot, ItemStack.fromNbt(c));
+                }
+            }
+        }
+
         if (nbt.contains("DespawnDelay")) {
             this.despawnDelay = nbt.getInt("DespawnDelay");
         }
@@ -1391,6 +1432,17 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
         nbt.putInt("DespawnDelay", this.despawnDelay);
         nbt.putBoolean("InteractedWith", this.interactedWith);
         InventoryUtils.saveToNBT(inventory, nbt);
+
+        net.minecraft.nbt.NbtList outfit = new net.minecraft.nbt.NbtList();
+        for (int i = 0; i < dreamsOutfit.size(); i++) {
+            if (!dreamsOutfit.getStack(i).isEmpty()) {
+                NbtCompound c = new NbtCompound();
+                c.putByte("Slot", (byte) i);
+                dreamsOutfit.getStack(i).writeNbt(c);
+                outfit.add(c);
+            }
+        }
+        nbt.put("DreamsOutfit", outfit);
 
         if (interactedWith) {
             VillagerTrackerManager.update(this);

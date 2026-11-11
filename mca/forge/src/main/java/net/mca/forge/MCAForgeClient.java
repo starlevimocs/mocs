@@ -62,6 +62,11 @@ public final class MCAForgeClient {
         ModelPredicatesMCA.setup(ModelPredicateProviderRegistry::register);
 
         RenderLayers.setRenderLayer(BlocksMCA.INFERNAL_FLAME.get(), RenderLayer.getCutout());
+
+        // Dreams
+        dev.architectury.registry.menu.MenuRegistry.registerScreenFactory(
+                net.mca.screen.dreams.DreamsScreens.VILLAGER_OUTFIT.get(), net.mca.client.gui.dreams.VillagerOutfitScreen::new);
+        net.mca.server.dreams.DreamsAnimations.CLIENT_ANIMATING = net.mca.client.dreams.DreamsPoses::isAnimating;
     }
 
     @SubscribeEvent

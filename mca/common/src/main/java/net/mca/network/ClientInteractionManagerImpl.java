@@ -234,6 +234,10 @@ public class ClientInteractionManagerImpl implements ClientInteractionManager {
     @Override
     public void handleVillagerMessage(VillagerMessage message) {
         client.getMessageHandler().onGameMessage(message.getMessage(), false);
+        // Dreams: si la conversacion con ese aldeano esta abierta, la respuesta aparece en la caja
+        if (client.currentScreen instanceof InteractScreen gui && gui.isVillager(message.getUuid())) {
+            gui.showVillagerLine(message.getContent());
+        }
         SpeechManager.INSTANCE.onChatMessage(message.getContent(), message.getUuid());
     }
 

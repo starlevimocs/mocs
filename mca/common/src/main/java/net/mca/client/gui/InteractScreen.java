@@ -53,9 +53,14 @@ public class InteractScreen extends AbstractDynamicScreen {
     private static Analysis<?> analysis;
 
     // Dreams: conversacion estilo novela visual
-    private static final int BOX_HEIGHT = 80;
+    private static final int BOX_HEIGHT = 92;
     private static final float CHARS_PER_SECOND = 42.0F;
     private static UUID talkingTo;
+
+    // Dreams: menu nuevo
+    private String tab = "talk";
+    private net.minecraft.client.gui.widget.TextFieldWidget chatField;
+    private String playerLine;
 
     private final VillagerVoice voice;
     private VillagerVoice.Speech speech;
@@ -71,6 +76,25 @@ public class InteractScreen extends AbstractDynamicScreen {
         this.villager = villager;
         this.voice = VillagerVoice.of(villager);
         talkingTo = villager.asEntity().getUuid();
+    }
+
+    public boolean isVillager(UUID uuid) {
+        return villager.asEntity().getUuid().equals(uuid);
+    }
+
+    /** Una respuesta del aldeano que llego por el chat (por ejemplo de la IA): va a la caja, con voz. */
+    public void showVillagerLine(Text text) {
+        dialogQuestionId = null;
+        dialogAnswers = null;
+        dialogQuestionText = textRenderer.wrapLines(text, textWidth());
+        fullText = text.getString();
+        speech = voice.plan(fullText, VillagerVoice.emotionOf(villager, text));
+        net.mca.client.dreams.DreamsPoses.startSolo(villager.asEntity(), fullText.length() % 2 == 0 ? "talk" : "talk2");
+        shown = 0;
+        pause = 0;
+        lastFrame = Util.getMeasuringTimeMs();
+        lineStartedAt = lastFrame;
+        playerLine = null;
     }
 
     /** true si la pantalla de conversacion con ese aldeano esta abierta (los bips los pone la pantalla). */
@@ -104,6 +128,147 @@ public class InteractScreen extends AbstractDynamicScreen {
     @Override
     public void init() {
         NetworkHandler.sendToServer(new GetInteractDataRequest(villager.asEntity().getUuid()));
+        setLayout("main");
+    }
+
+    // ------------------------------------------------------------------ Dreams: menu de interaccion
+
+    private static Map<String, Button> mcaButtons;
+
+    /** Los botones originales de MCA, para saber si una orden esta permitida (por ejemplo "comerciar"). */
+    private static Map<String, Button> mcaButtons() {
+        if (mcaButtons == null) {
+            mcaButtons = new HashMap<>();
+            for (String key : List.of("main", "interact", "work", "professions", "locations")) {
+                MCAScreens.getInstance().getScreen(key).ifPresent(list -> {
+                    for (Button b : list) {
+                        mcaButtons.putIfAbsent(b.identifier(), b);
+                    }
+                });
+            }
+        }
+        return mcaButtons;
+    }
+
+    private int panelX() {
+        return width - 196;
+    }
+
+    @Override
+    public void setLayout(String guiKey) {
+        clearChildren();
+        if (inGiftMode) {
+            return;
+        }
+        int px = panelX();
+        int py = 10;
+
+        // pestanas
+        int tw = 36;
+        for (int i = 0; i < net.mca.client.gui.dreams.DreamsActions.TABS.size(); i++) {
+            var t = net.mca.client.gui.dreams.DreamsActions.TABS.get(i);
+            boolean selected = t.id().equals(tab);
+            addDrawableChild(new net.mca.client.gui.dreams.VnButton(px + 4 + i * (tw + 1), py + 4, tw, 20,
+                    Text.literal(t.icon()), selected, Text.translatable(t.label()), b -> {
+                tab = t.id();
+                setLayout("main");
+            }));
+        }
+
+        // acciones de la pestana
+        var current = net.mca.client.gui.dreams.DreamsActions.TABS.stream().filter(t -> t.id().equals(tab)).findFirst().orElseThrow();
+        int col = 0;
+        int row = 0;
+        boolean adult = !villager.asEntity().isBaby() && villager.getAgeState() == net.mca.entity.ai.relationship.AgeState.ADULT;
+        for (var a : current.actions()) {
+            if (a.adultOnly() && !adult) {
+                continue;
+            }
+            boolean active = true;
+            if (a.kind() == net.mca.client.gui.dreams.DreamsActions.Kind.COMMAND) {
+                Button original = mcaButtons().get(a.target());
+                if (original != null && !original.isValidForConstraint(getConstraints())) {
+                    if (original.hideOnFail()) {
+                        continue;
+                    }
+                    active = false;
+                }
+            }
+            int bx = px + 4 + col * 94;
+            int by = py + 30 + row * 21;
+            var button = new net.mca.client.gui.dreams.VnButton(bx, by, 92, 19, Text.translatable(a.label()), false, null, b -> runAction(a));
+            button.active = active;
+            addDrawableChild(button);
+            if (++col == 2) {
+                col = 0;
+                row++;
+            }
+        }
+
+        // campo para escribirle
+        chatField = new net.minecraft.client.gui.widget.TextFieldWidget(textRenderer, boxX() + 92, boxY() + BOX_HEIGHT - 19, textWidth(), 14, Text.translatable("gui.dreams.say"));
+        chatField.setMaxLength(200);
+        chatField.setDrawsBackground(false);
+        chatField.setPlaceholder(Text.translatable("gui.dreams.say").formatted(Formatting.ITALIC, Formatting.DARK_GRAY));
+        addDrawableChild(chatField);
+    }
+
+    private void runAction(net.mca.client.gui.dreams.DreamsActions.Action a) {
+        UUID uuid = villager.asEntity().getUuid();
+        switch (a.kind()) {
+            case DIALOGUE -> NetworkHandler.sendToServer(new InteractionDialogueMessage(uuid, "main", a.target()));
+            case COMMAND -> {
+                if (a.target().equals("gui.button.inventory") || a.target().equals("gui.button.trade")) {
+                    NetworkHandler.sendToServer(new InteractionVillagerMessage(a.target(), uuid));
+                } else {
+                    NetworkHandler.sendToServer(new InteractionVillagerMessage(a.target(), uuid));
+                }
+            }
+            case CLIENT -> {
+                switch (a.target()) {
+                    case "say" -> {
+                        setFocused(chatField);
+                        chatField.setFocused(true);
+                    }
+                    case "gift" -> {
+                        inGiftMode = true;
+                        setLayout("main");
+                    }
+                    case "family" -> MinecraftClient.getInstance().setScreen(new FamilyTreeScreen(uuid));
+                    default -> {
+                    }
+                }
+            }
+        }
+    }
+
+    /** Fondo del menu de acciones (a la derecha) y titulo de la pestana. */
+    private void drawActionPanel(DrawContext context) {
+        if (inGiftMode) {
+            Text hint = Text.translatable("gui.dreams.gift_hint");
+            int w = textRenderer.getWidth(hint) + 20;
+            VnStyle.panel(context, width - w - 8, 10, w, 20, VnStyle.PANEL, VnStyle.BORDER_HOVER);
+            context.drawTextWithShadow(textRenderer, hint, width - w + 2, 16, VnStyle.ACCENT);
+            return;
+        }
+        int count = 0;
+        for (var t : net.mca.client.gui.dreams.DreamsActions.TABS) {
+            if (t.id().equals(tab)) {
+                count = t.actions().size();
+            }
+        }
+        int rows = (count + 1) / 2;
+        VnStyle.panel(context, panelX(), 10, 192, 32 + rows * 21, VnStyle.PANEL_SOFT, VnStyle.BORDER);
+    }
+
+    private void sendChat() {
+        String text = chatField.getText().trim();
+        if (text.isEmpty()) {
+            return;
+        }
+        chatField.setText("");
+        playerLine = text;
+        NetworkHandler.sendToServer(new net.mca.network.c2s.DreamsChatMessage(villager.asEntity().getUuid(), text));
     }
 
     @Override
@@ -117,6 +282,7 @@ public class InteractScreen extends AbstractDynamicScreen {
         drawBackdrop(context);
         drawPortrait(context, mouseX, mouseY);
         drawDialogueBox(context, mouseX, mouseY);
+        drawActionPanel(context);
         super.render(context, mouseX, mouseY, tickDelta);
 
         drawIcons(context);
@@ -160,6 +326,19 @@ public class InteractScreen extends AbstractDynamicScreen {
 
     @Override
     public boolean keyPressed(int keyChar, int keyCode, int unknown) {
+        if (chatField != null && chatField.isFocused()) {
+            if (keyChar == GLFW.GLFW_KEY_ENTER || keyChar == GLFW.GLFW_KEY_KP_ENTER) {
+                sendChat();
+                return true;
+            }
+            if (keyChar == GLFW.GLFW_KEY_ESCAPE) {
+                chatField.setFocused(false);
+                setFocused(null);
+                return true;
+            }
+            return chatField.keyPressed(keyChar, keyCode, unknown);
+        }
+
         // Dreams: espacio / enter completan el texto; 1-9 eligen respuesta
         if ((keyChar == GLFW.GLFW_KEY_SPACE || keyChar == GLFW.GLFW_KEY_ENTER) && isTyping()) {
             skipTyping();
@@ -177,7 +356,7 @@ public class InteractScreen extends AbstractDynamicScreen {
         if (keyChar == GLFW.GLFW_KEY_ESCAPE) {
             if (inGiftMode) {
                 inGiftMode = false;
-                setLayout("interact");
+                setLayout("main");
             } else {
                 close();
             }
@@ -462,8 +641,13 @@ public class InteractScreen extends AbstractDynamicScreen {
         int size = Math.max(40, Math.min(90, height / 4));
         int px = boxX() + 34 + (int) ((1.0F - open) * -40);
         int py = boxY() + 18;
-        net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity(context, px, py, size,
-                px - mouseX, py - size * 1.6F - mouseY, living);
+        net.mca.client.dreams.DreamsPoses.guiRender = true;
+        try {
+            net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity(context, px, py, size,
+                    px - mouseX, py - size * 1.6F - mouseY, living);
+        } finally {
+            net.mca.client.dreams.DreamsPoses.guiRender = false;
+        }
     }
 
     private void drawDialogueBox(DrawContext context, int mouseX, int mouseY) {
@@ -483,6 +667,13 @@ public class InteractScreen extends AbstractDynamicScreen {
         int ny = y - 13;
         VnStyle.nameplate(context, nx, ny, nameW, 17, nameColor(), open);
         context.drawTextWithShadow(textRenderer, name, nx + 13, ny + 5, VnStyle.alpha(0xFFFFFFFF, open) | 0x01000000);
+
+        if (playerLine != null) {
+            Text you = Text.translatable("gui.dreams.you", playerLine);
+            int yw = Math.min(textRenderer.getWidth(you) + 16, w - 100);
+            VnStyle.panel(context, x + w - yw - 6, y - 15, yw, 15, 0xE0221A2E, 0x60E2C98F);
+            context.drawTextWithShadow(textRenderer, net.minecraft.util.Language.getInstance().reorder(textRenderer.trimToWidth(you, yw - 12)), x + w - yw + 2, y - 11, VnStyle.TEXT_DIM);
+        }
 
         dialogAnswerHover = null;
         if (dialogQuestionText == null || fullText.isEmpty()) {

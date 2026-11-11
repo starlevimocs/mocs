@@ -147,7 +147,13 @@ public final class DreamsPoses {
      * Antes de dibujar: lleva a la entidad a su lugar en la pareja (sin moverla de verdad) y la gira.
      * Devuelve true si empujo una matriz (hay que sacarla al terminar de dibujar).
      */
+    /** true mientras se dibuja el retrato del aldeano en la interfaz (ahi no hay que correrlo). */
+    public static boolean guiRender;
+
     public static void beforeRender(LivingEntity entity, float tickDelta, MatrixStack matrices) {
+        if (guiRender) {
+            return;
+        }
         Active a = current(entity);
         if (a == null || !a.anchored) {
             return;
@@ -202,9 +208,10 @@ public final class DreamsPoses {
             }
             if (bone.position != null) {
                 float[] p = bone.position.sample(t);
-                part.pivotX += p[0] * w;
+                // x = derecha, y = arriba, z = hacia adelante (el frente del modelo es -Z)
+                part.pivotX -= p[0] * w;
                 part.pivotY -= p[1] * w;
-                part.pivotZ += p[2] * w;
+                part.pivotZ -= p[2] * w;
             }
         }
         if (model instanceof PlayerEntityModel<?> p) {
