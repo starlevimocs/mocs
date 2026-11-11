@@ -33,7 +33,7 @@ public final class StarCamera {
     private static double shotStart;
     private static double shotLen = 8;
     private static int sideSign = 1;
-    private static Shot last;
+    private static Shot lastShot;
 
     private StarCamera() {
     }
@@ -69,8 +69,8 @@ public final class StarCamera {
         Shot pick;
         do {
             pick = pool[RANDOM.nextInt(pool.length)];
-        } while (pick == last && pool.length > 1);
-        last = pick;
+        } while (pick == lastShot && pool.length > 1);
+        lastShot = pick;
         shot = pick;
         member = members.isEmpty() ? 0 : RANDOM.nextInt(members.size());
         sideSign = RANDOM.nextBoolean() ? 1 : -1;
