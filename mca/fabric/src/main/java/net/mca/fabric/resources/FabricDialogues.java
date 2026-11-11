@@ -1,0 +1,12 @@
+package net.mca.fabric.resources;
+
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.mca.resources.Dialogues;
+import net.minecraft.util.Identifier;
+
+public class FabricDialogues extends Dialogues implements IdentifiableResourceReloadListener {
+    @Override
+    public Identifier getFabricId() {
+        return ID;
+    }
+}

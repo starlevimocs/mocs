@@ -1,0 +1,53 @@
+name: Compilar MCA de Dreams
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mca/**'
+      - '.github/workflows/mca.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mca
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Compilar (solo Forge)
+        run: |
+          chmod +x gradlew
+          ./gradlew :forge:build --console=plain --non-interactive --no-daemon
+
+      - name: Renombrar el jar
+        run: |
+          ls -la forge/build/libs
+          cp forge/build/libs/minecraft-comes-alive-7.6.26+1.20.1-dreams.jar ../mca-dreams-forge-1.20.1.jar
+
+      - name: Guardar el jar como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: mca-dreams
+          path: mca-dreams-forge-1.20.1.jar
+          if-no-files-found: error
+
+      - name: Publicar en Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Ultima version
+          files: mca-dreams-forge-1.20.1.jar
+          prerelease: true

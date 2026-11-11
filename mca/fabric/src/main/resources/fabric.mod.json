@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "mca",
+  "version": "${version}",
+  "name": "Minecraft Comes Alive",
+  "description": "No more squidward-villagers! Interact with male and female human villagers and raise a family.",
+  "authors": [
+    "Luke100000",
+    "S0llace",
+    "CDAGaming",
+    "ffrannny",
+    "jahx_senpoopie",
+    "WildBamaBoy",
+    "SheWolfDeadly"
+  ],
+  "contact": {
+    "sources": "https://github.com/Luke100000/minecraft-comes-alive",
+    "issues": "https://github.com/Luke100000/minecraft-comes-alive/issues"
+  },
+  "license": "GPL-3.0-only",
+  "icon": "mca.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.mca.fabric.MCAFabric"
+    ],
+    "client": [
+      "net.mca.fabric.MCAFabricClient"
+    ],
+    "fabric-datagen": [
+      "net.mca.fabric.datagen.CribDatagen"
+    ]
+  },
+  "mixins": [
+    "mca.mixin.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.12",
+    "minecraft": ">=1.19.3",
+    "java": ">=17",
+    "fabric-api-base": ">=0.1.0",
+    "fabric-registry-sync-v0": ">=0.1.0",
+    "architectury": ">=7.0.66"
+  }
+}

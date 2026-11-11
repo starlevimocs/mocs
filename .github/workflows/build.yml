@@ -3,6 +3,9 @@ name: Compilar mods
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'mca/**'
+      - '.github/workflows/mca.yml'
   workflow_dispatch:
 
 permissions:
