@@ -1,0 +1,47 @@
+{
+  "answers": [
+    {
+      "name": "",
+      "results": [
+        {
+          "baseChance": 2,
+          "actions": {
+            "next": "talk.ask.origin"
+          }
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "next": "talk.ask.travel"
+          }
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "next": "talk.ask.food"
+          }
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "next": "talk.ask.dream"
+          }
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.ask.love"
+          },
+          "conditions": [
+            {
+              "chance": 3,
+              "hearts_min": 25
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auto": true,
+  "silent": true
+}

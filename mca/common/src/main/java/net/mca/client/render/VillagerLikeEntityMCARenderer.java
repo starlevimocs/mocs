@@ -28,7 +28,35 @@ import java.util.Map;
 public class VillagerLikeEntityMCARenderer<T extends MobEntity & VillagerLike<T>> extends BipedEntityRenderer<T, VillagerEntityModelMCA<T>> {
     public VillagerLikeEntityMCARenderer(EntityRendererFactory.Context ctx, VillagerEntityModelMCA<T> model) {
         super(ctx, model, 0.5F);
-        addFeature(new ArmorFeatureRenderer<>(this, createArmorModel(0.3f), createArmorModel(0.55f), ctx.getModelManager()));
+        addFeature(new ArmorFeatureRenderer<>(this, createArmorModel(ctx, false, 0.3f), createArmorModel(ctx, true, 0.55f), ctx.getModelManager()));
+    }
+
+    /**
+     * Dreams: la armadura sale de las capas de armadura del jugador, asi EMF les pone el modelo 3D de los
+     * paquetes de armaduras (Just 3D Armors y el port de 1.21) igual que al jugador. Si EMF la cambio, la
+     * pieza extra de MCA para el pecho no se dibuja (la textura 3D no tiene ese pedazo).
+     */
+    private VillagerEntityBaseModelMCA<T> createArmorModel(EntityRendererFactory.Context ctx, boolean outer, float modelSize) {
+        if (Config.getInstance().useAnimatedPlayerModel) {
+            try {
+                net.minecraft.client.model.ModelPart root = ctx.getPart(outer
+                        ? net.minecraft.client.render.entity.model.EntityModelLayers.PLAYER_OUTER_ARMOR
+                        : net.minecraft.client.render.entity.model.EntityModelLayers.PLAYER_INNER_ARMOR);
+                boolean emf = root.getClass().getName().startsWith("traben.");
+                net.minecraft.client.model.ModelPart extras;
+                if (emf) {
+                    net.minecraft.client.model.ModelData data = new net.minecraft.client.model.ModelData();
+                    data.getRoot().addChild("breasts", net.minecraft.client.model.ModelPartBuilder.create(), net.minecraft.client.model.ModelTransform.NONE);
+                    extras = TexturedModelData.of(data, 64, 32).createModel();
+                } else {
+                    extras = TexturedModelData.of(VillagerEntityBaseModelMCA.getModelData(new Dilation(modelSize)), 64, 32).createModel();
+                }
+                return new VillagerEntityBaseModelMCA<>(root, extras);
+            } catch (Exception e) {
+                net.mca.MCA.LOGGER.warn("Dreams: no se pudo usar la armadura del jugador para los aldeanos", e);
+            }
+        }
+        return createArmorModel(modelSize);
     }
 
     private VillagerEntityBaseModelMCA<T> createArmorModel(float modelSize) {

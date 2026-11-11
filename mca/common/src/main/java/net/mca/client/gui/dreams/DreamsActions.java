@@ -40,13 +40,14 @@ public final class DreamsActions {
 
     public static final List<Tab> TABS = List.of(
             new Tab("talk", "❦", List.of(
-                    ui("say"), d("chat"), d("joke"), d("story"), d("rumors"),
+                    d("talk"), ui("say"), d("chat"), d("joke"), d("story"), d("rumors"),
                     d("rock_paper_scissor"), d("apologize"))),
             new Tab("gestures", "✋", List.of(
-                    d("hug"), d("high_five"), d("dance_fun"), ui("gift"))),
+                    c("release", "dreams_release"), d("hug"), d("high_five"), d("hold_hand"), d("carry_back"),
+                    d("dance_fun"), ui("gift"))),
             new Tab("romance", "❤", List.of(
-                    dAdult("flirt"), dAdult("kiss"), dAdult("dance_slow"), ui("gift"),
-                    dAdult("procreate"), dAdult("adopt"))),
+                    c("release", "dreams_release"), dAdult("flirt"), dAdult("kiss"), d("hold_hand"),
+                    dAdult("carry_arms"), dAdult("dance_slow"), ui("gift"), dAdult("procreate"), dAdult("adopt"))),
             new Tab("orders", "⚑", List.of(
                     c("follow", "follow"), c("stay", "stay"), c("move", "move"), c("ridehorse", "ridehorse"),
                     c("sethome", "sethome"), c("gohome", "gohome"), c("setworkplace", "setworkplace"),

@@ -1,0 +1,319 @@
+{
+  "answers": [
+    {
+      "name": "more",
+      "results": [
+        {
+          "baseChance": 6,
+          "actions": {
+            "positive": 1,
+            "next": "talk.about.family.more"
+          }
+        },
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.ask"
+          }
+        }
+      ]
+    },
+    {
+      "name": "relate",
+      "results": [
+        {
+          "baseChance": 5,
+          "actions": {
+            "positive": 1,
+            "next": "talk.react.relate"
+          }
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "next": "talk.ask"
+          }
+        }
+      ]
+    },
+    {
+      "name": "tease",
+      "results": [
+        {
+          "baseChance": 3,
+          "actions": {
+            "positive": 1,
+            "gesture": "laugh",
+            "next": "talk.react.laugh"
+          },
+          "conditions": [
+            {
+              "chance": 5,
+              "personality": "witty"
+            },
+            {
+              "chance": 3,
+              "personality": "peppy"
+            },
+            {
+              "chance": 4,
+              "personality": "odd"
+            },
+            {
+              "chance": 3,
+              "personality": "confident"
+            }
+          ]
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "negative": 1,
+            "gesture": "sad",
+            "next": "talk.react.hurt"
+          },
+          "conditions": [
+            {
+              "chance": 6,
+              "personality": "sensitive"
+            },
+            {
+              "chance": 4,
+              "personality": "shy"
+            },
+            {
+              "chance": 4,
+              "personality": "grumpy"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "how",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.how"
+          }
+        }
+      ]
+    },
+    {
+      "name": "about",
+      "results": [
+        {
+          "baseChance": 6,
+          "actions": {
+            "next": "talk.about"
+          }
+        },
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.ask"
+          }
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.tired"
+          },
+          "applyFatigue": true
+        }
+      ]
+    },
+    {
+      "name": "work",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.work"
+          }
+        }
+      ],
+      "constraints": "adult"
+    },
+    {
+      "name": "village",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.village"
+          }
+        }
+      ]
+    },
+    {
+      "name": "day",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.day"
+          }
+        }
+      ]
+    },
+    {
+      "name": "compliment",
+      "results": [
+        {
+          "baseChance": 5,
+          "actions": {
+            "positive": 2,
+            "gesture": "shy",
+            "next": "talk.compliment.happy"
+          },
+          "conditions": [
+            {
+              "chance": 3,
+              "hearts_min": 10
+            },
+            {
+              "chance": 6,
+              "personality": "flirty"
+            },
+            {
+              "chance": 3,
+              "personality": "peppy"
+            },
+            {
+              "chance": 2,
+              "personality": "friendly"
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "positive": 2,
+            "gesture": "flirty",
+            "next": "talk.compliment.flirty"
+          },
+          "conditions": [
+            {
+              "chance": 8,
+              "personality": "flirty"
+            },
+            {
+              "chance": 4,
+              "personality": "confident"
+            }
+          ]
+        },
+        {
+          "baseChance": 1,
+          "actions": {
+            "gesture": "think",
+            "next": "talk.compliment.suspicious"
+          },
+          "conditions": [
+            {
+              "chance": 4,
+              "personality": "odd"
+            },
+            {
+              "chance": 4,
+              "personality": "greedy"
+            },
+            {
+              "chance": 5,
+              "personality": "grumpy"
+            },
+            {
+              "chance": 3,
+              "hearts_max": 5
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "negative": 1,
+            "gesture": "no",
+            "next": "talk.compliment.again"
+          },
+          "applyFatigue": true
+        }
+      ]
+    },
+    {
+      "name": "romance",
+      "results": [
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.love.spouse"
+          },
+          "conditions": [
+            {
+              "chance": 100,
+              "constraints": "spouse"
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.love.lover"
+          },
+          "conditions": [
+            {
+              "chance": 100,
+              "constraints": "engaged"
+            },
+            {
+              "chance": 100,
+              "constraints": "promised"
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.love.crush"
+          },
+          "conditions": [
+            {
+              "chance": 10,
+              "hearts_min": 40
+            }
+          ]
+        },
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.love.friend"
+          }
+        }
+      ],
+      "constraints": "adult,!kids,!parent"
+    },
+    {
+      "name": "joke",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "joke"
+          }
+        }
+      ]
+    },
+    {
+      "name": "bye",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.bye"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -70,6 +70,12 @@ public class VillagerCommandHandler extends EntityCommandHandler<VillagerEntityM
         }
 
         switch (command) {
+            case "dreams_release" -> {
+                if (entity.dreamsAttach != 0) {
+                    net.mca.server.dreams.DreamsAttach.release(entity);
+                }
+                return true;
+            }
             case "pick_up" -> {
                 if (player.getPassengerList().size() >= 3) {
                     player.getPassengerList().get(0).stopRiding();
@@ -135,6 +141,8 @@ public class VillagerCommandHandler extends EntityCommandHandler<VillagerEntityM
                     entity.sendChatMessage(player, "interaction.procreate.fail.lowhearts");
                 } else if (entity.getRelationships().mayProcreateAgain(player.getWorld().getTime())) {
                     entity.getRelationships().startProcreating(player.getWorld().getTime());
+                    // Dreams: abrazo, beso y fundido a negro
+                    net.mca.server.dreams.DreamsAnimations.play(entity, player, "procreate");
                 } else {
                     entity.sendChatMessage(player, "interaction.procreate.fail.toosoon");
                 }

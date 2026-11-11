@@ -119,6 +119,9 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
     private final UpdatableInventory inventory = new UpdatableInventory(27);
     // Dreams: ropa elegida por el jugador (cabeza, pecho, piernas, pies, mano principal, mano secundaria)
     private final net.minecraft.inventory.SimpleInventory dreamsOutfit = new net.minecraft.inventory.SimpleInventory(6);
+
+    /** Dreams: 0 = suelto, 1 = de la mano, 2 = en brazos, 3 = en la espalda (ver DreamsAttach). No se guarda. */
+    public int dreamsAttach;
     private final VillagerDimensions.Mutable dimensions = new VillagerDimensions.Mutable(AgeState.UNASSIGNED);
 
     private GameProfile gameProfile;
@@ -780,6 +783,7 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
     public void tick() {
         if (!getWorld().isClient) {
             net.mca.server.dreams.DreamsAnimations.tick(this);
+            net.mca.server.dreams.DreamsAttach.serverTick(this);
         }
         super.tick();
 
@@ -791,8 +795,8 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
         }
 
         if (getWorld().isClient) {
-            // procreate anim
-            if (relations.isProcreating()) {
+            // procreate anim (Dreams: en vez de girar la cabeza, la animacion de pareja de DreamsPoses)
+            if (relations.isProcreating() && !net.mca.server.dreams.DreamsAnimations.CLIENT_ANIMATING.test(this)) {
                 headYaw += 50;
             }
 
@@ -884,6 +888,23 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
             bodyYaw = pathAwareEntity.bodyYaw;
         }
 
+        if (vehicle instanceof PlayerEntity player && dreamsAttach != 0) {
+            // Dreams: de la mano / en brazos / en la espalda
+            net.mca.server.dreams.DreamsAttach.position(this, player);
+            if (isClient() && dreamsAttach == net.mca.server.dreams.DreamsAttach.HAND) {
+                // camina al mismo paso que el jugador
+                net.mca.mixin.MixinDreamsLimbAnimator from = (net.mca.mixin.MixinDreamsLimbAnimator) (Object) player.limbAnimator;
+                net.mca.mixin.MixinDreamsLimbAnimator to = (net.mca.mixin.MixinDreamsLimbAnimator) (Object) this.limbAnimator;
+                to.dreams$setPrevSpeed(from.dreams$getPrevSpeed());
+                to.dreams$setSpeed(from.dreams$getSpeed());
+                to.dreams$setPos(from.dreams$getPos());
+            }
+            if (vehicle.isSneaking()) {
+                stopRiding();
+            }
+            return;
+        }
+
         if (vehicle instanceof PlayerEntity player) {
             List<Entity> passengers = vehicle.getPassengerList();
 
@@ -923,7 +944,7 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
     public EntityDimensions getDimensions(EntityPose pose) {
 
         Entity vehicle = getVehicle();
-        if (vehicle instanceof PlayerEntity) {
+        if (vehicle instanceof PlayerEntity && dreamsAttach == 0) {
             return SLEEPING_DIMENSIONS;
         }
 
@@ -1288,6 +1309,15 @@ public class VillagerEntityMCA extends VillagerEntity implements VillagerLike<Vi
                 equipStack(slots[i], stack);
             }
         }
+    }
+
+    @Override
+    protected void mobTick() {
+        // Dreams: mientras esta enganchado al jugador o en una animacion de pareja no decide nada por su cuenta
+        if (dreamsAttach != 0 || net.mca.server.dreams.DreamsAnimations.isLocked(this)) {
+            return;
+        }
+        super.mobTick();
     }
 
     @Override

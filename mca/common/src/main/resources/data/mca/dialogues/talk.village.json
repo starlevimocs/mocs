@@ -1,0 +1,71 @@
+{
+  "answers": [
+    {
+      "name": "",
+      "results": [
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "talk.village.gossip"
+          },
+          "conditions": [
+            {
+              "chance": 3,
+              "personality": "peppy"
+            },
+            {
+              "chance": 2,
+              "personality": "flirty"
+            }
+          ]
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "next": "talk.village.love"
+          },
+          "conditions": [
+            {
+              "chance": 3,
+              "personality": "flirty"
+            }
+          ]
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "next": "talk.village.trouble"
+          },
+          "conditions": [
+            {
+              "chance": 3,
+              "personality": "gloomy"
+            },
+            {
+              "chance": 3,
+              "personality": "grumpy"
+            }
+          ]
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "next": "talk.village.event"
+          },
+          "conditions": [
+            {
+              "chance": 2,
+              "personality": "friendly"
+            },
+            {
+              "chance": 2,
+              "personality": "athletic"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auto": true,
+  "silent": true
+}

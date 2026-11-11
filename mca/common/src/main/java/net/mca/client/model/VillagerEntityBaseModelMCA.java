@@ -68,6 +68,10 @@ public class VillagerEntityBaseModelMCA<T extends LivingEntity & VillagerLike<T>
     public void animateModel(T entity, float limbAngle, float limbDistance, float tickDelta) {
         super.animateModel(entity, limbDistance, limbAngle, tickDelta);
         riding |= entity.getAgeState() == AgeState.BABY;
+        // Dreams: de la mano / en brazos / en la espalda va "montado" en el jugador, pero no sentado
+        if (entity instanceof net.mca.entity.VillagerEntityMCA v && v.dreamsAttach != 0) {
+            riding = false;
+        }
     }
 
     @Override

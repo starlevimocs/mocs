@@ -25,6 +25,8 @@ public final class VillageLife {
     private static final Random RANDOM = Random.create();
     private static final Map<UUID, Long> GREETED = new HashMap<>();
     private static final Map<UUID, Long> NEXT_CHAT = new HashMap<>();
+    private static final Map<UUID, Long> NEXT_IDLE = new HashMap<>();
+    private static final Map<UUID, Long> NEXT_WORK = new HashMap<>();
     private static final String[] GREETINGS = {"¡Hola!", "¡Buenas!", "¡Hola, qué tal!", "¡Hey!", "¡Buen día!"};
     private static final String[] CHATTER = {
             "¿Viste lo que pasó en el mercado?", "Hoy hace un lindo día.", "Ja, ¡no te puedo creer!",
@@ -70,6 +72,24 @@ public final class VillageLife {
                 String hi = GREETINGS[RANDOM.nextInt(GREETINGS.length)];
                 VillagerVoice.speakAmbient(v, Text.literal(hi), hi);
                 continue;
+            }
+
+            // trabajando: hachazos, cosechar, picar, pescar
+            if (!isMoving(v) && !DreamsPoses.isAnimating(v) && workTick(v, now)) {
+                continue;
+            }
+
+            // quieto sin hacer nada: gestos segun su animo, su personalidad y la hora
+            if (clock % 20 == 0 && !isMoving(v) && !DreamsPoses.isAnimating(v)
+                    && !net.mca.client.gui.InteractScreen.isTalkingTo(v.getUuid())) {
+                Long next = NEXT_IDLE.get(v.getUuid());
+                if (next == null) {
+                    NEXT_IDLE.put(v.getUuid(), now + 100 + RANDOM.nextInt(500));
+                } else if (now >= next) {
+                    NEXT_IDLE.put(v.getUuid(), now + 20L * (14 + RANDOM.nextInt(30)));
+                    DreamsPoses.startSolo(v, pickIdle(v));
+                    continue;
+                }
             }
 
             // charlas entre aldeanos
@@ -120,6 +140,85 @@ public final class VillageLife {
     }
 
     private static boolean isMoving(Entity e) {
+        if (e instanceof net.minecraft.entity.LivingEntity l && l.limbAnimator.getSpeed() > 0.12F) {
+            return true;
+        }
         return e.getVelocity().horizontalLengthSquared() > 0.0009;
+    }
+
+    private static boolean workTick(VillagerEntityMCA v, long now) {
+        net.mca.entity.ai.Chore job = v.getVillagerBrain().getCurrentJob();
+        if (job == null || job == net.mca.entity.ai.Chore.NONE) {
+            return false;
+        }
+        Long next = NEXT_WORK.get(v.getUuid());
+        if (next != null && now < next) {
+            return false;
+        }
+        String anim = switch (job) {
+            case CHOP -> near(v, 2, st -> st.isIn(net.minecraft.registry.tag.BlockTags.LOGS)) ? "chop" : null;
+            case HARVEST -> near(v, 2, st -> st.getBlock() instanceof net.minecraft.block.CropBlock) ? "harvest" : null;
+            case PROSPECT -> near(v, 2, st -> st.isIn(net.minecraft.registry.tag.BlockTags.BASE_STONE_OVERWORLD)) ? "mine" : null;
+            case FISH -> near(v, 4, st -> st.getFluidState().isIn(net.minecraft.registry.tag.FluidTags.WATER)) ? "fish" : null;
+            default -> null;
+        };
+        NEXT_WORK.put(v.getUuid(), now + 20 + RANDOM.nextInt(30));
+        if (anim == null) {
+            return false;
+        }
+        DreamsPoses.startSolo(v, anim);
+        return true;
+    }
+
+    private static boolean near(VillagerEntityMCA v, int r, java.util.function.Predicate<net.minecraft.block.BlockState> test) {
+        net.minecraft.util.math.BlockPos base = v.getBlockPos();
+        for (net.minecraft.util.math.BlockPos p : net.minecraft.util.math.BlockPos.iterate(base.add(-r, -1, -r), base.add(r, 2, r))) {
+            if (test.test(v.getWorld().getBlockState(p))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Elige un gesto de ocio: el animo pesa mas, la personalidad le da el toque propio. */
+    private static String pickIdle(VillagerEntityMCA v) {
+        List<String> pool = new ArrayList<>();
+        String mood = v.getVillagerBrain().getMood().getName();
+        switch (mood) {
+            case "depressed", "sad" -> add(pool, 4, "sad", "scratch_head");
+            case "unhappy" -> add(pool, 2, "angry", "scratch_head", "look_around", "sad");
+            case "happy", "overjoyed" -> add(pool, 2, "hum", "stretch", "cheer", "clap", "look_around");
+            default -> add(pool, 2, "look_around", "stretch", "scratch_head", "hips");
+        }
+        switch (v.getVillagerBrain().getPersonality()) {
+            case LAZY -> add(pool, 3, "yawn");
+            case PEPPY -> add(pool, 2, "cheer", "hum", "clap");
+            case SHY -> add(pool, 2, "shy", "look_around");
+            case GRUMPY -> add(pool, 3, "angry", "hips");
+            case ATHLETIC -> add(pool, 3, "stretch");
+            case FLIRTY -> add(pool, 3, "flirty");
+            case WITTY -> add(pool, 2, "laugh");
+            case GLOOMY -> add(pool, 3, "sad");
+            case CONFIDENT -> add(pool, 3, "hips");
+            case ODD -> add(pool, 2, "look_around", "no", "surprised");
+            case GREEDY -> add(pool, 3, "rub_hands");
+            case FRIENDLY -> add(pool, 2, "wave", "hum");
+            case SENSITIVE -> add(pool, 2, "sad", "shy");
+            default -> {
+            }
+        }
+        long time = v.getWorld().getTimeOfDay() % 24000L;
+        if (time > 12500 || time < 500) {
+            add(pool, 3, "yawn");
+        }
+        return pool.get(RANDOM.nextInt(pool.size()));
+    }
+
+    private static void add(List<String> pool, int weight, String... names) {
+        for (String n : names) {
+            for (int i = 0; i < weight; i++) {
+                pool.add(n);
+            }
+        }
     }
 }

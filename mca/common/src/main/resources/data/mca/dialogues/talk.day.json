@@ -1,0 +1,54 @@
+{
+  "answers": [
+    {
+      "name": "",
+      "results": [
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.day.morning"
+          },
+          "conditions": [
+            {
+              "chance": 10,
+              "time_max": 5000
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.day.afternoon"
+          },
+          "conditions": [
+            {
+              "chance": 10,
+              "time_min": 5000,
+              "time_max": 11500
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.day.night"
+          },
+          "conditions": [
+            {
+              "chance": 10,
+              "time_min": 11500
+            }
+          ]
+        },
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.day.afternoon"
+          }
+        }
+      ]
+    }
+  ],
+  "auto": true,
+  "silent": true
+}

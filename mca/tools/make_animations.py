@@ -251,3 +251,219 @@ save("talk", talk(1))
 save("talk2", talk(7))
 save("nod", {"length": 0.9, "blend_in": 0.1, "blend_out": 0.2,
              "participants": {"self": {"bones": {"head": {"rotation": kf([(0, [0, 0, 0]), (0.2, [18, 0, 0]), (0.4, [-4, 0, 0]), (0.6, [14, 0, 0]), (0.9, [0, 0, 0])])}}}}})
+
+
+# ================================================================== Dreams 2: procrear, gestos y vida diaria
+
+# ------------------------------------------------------------------ procrear: se acercan, abrazo, beso largo y
+# fundido a negro (lo dibuja DreamsPoses.renderOverlay entre 3.6 s y 7 s). Nada explicito: es "la escena se corta".
+D = 5.5
+L = 7.0
+def tender(who):
+    me = who == "player"
+    base_z = 0 if me else D
+    yaw = 0 if me else 180
+    side = 1 if me else -1
+    sway = [(0.9 + i * 0.45, [4, 4 * math.sin(i * 1.3), 2 * math.sin(i * 0.9)]) for i in range(9)]
+    return {"bones": {
+        "root": {"position": kf([(0, [0, 0, base_z + (-2.5 if me else 2.5)]), (0.8, [0, 0, base_z]),
+                                 (6.3, [0, 0, base_z]), (L, [0, 0, base_z + (-2.5 if me else 2.5)])]),
+                 "rotation": kf([(0, [0, yaw, 0])])},
+        "body": {"rotation": kf([(0, [0, 0, 0])] + sway + [(L, [0, 0, 0])])},
+        # primero de la cintura, despues un brazo sube a la nuca / mejilla
+        "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.8, [-50, -35, 6]), (2.4, [-55, -38, 6]),
+                                      (3.0, [-120, -30, 10]), (6.3, [-118, -30, 10]), (L, [0, 0, 0])])},
+        "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.8, [-50, 35, -6]), (6.3, [-52, 35, -6]), (L, [0, 0, 0])])},
+        # se miran, y en el beso la cabeza se ladea
+        "head": {"rotation": kf([(0, [0, 0, 0]), (0.8, [8, 0, 0]), (2.4, [6, 0, 4 * side]),
+                                 (3.0, [6, -12 * side, -16 * side]), (6.3, [6, -12 * side, -16 * side]), (L, [0, 0, 0])]),
+                 "position": kf([(0, [0, 0, 0]), (2.8, [0, 0, 0]), (3.1, [0, 0, 0.7]), (6.3, [0, 0, 0.7]), (L, [0, 0, 0])])},
+        # el pie de atras se levanta en el beso
+        "left_leg": {"rotation": kf([(0, [0, 0, 0]), (3.0, [0, 0, 0]), (3.4, [0 if me else 40, 0, 0]),
+                                     (6.3, [0 if me else 40, 0, 0]), (L, [0, 0, 0])])},
+    }}
+save("procreate", {"length": L, "blend_in": 0.5, "blend_out": 0.6, "distance": D, "camera": "third_person",
+                   "participants": {"player": tender("player"), "villager": tender("villager")}})
+
+
+def solo(name, L, bones, blend_in=0.25, blend_out=0.35, loop=False):
+    data = {"length": L, "blend_in": blend_in, "blend_out": blend_out, "participants": {"self": {"bones": bones}}}
+    if loop:
+        data["loop"] = True
+    save(name, data)
+
+
+def held(pose, t_in, t_out, L):
+    return kf([(0, [0, 0, 0]), (t_in, pose), (t_out, pose), (L, [0, 0, 0])])
+
+
+# ------------------------------------------------------------------ gestos de charla
+# reirse: se echa para atras, sacude los hombros, una mano a la panza
+lt = [(0, [0, 0, 0])] + [(0.25 + i * 0.16, [-6 + (3 if i % 2 else -3), 0, 0]) for i in range(9)] + [(1.9, [0, 0, 0])]
+solo("laugh", 1.9, {
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.25, [-22, 0, 4])] + [(0.4 + i * 0.16, [-22 + (6 if i % 2 else 0), 0, 4]) for i in range(8)] + [(1.9, [0, 0, 0])])},
+    "body": {"rotation": kf(lt)},
+    "right_arm": {"rotation": held([-40, 25, -12], 0.3, 1.5, 1.9)},
+    "left_arm": {"rotation": held([-10, 0, -16], 0.3, 1.5, 1.9)},
+})
+# encogerse de hombros
+solo("shrug", 1.3, {
+    "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.3, [-25, 30, 35]), (0.9, [-25, 30, 35]), (1.3, [0, 0, 0])]),
+                  "position": kf([(0, [0, 0, 0]), (0.3, [0, 1.2, 0]), (0.9, [0, 1.2, 0]), (1.3, [0, 0, 0])])},
+    "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.3, [-25, -30, -35]), (0.9, [-25, -30, -35]), (1.3, [0, 0, 0])]),
+                 "position": kf([(0, [0, 0, 0]), (0.3, [0, 1.2, 0]), (0.9, [0, 1.2, 0]), (1.3, [0, 0, 0])])},
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.3, [0, 0, 12]), (0.9, [0, 0, 12]), (1.3, [0, 0, 0])])},
+})
+# pensar: mano al menton, mira para arriba
+solo("think", 2.4, {
+    "right_arm": {"rotation": held([-125, -40, 0], 0.4, 2.0, 2.4)},
+    "left_arm": {"rotation": held([-35, 40, -10], 0.4, 2.0, 2.4)},
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.4, [-14, 14, 6]), (1.2, [-16, -10, 4]), (2.0, [-14, 12, 6]), (2.4, [0, 0, 0])])},
+})
+# vergüenza: tapa la cara con las manos y mira al costado
+solo("shy", 2.0, {
+    "right_arm": {"rotation": held([-140, -28, 0], 0.35, 1.6, 2.0)},
+    "left_arm": {"rotation": held([-140, 28, 0], 0.35, 1.6, 2.0)},
+    "head": {"rotation": held([22, -18, -6], 0.35, 1.6, 2.0)},
+    "body": {"rotation": held([6, -10, 0], 0.35, 1.6, 2.0)},
+    "right_leg": {"rotation": held([0, 0, -6], 0.35, 1.6, 2.0)},
+})
+# enojo: brazos cruzados, da vuelta la cara
+solo("angry", 2.4, {
+    "right_arm": {"rotation": held([-70, -45, 0], 0.3, 2.0, 2.4)},
+    "left_arm": {"rotation": held([-62, 45, 0], 0.3, 2.0, 2.4)},
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.3, [-8, 25, 0]), (2.0, [-8, 30, 0]), (2.4, [0, 0, 0])])},
+})
+# alegria: salta con los brazos arriba
+solo("cheer", 1.4, {
+    "root": {"position": kf([(0, [0, 0, 0]), (0.25, [0, 0, 0]), (0.45, [0, 4, 0]), (0.65, [0, 0, 0]), (0.85, [0, 2.5, 0]), (1.05, [0, 0, 0])])},
+    "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.3, [-170, 0, 25]), (0.6, [-160, 0, 35]), (0.9, [-170, 0, 20]), (1.4, [0, 0, 0])])},
+    "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.3, [-170, 0, -25]), (0.6, [-160, 0, -35]), (0.9, [-170, 0, -20]), (1.4, [0, 0, 0])])},
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.3, [-14, 0, 0]), (1.0, [-10, 0, 0]), (1.4, [0, 0, 0])])},
+})
+# tristeza: cabeza gacha, hombros caidos, un suspiro
+solo("sad", 3.0, {
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [32, 0, 0]), (1.6, [28, 6, 0]), (2.5, [32, -4, 0]), (3.0, [0, 0, 0])])},
+    "body": {"rotation": held([10, 0, 0], 0.6, 2.5, 3.0)},
+    "right_arm": {"rotation": held([-8, 0, -2], 0.6, 2.5, 3.0), "position": held([0, -0.8, 0], 0.6, 2.5, 3.0)},
+    "left_arm": {"rotation": held([-8, 0, 2], 0.6, 2.5, 3.0), "position": held([0, -0.8, 0], 0.6, 2.5, 3.0)},
+})
+# reverencia
+solo("bow", 1.6, {
+    "body": {"rotation": held([30, 0, 0], 0.4, 1.1, 1.6)},
+    "head": {"rotation": held([25, 0, 0], 0.4, 1.1, 1.6), "position": held([0, -1.5, -3.5], 0.4, 1.1, 1.6)},
+    "right_arm": {"rotation": held([-60, -40, 0], 0.4, 1.1, 1.6), "position": held([0, -1, -2.5], 0.4, 1.1, 1.6)},
+    "left_arm": {"rotation": held([30, 0, -5], 0.4, 1.1, 1.6), "position": held([0, -1, -2.5], 0.4, 1.1, 1.6)},
+})
+# aplaudir
+cl = [(0, [0, 0, 0])]
+cr = [(0, [0, 0, 0])]
+for i in range(7):
+    t = 0.25 + i * 0.17
+    open_ = i % 2 == 0
+    cr.append((t, [-70, -20 if open_ else -42, 0]))
+    cl.append((t, [-70, 20 if open_ else 42, 0]))
+cr.append((1.7, [0, 0, 0]))
+cl.append((1.7, [0, 0, 0]))
+solo("clap", 1.7, {"right_arm": {"rotation": kf(cr)}, "left_arm": {"rotation": kf(cl)},
+                   "head": {"rotation": held([-6, 0, 0], 0.25, 1.4, 1.7)}})
+# coqueta: se acomoda el pelo detras de la oreja y ladea la cabeza
+solo("flirty", 2.0, {
+    "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.4, [-150, -20, 20]), (0.9, [-140, -30, 25]), (1.3, [-20, 0, 6]), (2.0, [0, 0, 0])])},
+    "head": {"rotation": held([6, -10, -14], 0.4, 1.6, 2.0)},
+    "body": {"rotation": held([0, -8, 0], 0.4, 1.6, 2.0)},
+})
+# no: niega con la cabeza
+solo("no", 1.0, {"head": {"rotation": kf([(0, [0, 0, 0]), (0.15, [0, 22, 0]), (0.35, [0, -22, 0]), (0.55, [0, 18, 0]), (0.75, [0, -12, 0]), (1.0, [0, 0, 0])])}})
+# sorpresa: un pasito atras, manos arriba
+solo("surprised", 1.4, {
+    "root": {"position": kf([(0, [0, 0, 0]), (0.2, [0, 0, -1.5]), (1.0, [0, 0, -1.5]), (1.4, [0, 0, 0])])},
+    "head": {"rotation": held([-12, 0, 0], 0.15, 1.0, 1.4)},
+    "right_arm": {"rotation": held([-95, -10, 25], 0.15, 1.0, 1.4)},
+    "left_arm": {"rotation": held([-95, 10, -25], 0.15, 1.0, 1.4)},
+})
+
+# ------------------------------------------------------------------ vida diaria (VillageLife los elige)
+# estirarse
+solo("stretch", 2.6, {
+    "right_arm": {"rotation": held([-178, 0, 12], 0.7, 1.9, 2.6)},
+    "left_arm": {"rotation": held([-178, 0, -12], 0.7, 1.9, 2.6)},
+    "body": {"rotation": held([-6, 0, 0], 0.7, 1.9, 2.6)},
+    "head": {"rotation": held([-20, 0, 0], 0.7, 1.9, 2.6)},
+}, blend_in=0.5, blend_out=0.6)
+# bostezar: mano a la boca
+solo("yawn", 2.2, {
+    "right_arm": {"rotation": held([-120, -38, 0], 0.5, 1.7, 2.2)},
+    "head": {"rotation": kf([(0, [0, 0, 0]), (0.5, [-22, 0, 0]), (1.4, [-26, 0, 4]), (1.8, [4, 0, 0]), (2.2, [0, 0, 0])])},
+    "left_arm": {"rotation": held([-5, 0, -25], 0.6, 1.6, 2.2)},
+})
+# rascarse la cabeza
+sc = [(0, [0, 0, 0]), (0.35, [-160, -40, 0])]
+for i in range(5):
+    sc.append((0.5 + i * 0.15, [-165 if i % 2 else -155, -40, 0]))
+sc.append((1.8, [0, 0, 0]))
+solo("scratch_head", 1.8, {"right_arm": {"rotation": kf(sc)}, "head": {"rotation": held([8, 0, 12], 0.35, 1.4, 1.8)}})
+# mirar alrededor
+solo("look_around", 3.0, {"head": {"rotation": kf([(0, [0, 0, 0]), (0.6, [0, 55, 0]), (1.2, [0, 55, 0]), (1.9, [-5, -55, 0]), (2.5, [-5, -55, 0]), (3.0, [0, 0, 0])])},
+                          "body": {"rotation": kf([(0, [0, 0, 0]), (0.6, [0, 10, 0]), (1.9, [0, -10, 0]), (3.0, [0, 0, 0])])}},
+     blend_in=0.4, blend_out=0.4)
+# manos en la cintura
+solo("hips", 3.0, {
+    "right_arm": {"rotation": held([12, 0, 38], 0.4, 2.6, 3.0)},
+    "left_arm": {"rotation": held([12, 0, -38], 0.4, 2.6, 3.0)},
+    "head": {"rotation": held([-6, 0, 0], 0.4, 2.6, 3.0)},
+})
+# frotarse las manos (codicioso)
+rb_r = [(0, [0, 0, 0])]
+rb_l = [(0, [0, 0, 0])]
+for i in range(8):
+    t = 0.3 + i * 0.16
+    rb_r.append((t, [-60 + (6 if i % 2 else -6), -38, 0]))
+    rb_l.append((t, [-60 + (-6 if i % 2 else 6), 38, 0]))
+rb_r.append((1.9, [0, 0, 0]))
+rb_l.append((1.9, [0, 0, 0]))
+solo("rub_hands", 1.9, {"right_arm": {"rotation": kf(rb_r)}, "left_arm": {"rotation": kf(rb_l)},
+                        "head": {"rotation": held([10, 0, 0], 0.3, 1.5, 1.9)}})
+# tararear y balancearse (contento)
+hm = [(0, [0, 0, 0])] + [(0.4 + i * 0.45, [0, 0, 6 if i % 2 else -6]) for i in range(6)] + [(3.2, [0, 0, 0])]
+solo("hum", 3.2, {"head": {"rotation": kf(hm)}, "body": {"rotation": kf([(t, [0, 0, v[2] * 0.4]) for t, v in hm])}},
+     blend_in=0.4, blend_out=0.4)
+
+# ------------------------------------------------------------------ trabajos (mientras hacen la tarea)
+# talar: hachazos con los dos brazos
+ch_r, ch_l, ch_b = [(0, [0, 0, 0])], [(0, [0, 0, 0])], [(0, [0, 0, 0])]
+for i in range(3):
+    t0 = 0.2 + i * 0.8
+    ch_r += [(t0 + 0.3, [-170, -10, 0]), (t0 + 0.55, [-55, -20, 0]), (t0 + 0.75, [-60, -20, 0])]
+    ch_l += [(t0 + 0.3, [-165, 15, 0]), (t0 + 0.55, [-55, 25, 0]), (t0 + 0.75, [-60, 25, 0])]
+    ch_b += [(t0 + 0.3, [-6, 12, 0]), (t0 + 0.55, [12, -6, 0]), (t0 + 0.75, [10, -6, 0])]
+for lst in (ch_r, ch_l, ch_b):
+    lst.append((2.8, [0, 0, 0]))
+solo("chop", 2.8, {"right_arm": {"interpolation": "linear", "rotation": kf(ch_r)},
+                   "left_arm": {"interpolation": "linear", "rotation": kf(ch_l)},
+                   "body": {"rotation": kf(ch_b)}})
+# cosechar: se agacha y junta con las manos
+solo("harvest", 2.6, {
+    "body": {"rotation": held([38, 0, 0], 0.5, 2.1, 2.6)},
+    "head": {"rotation": held([25, 0, 0], 0.5, 2.1, 2.6), "position": held([0, -2, -5], 0.5, 2.1, 2.6)},
+    "right_arm": {"rotation": kf([(0, [0, 0, 0]), (0.5, [-55, 0, 0]), (0.9, [-40, -10, 0]), (1.3, [-58, 5, 0]), (1.7, [-42, -10, 0]), (2.1, [-55, 0, 0]), (2.6, [0, 0, 0])]),
+                  "position": held([0, -1.5, -4.5], 0.5, 2.1, 2.6)},
+    "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.5, [-50, 0, 0]), (0.9, [-60, 10, 0]), (1.3, [-42, -5, 0]), (1.7, [-58, 10, 0]), (2.1, [-50, 0, 0]), (2.6, [0, 0, 0])]),
+                 "position": held([0, -1.5, -4.5], 0.5, 2.1, 2.6)},
+    "right_leg": {"rotation": held([-20, 0, 0], 0.5, 2.1, 2.6)},
+    "left_leg": {"rotation": held([10, 0, 0], 0.5, 2.1, 2.6)},
+}, blend_in=0.45, blend_out=0.45)
+# picar piedra: golpes con un brazo, mas cortos
+mi = [(0, [0, 0, 0])]
+for i in range(4):
+    t0 = 0.15 + i * 0.6
+    mi += [(t0 + 0.2, [-150, -5, 0]), (t0 + 0.4, [-45, -10, 0])]
+mi.append((2.8, [0, 0, 0]))
+solo("mine", 2.8, {"right_arm": {"interpolation": "linear", "rotation": kf(mi)},
+                   "body": {"rotation": held([8, 0, 0], 0.3, 2.4, 2.8)},
+                   "head": {"rotation": held([12, 0, 0], 0.3, 2.4, 2.8)}})
+# pescar: caña al frente y de vez en cuando recoge
+fi = [(0, [0, 0, 0]), (0.5, [-50, -10, 0]), (2.0, [-48, -10, 0]), (2.2, [-80, -10, 0]), (2.6, [-52, -10, 0]), (3.6, [-50, -10, 0]), (4.0, [0, 0, 0])]
+solo("fish", 4.0, {"right_arm": {"rotation": kf(fi)},
+                   "left_arm": {"rotation": kf([(0, [0, 0, 0]), (0.5, [-40, 30, 0]), (2.0, [-40, 30, 0]), (2.2, [-55, 35, 0]), (2.6, [-42, 30, 0]), (4.0, [0, 0, 0])])},
+                   "head": {"rotation": held([14, 0, 0], 0.5, 3.6, 4.0)}}, blend_in=0.4, blend_out=0.4)

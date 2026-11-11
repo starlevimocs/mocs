@@ -180,8 +180,14 @@ public class InteractScreen extends AbstractDynamicScreen {
         int col = 0;
         int row = 0;
         boolean adult = !villager.asEntity().isBaby() && villager.getAgeState() == net.mca.entity.ai.relationship.AgeState.ADULT;
+        boolean attached = villager.asEntity() instanceof net.mca.entity.VillagerEntityMCA av && av.dreamsAttach != 0
+                && av.getVehicle() == MinecraftClient.getInstance().player;
         for (var a : current.actions()) {
             if (a.adultOnly() && !adult) {
+                continue;
+            }
+            // enganchados: solo "Soltar"; sueltos: no hay nada que soltar
+            if (a.id().equals("release") != attached && (a.id().equals("release") || a.id().startsWith("hold_") || a.id().startsWith("carry_"))) {
                 continue;
             }
             boolean active = true;
@@ -634,19 +640,40 @@ public class InteractScreen extends AbstractDynamicScreen {
         context.fillGradient(0, 0, width, 40, VnStyle.alpha(0x70080610, open), 0x00000000);
     }
 
-    /** El aldeano parado a la izquierda, detras de la caja, como el "sprite" del personaje. */
+    /**
+     * El aldeano parado a la izquierda, detras de la caja, como el "sprite" del personaje.
+     * Solo la cabeza sigue al cursor: el cuerpo queda derecho (el inventario de Minecraft inclina todo el cuerpo,
+     * y en grande parecia que se hundia en la pantalla).
+     */
     private void drawPortrait(DrawContext context, int mouseX, int mouseY) {
         net.minecraft.entity.LivingEntity living = villager.asEntity();
         float open = openProgress();
-        int size = Math.max(40, Math.min(90, height / 4));
-        int px = boxX() + 34 + (int) ((1.0F - open) * -40);
-        int py = boxY() + 18;
+        int size = Math.max(48, Math.min(125, (int) (height / 2.7F)));
+        int px = Math.max((int) (size * 0.42F) + 4, boxX() + 6) + (int) ((1.0F - open) * -40);
+        int py = boxY() + 22;
+
+        float dx = (float) Math.atan((px - mouseX) / 40.0F);
+        float dy = (float) Math.atan((py - size * 1.6F - mouseY) / 40.0F);
+        float bodyYaw = living.bodyYaw, yaw = living.getYaw(), pitch = living.getPitch();
+        float prevHeadYaw = living.prevHeadYaw, headYaw = living.headYaw, prevBody = living.prevBodyYaw;
+        living.bodyYaw = 180.0F + dx * 12.0F;
+        living.prevBodyYaw = living.bodyYaw;
+        living.setYaw(180.0F + dx * 40.0F);
+        living.setPitch(-dy * 22.0F);
+        living.headYaw = living.getYaw();
+        living.prevHeadYaw = living.getYaw();
         net.mca.client.dreams.DreamsPoses.guiRender = true;
         try {
-            net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity(context, px, py, size,
-                    px - mouseX, py - size * 1.6F - mouseY, living);
+            org.joml.Quaternionf flip = new org.joml.Quaternionf().rotateZ((float) Math.PI);
+            net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity(context, px, py, size, flip, null, living);
         } finally {
             net.mca.client.dreams.DreamsPoses.guiRender = false;
+            living.bodyYaw = bodyYaw;
+            living.prevBodyYaw = prevBody;
+            living.setYaw(yaw);
+            living.setPitch(pitch);
+            living.prevHeadYaw = prevHeadYaw;
+            living.headYaw = headYaw;
         }
     }
 

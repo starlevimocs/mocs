@@ -61,7 +61,7 @@ public class BreedableRelationship extends Relationship<VillagerEntityMCA> {
     }
 
     public void startProcreating(long time) {
-        procreateTick = 60;
+        procreateTick = 140; // Dreams: lo que dura la animacion
         entity.setTrackedValue(IS_PROCREATING, true);
         entity.setTrackedValue(LAST_PROCREATION, (int) time);
     }

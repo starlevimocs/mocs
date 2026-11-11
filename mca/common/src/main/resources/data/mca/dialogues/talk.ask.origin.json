@@ -1,0 +1,53 @@
+{
+  "answers": [
+    {
+      "name": "far",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 1,
+            "gesture": "surprised",
+            "next": "talk.ask.react.wow"
+          }
+        }
+      ]
+    },
+    {
+      "name": "here",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 1,
+            "next": "talk.ask.react.neighbor"
+          }
+        }
+      ]
+    },
+    {
+      "name": "secret",
+      "results": [
+        {
+          "baseChance": 3,
+          "actions": {
+            "gesture": "think",
+            "next": "talk.ask.react.mystery"
+          }
+        },
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.react.annoyed"
+          },
+          "conditions": [
+            {
+              "chance": 4,
+              "personality": "grumpy"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

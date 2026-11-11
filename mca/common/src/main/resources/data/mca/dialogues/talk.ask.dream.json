@@ -1,0 +1,42 @@
+{
+  "answers": [
+    {
+      "name": "hero",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 2,
+            "gesture": "clap",
+            "next": "talk.ask.react.hero"
+          }
+        }
+      ]
+    },
+    {
+      "name": "builder",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 1,
+            "next": "talk.ask.react.wow"
+          }
+        }
+      ]
+    },
+    {
+      "name": "family",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 2,
+            "gesture": "shy",
+            "next": "talk.ask.react.sweet"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "answers": [
+    {
+      "name": "",
+      "results": [
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "talk.about.family"
+          }
+        },
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "talk.about.dream"
+          }
+        },
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "talk.about.fear"
+          }
+        },
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "talk.about.hobby"
+          }
+        },
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "talk.about.childhood"
+          }
+        },
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "talk.about.food"
+          }
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.about.secret"
+          },
+          "conditions": [
+            {
+              "chance": 6,
+              "hearts_min": 50
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auto": true,
+  "silent": true
+}

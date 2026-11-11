@@ -1,0 +1,41 @@
+{
+  "answers": [
+    {
+      "name": "bread",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 1,
+            "gesture": "clap",
+            "next": "talk.ask.react.same"
+          }
+        }
+      ]
+    },
+    {
+      "name": "cake",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 1,
+            "gesture": "cheer",
+            "next": "talk.ask.react.same"
+          }
+        }
+      ]
+    },
+    {
+      "name": "fish",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.ask.react.ok"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -32,6 +32,10 @@ public class DreamsAnimationMessage implements Message {
 
     @Override
     public void receive() {
-        net.mca.client.dreams.DreamsPoses.startPair(type, villagerId, playerId, ax, ay, az, ayaw);
+        if (playerId < 0) {
+            net.mca.client.dreams.DreamsPoses.startSoloById(villagerId, type);
+        } else {
+            net.mca.client.dreams.DreamsPoses.startPair(type, villagerId, playerId, ax, ay, az, ayaw);
+        }
     }
 }

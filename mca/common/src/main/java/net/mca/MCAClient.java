@@ -45,7 +45,8 @@ public class MCAClient {
             return pack.getName().contains("MCAVoices");
         });
         String language = MinecraftClient.getInstance().options.language;
-        return !isTTSPackActive && (language.equals("en_us") || language.equals("ru_ru")) && !Config.getInstance().enableOnlineTTS;
+        // Dreams: tambien en espanol (los paquetes de personalidad ya tienen sus textos)
+        return !isTTSPackActive && (language.equals("en_us") || language.equals("ru_ru") || language.startsWith("es_")) && !Config.getInstance().enableOnlineTTS;
     }
 
     public static boolean useGeneticsRenderer(UUID uuid) {

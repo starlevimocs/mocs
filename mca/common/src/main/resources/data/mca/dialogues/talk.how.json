@@ -1,0 +1,57 @@
+{
+  "answers": [
+    {
+      "name": "",
+      "results": [
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.how.good"
+          },
+          "conditions": [
+            {
+              "chance": 10,
+              "mood": "happy"
+            },
+            {
+              "chance": 10,
+              "mood": "overjoyed"
+            },
+            {
+              "chance": 4,
+              "mood": "fine"
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.how.bad"
+          },
+          "conditions": [
+            {
+              "chance": 10,
+              "mood": "sad"
+            },
+            {
+              "chance": 10,
+              "mood": "depressed"
+            },
+            {
+              "chance": 8,
+              "mood": "unhappy"
+            }
+          ]
+        },
+        {
+          "baseChance": 3,
+          "actions": {
+            "next": "talk.how.ok"
+          }
+        }
+      ]
+    }
+  ],
+  "auto": true,
+  "silent": true
+}

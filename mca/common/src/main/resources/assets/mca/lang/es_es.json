@@ -998,5 +998,10 @@
   "gui.dreams.action.pick_up": "Alzar",
   "tag.block.mca.anvils": "Yunques",
   "trait.asexual": "Asexual",
-  "traitDescription.asexual": "No siente atracción por ningún género."
+  "traitDescription.asexual": "No siente atracción por ningún género.",
+  "gui.dreams.action.talk": "Conversar",
+  "gui.dreams.action.hold_hand": "Ir de la mano",
+  "gui.dreams.action.carry_back": "Llevar en la espalda",
+  "gui.dreams.action.carry_arms": "Alzar en brazos",
+  "gui.dreams.action.release": "Soltar"
 }

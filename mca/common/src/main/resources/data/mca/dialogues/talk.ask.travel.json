@@ -1,0 +1,42 @@
+{
+  "answers": [
+    {
+      "name": "yes",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 1,
+            "gesture": "surprised",
+            "next": "talk.ask.react.wow"
+          }
+        }
+      ]
+    },
+    {
+      "name": "little",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 1,
+            "next": "talk.ask.react.adventure"
+          }
+        }
+      ]
+    },
+    {
+      "name": "home",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "positive": 1,
+            "gesture": "hum",
+            "next": "talk.ask.react.neighbor"
+          }
+        }
+      ]
+    }
+  ]
+}

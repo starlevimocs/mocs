@@ -29,13 +29,14 @@
     "MixinVillagerEntityInvoker",
     "MixinVillagerProfession",
     "MixinZombieEntity",
-    "MixinZombieVillagerEntity"
+    "MixinZombieVillagerEntity",
+    "MixinDreamsLimbAnimator"
   ],
   "client": [
     "client.MixinArmorFeatureRenderer", "client.MixinGameRenderer", "client.MixinHeldItemFeatureRenderer",
     "client.MixinLivingEntityRenderer", "client.MixinPlayerEntityClient",
     "client.MixinPlayerEntityRenderer", "client.MixinSoundLoader", "client.MixinTranslationStorage",
-    "client.MixinDreamsPlayerModel", "client.MixinDreamsLivingEntityRenderer", "client.MixinDreamsKeyboardInput"
+    "client.MixinDreamsPlayerModel", "client.MixinDreamsLivingEntityRenderer", "client.MixinDreamsKeyboardInput", "client.MixinDreamsInGameHud"
   ],
   "injectors": {
     "defaultRequire": 1

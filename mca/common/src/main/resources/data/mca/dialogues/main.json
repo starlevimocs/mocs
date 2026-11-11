@@ -2,6 +2,16 @@
   "silent": true,
   "answers": [
     {
+      "name": "talk",
+      "results": [
+        {
+          "actions": {
+            "next": "talk"
+          }
+        }
+      ]
+    },
+    {
       "name": "rock_paper_scissor",
       "constraints": "!adult",
       "results": [
@@ -259,6 +269,37 @@
           }
         }
       ]
+    },
+    {
+      "name": "hold_hand",
+      "results": [
+        {
+          "actions": {
+            "next": "hold_hand"
+          }
+        }
+      ]
+    },
+    {
+      "name": "carry_back",
+      "results": [
+        {
+          "actions": {
+            "next": "carry_back"
+          }
+        }
+      ]
+    },
+    {
+      "name": "carry_arms",
+      "results": [
+        {
+          "actions": {
+            "next": "carry_arms"
+          }
+        }
+      ],
+      "constraints": "!kids,adult"
     }
   ]
 }

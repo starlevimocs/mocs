@@ -85,6 +85,16 @@ public class Actions {
                 net.mca.server.dreams.DreamsAnimations.play(villager, player, type));
     }
 
+    static {
+        // Dreams: gesto del aldeano al contestar ("laugh", "shrug", "think", "shy", "angry", "cheer", "sad"...)
+        register("gesture", JsonHelper::asString, type -> (villager, player) ->
+                net.mca.server.dreams.DreamsAnimations.gesture(villager, type));
+
+        // Dreams: ir de la mano / en brazos / en la espalda ("hand", "arms", "back")
+        register("attach", JsonHelper::asString, mode -> (villager, player) ->
+                net.mca.server.dreams.DreamsAttach.toggle(villager, player, net.mca.server.dreams.DreamsAttach.parse(mode)));
+    }
+
     public static <T> void register(String name, BiFunction<JsonElement, String, T> jsonParser, Factory<T> predicate) {
         TYPES.put(name, json -> predicate.parse(jsonParser.apply(json, name)));
     }

@@ -30,7 +30,8 @@ public final class DreamsAnimations {
             "slap", new Spec(12, 20),
             "high_five", new Spec(13, 32),
             "dance_slow", new Spec(6, 202),
-            "dance_fun", new Spec(15, 160)
+            "dance_fun", new Spec(15, 160),
+            "procreate", new Spec(5.5F, 140)
     );
 
     private record Lock(double x, double y, double z, float yaw, long until) {
@@ -81,8 +82,7 @@ public final class DreamsAnimations {
         villager.setHeadYaw(villagerYaw);
         villager.setBodyYaw(villagerYaw);
         LOCKS.put(villager, new Lock(vx, vy, vz, villagerYaw, world.getTime() + spec.ticks()));
-        // sin IA mientras dura: no camina, no se da vuelta, no se va
-        villager.setAiDisabled(true);
+        // mientras dura no decide nada (VillagerEntityMCA.mobTick lo saltea), no camina, no se va
         // el jugador queda en el ancla
         if (player instanceof ServerPlayerEntity sp) {
             sp.networkHandler.requestTeleport(anchor.x, anchor.y, anchor.z, yaw, sp.getPitch());
@@ -96,6 +96,19 @@ public final class DreamsAnimations {
         }
     }
 
+    /** Gesto de una sola persona (reir, encogerse de hombros, pensar...) que ven todos los que estan cerca. */
+    public static void gesture(VillagerEntityMCA villager, String type) {
+        if (!(villager.getWorld() instanceof ServerWorld world)) {
+            return;
+        }
+        DreamsAnimationMessage msg = new DreamsAnimationMessage(type.toLowerCase(Locale.ROOT), villager.getId(), -1, 0, 0, 0, 0);
+        for (ServerPlayerEntity p : world.getPlayers()) {
+            if (p.squaredDistanceTo(villager) < 48 * 48) {
+                NetworkHandler.sendToPlayer(msg, p);
+            }
+        }
+    }
+
     /** Cada tick del aldeano: mientras dura la animacion se queda en su lugar. */
     public static void tick(VillagerEntityMCA villager) {
         Lock lock = LOCKS.get(villager);
@@ -104,7 +117,6 @@ public final class DreamsAnimations {
         }
         if (villager.getWorld().getTime() > lock.until() || villager.isRemoved()) {
             LOCKS.remove(villager);
-            villager.setAiDisabled(false);
             return;
         }
         villager.getNavigation().stop();

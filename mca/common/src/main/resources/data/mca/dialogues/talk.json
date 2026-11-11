@@ -1,0 +1,93 @@
+{
+  "answers": [
+    {
+      "name": "",
+      "results": [
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.open.spouse"
+          },
+          "conditions": [
+            {
+              "chance": 100,
+              "constraints": "spouse"
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.open.lover"
+          },
+          "conditions": [
+            {
+              "chance": 100,
+              "constraints": "engaged"
+            },
+            {
+              "chance": 100,
+              "constraints": "promised"
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.open.cold"
+          },
+          "conditions": [
+            {
+              "chance": 60,
+              "hearts_max": -10
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.open.happy"
+          },
+          "conditions": [
+            {
+              "chance": 8,
+              "mood": "happy"
+            },
+            {
+              "chance": 12,
+              "mood": "overjoyed"
+            }
+          ]
+        },
+        {
+          "baseChance": 0,
+          "actions": {
+            "next": "talk.open.sad"
+          },
+          "conditions": [
+            {
+              "chance": 8,
+              "mood": "sad"
+            },
+            {
+              "chance": 12,
+              "mood": "depressed"
+            },
+            {
+              "chance": 4,
+              "mood": "unhappy"
+            }
+          ]
+        },
+        {
+          "baseChance": 4,
+          "actions": {
+            "next": "talk.open.neutral"
+          }
+        }
+      ]
+    }
+  ],
+  "auto": true,
+  "silent": true
+}

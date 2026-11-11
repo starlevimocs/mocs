@@ -1,0 +1,64 @@
+{
+  "answers": [
+    {
+      "name": "you",
+      "results": [
+        {
+          "baseChance": 3,
+          "actions": {
+            "positive": 3,
+            "gesture": "shy",
+            "next": "talk.ask.react.blush"
+          },
+          "conditions": [
+            {
+              "chance": 8,
+              "hearts_min": 50
+            },
+            {
+              "chance": 4,
+              "personality": "flirty"
+            }
+          ]
+        },
+        {
+          "baseChance": 2,
+          "actions": {
+            "gesture": "surprised",
+            "next": "talk.ask.react.awkward"
+          },
+          "conditions": [
+            {
+              "chance": 5,
+              "hearts_max": 30
+            }
+          ]
+        }
+      ],
+      "constraints": "adult"
+    },
+    {
+      "name": "no",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "next": "talk.ask.react.ok"
+          }
+        }
+      ]
+    },
+    {
+      "name": "secret",
+      "results": [
+        {
+          "baseChance": 1,
+          "actions": {
+            "gesture": "think",
+            "next": "talk.ask.react.mystery"
+          }
+        }
+      ]
+    }
+  ]
+}

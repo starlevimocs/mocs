@@ -56,5 +56,6 @@ public interface MessagesMCA {
         NetworkHandler.registerMessage(CivilRegistryResponse.class);
         NetworkHandler.registerMessage(net.mca.network.s2c.DreamsAnimationMessage.class);
         NetworkHandler.registerMessage(net.mca.network.c2s.DreamsChatMessage.class);
+        NetworkHandler.registerMessage(net.mca.network.s2c.DreamsAttachMessage.class);
     }
 }
