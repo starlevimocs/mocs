@@ -6,7 +6,8 @@
   "client": [
     "ModelPartCopyScaleMixin",
     "StarPackPortPaxiMixin",
-    "HumanoidModelSetupAnimMixin"
+    "HumanoidModelSetupAnimMixin",
+    "HumanoidArmorLayerModelMixin"
   ],
   "injectors": {
     "defaultRequire": 0

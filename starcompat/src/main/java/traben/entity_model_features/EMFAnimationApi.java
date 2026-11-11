@@ -11,6 +11,10 @@ public interface EMFAnimationApi {
         throw new UnsupportedOperationException("stub");
     }
 
+    static boolean isModelCustomizedByEMF(net.minecraft.client.model.EntityModel<?> model) {
+        throw new UnsupportedOperationException("stub");
+    }
+
     abstract class EMFAnimationHook {
         public boolean onAnimationStart(AnimationContext context, boolean isCancelledByHook) {
             return true;
