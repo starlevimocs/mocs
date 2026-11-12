@@ -8,29 +8,21 @@
       "t": 0,
       "pos": [
         0,
-        1.7,
-        -24
+        1.8,
+        -6
       ],
-      "look": [
-        0,
-        60,
-        0
-      ],
-      "fov": 70
+      "follow": "brote",
+      "fov": 72
     },
     {
       "t": 6.4,
       "pos": [
         0,
-        2.2,
-        -20
+        2.4,
+        -6
       ],
-      "look": [
-        0,
-        118,
-        0
-      ],
-      "fov": 62
+      "follow": "brote",
+      "fov": 36
     },
     {
       "t": 6.6,
@@ -185,6 +177,24 @@
       "out": 2.6
     },
     {
+      "t": 0,
+      "type": "effect",
+      "effect": "glow",
+      "pos": [
+        0,
+        0,
+        0
+      ],
+      "id": "brote",
+      "tree": true,
+      "fall": 125,
+      "size": 16,
+      "duration": 7.2,
+      "color": "#b8ffd0",
+      "fade_in": 4,
+      "fade_out": 0.8
+    },
+    {
       "t": 1.0,
       "type": "sound",
       "sound": "minecraft:block.conduit.activate",
@@ -192,49 +202,23 @@
       "pitch": 0.6
     },
     {
-      "t": 1.0,
-      "type": "effect",
-      "effect": "sky_rings",
-      "pos": [
-        0,
-        135,
-        0
-      ],
-      "size": 150,
-      "duration": 31,
-      "grow": 5,
-      "color": "#d6f5e4",
-      "fade_in": 2.5,
-      "fade_out": 4
+      "t": 1.2,
+      "type": "tree",
+      "color": "#b8ffd0",
+      "duration": 7
     },
     {
       "t": 3.0,
       "type": "sound",
-      "sound": "minecraft:item.trident.thunder",
+      "sound": "minecraft:block.beacon.power_select",
       "volume": 0.9,
       "pitch": 0.6
     },
     {
-      "t": 3.0,
+      "t": 5.6,
       "type": "shake",
-      "strength": 0.6,
-      "duration": 2.2
-    },
-    {
-      "t": 3.0,
-      "type": "effect",
-      "effect": "sky_crack",
-      "pos": [
-        0,
-        128,
-        0
-      ],
-      "size": 70,
-      "grow": 3.5,
-      "duration": 27,
-      "color": "#b8ffd0",
-      "fade_out": 3,
-      "seed": 11
+      "strength": 0.35,
+      "duration": 1.4
     },
     {
       "t": 6.3,
@@ -243,6 +227,12 @@
       "in": 0.1,
       "hold": 0.1,
       "out": 1.1
+    },
+    {
+      "t": 6.3,
+      "type": "tree",
+      "color": "#ffffff",
+      "duration": 3
     },
     {
       "t": 6.4,
@@ -261,6 +251,7 @@
         0
       ],
       "id": "hoja",
+      "tree": true,
       "size": 24,
       "fall": 125,
       "fall_time": 26.0,

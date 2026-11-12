@@ -10,6 +10,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.phys.Vec3;
@@ -79,6 +81,10 @@ public final class Trees {
                 continue;
             }
             float a = none || p.isSpectator() ? 0 : aura(p);
+            // descansar agachado junto al arbol cura despacio
+            if (a > 0.5F && p.isShiftKeyDown() && server.getTickCount() % 40 == 0 && p.getHealth() < p.getMaxHealth()) {
+                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 0, true, false, true));
+            }
             AttributeModifier current = gravity.getModifier(GRAVITY);
             // de 0.08 (normal) hasta 0.022 pegado al arbol
             double want = -0.058 * Math.round(a * 8) / 8.0;

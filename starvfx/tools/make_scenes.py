@@ -86,7 +86,27 @@ hoja = {
         ev(47.2, 'fade', color='#000000', **{'in': 0.5, 'hold': 0.5, 'out': 1.4}),
     ],
 }
-save('hoja', hoja)
+save('hoja_cielo', hoja)
+
+# La misma escena, pero la hoja se desprende del Arbol Madre mas cercano (si no hay ninguno, cae del cielo).
+# Se dispara parado donde la hoja tiene que posarse.
+import copy
+hoja_arbol = copy.deepcopy(hoja)
+hoja_arbol['camera'][0] = dict(t=0, pos=[0, 1.8, -6], follow='brote', fov=72)
+hoja_arbol['camera'][1] = dict(t=6.4, pos=[0, 2.4, -6], follow='brote', fov=36)
+hoja_arbol['events'] = [e for e in hoja_arbol['events']
+                        if e.get('effect') not in ('sky_rings', 'sky_crack', 'leaf') and e.get('sound') != 'minecraft:item.trident.thunder'
+                        and not (e['type'] == 'shake' and e['t'] == 3.0)]
+hoja_arbol['events'] += [
+    # un brote de luz crece en una rama alta; el arbol entero se enciende y lo suelta
+    fx(0, 'glow', [0, 0, 0], id='brote', tree=True, fall=125, size=16, duration=7.2, color=GREEN, fade_in=4, fade_out=0.8),
+    ev(1.2, 'tree', color=GREEN, duration=7),
+    snd(3.0, 'block.beacon.power_select', 0.9, 0.6),
+    ev(5.6, 'shake', strength=0.35, duration=1.4),
+    ev(6.3, 'tree', color='#ffffff', duration=3),
+    fx(FALL_START, 'leaf', [0, 0, 0], id='hoja', tree=True, size=24, fall=125, fall_time=FALL_TIME, hold=2.5, dissolve=3.5, color=GREEN),
+]
+save('hoja', hoja_arbol)
 
 # ------------------------------------------------------------------ una grieta se abre en el cielo
 save('grieta_cielo', {

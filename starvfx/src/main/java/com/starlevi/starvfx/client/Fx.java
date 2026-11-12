@@ -336,6 +336,9 @@ public final class Fx {
         private static final int NS = 30, NW = 10;
         float fall, fallTime, hold, dissolve, length;
         boolean landed;
+        /** si cae desde el Arbol Madre: cuanto esta corrida al empezar respecto de donde se posa */
+        double fromX, fromZ;
+        boolean fromTree;
 
         @Override
         void init() {
@@ -348,6 +351,20 @@ public final class Fx {
             if (color == 0xFFFFFF) {
                 color = 0x9DFFB4;
             }
+            if (Geo.bool(p, "tree", false)) {
+                Vec3 start = Tree.leafStart(pos);
+                if (start != null && start.y - pos.y > 8) {
+                    fromTree = true;
+                    fromX = start.x - pos.x;
+                    fromZ = start.z - pos.z;
+                    fall = (float) (start.y - pos.y);
+                }
+            }
+        }
+
+        /** Corrimiento horizontal: sale de la rama y va derivando hasta quedar sobre el lugar donde se posa. */
+        private double drift(float u) {
+            return Math.pow(1 - u, 1.7);
         }
 
         float u(float age) {
@@ -358,14 +375,18 @@ public final class Fx {
         public Vec3 position(float age) {
             float u = u(age);
             double y = fall * Math.pow(1 - u, 1.35);
-            double amp = length * 0.85 * Math.pow(1 - u, 0.8);
+            // recien desprendida casi no se hamaca; el vaiven crece mientras baja y se calma al llegar
+            double amp = length * 0.85 * Math.pow(1 - u, 0.8) * (fromTree ? Math.min(1, u * 7) : 1);
             double ph = u * Math.PI * 2 * 4.5;
-            return pos.add(Math.sin(ph) * amp, y + 0.12, Math.sin(ph * 0.5 + 1.0) * amp * 0.55 * (1 - u));
+            double d = drift(u);
+            return pos.add(fromX * d + Math.sin(ph) * amp, y + 0.12, fromZ * d + Math.sin(ph * 0.5 + 1.0) * amp * 0.55 * (1 - u));
         }
 
         @Override
         public Vec3 center(float age) {
-            return pos.add(0, fall * Math.pow(1 - u(age), 1.35) + 0.12, 0);
+            float u = u(age);
+            double d = drift(u);
+            return pos.add(fromX * d, fall * Math.pow(1 - u, 1.35) + 0.12, fromZ * d);
         }
 
         @Override
@@ -927,6 +948,11 @@ public final class Fx {
         void init() {
             if (size <= 0) {
                 size = 4;
+            }
+            // "tree": el brillo se pone en la rama del Arbol Madre de donde va a salir la hoja
+            if (Geo.bool(p, "tree", false)) {
+                Vec3 start = Tree.leafStart(pos);
+                pos = start != null ? start : pos.add(0, Geo.num(p, "fall", 120), 0);
             }
         }
 

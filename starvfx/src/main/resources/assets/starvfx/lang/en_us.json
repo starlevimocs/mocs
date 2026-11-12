@@ -29,5 +29,21 @@
   "message.starvfx.zone_added": "Fixed camera zone \"%s\" created. The camera stays where you stand",
   "message.starvfx.zone_list": "Zones: %s",
   "message.starvfx.zone_missing": "There is no zone called \"%s\" in this dimension",
-  "message.starvfx.zone_removed": "Zone \"%s\" removed"
+  "message.starvfx.zone_removed": "Zone \"%s\" removed",
+  "starvfx.tree.whisper.dying.0": "...do not go far...",
+  "starvfx.tree.whisper.dying.1": "...I can barely hear you now...",
+  "starvfx.tree.whisper.dying.2": "...I am... still...",
+  "starvfx.tree.whisper.strong.0": "I felt you coming. Come closer.",
+  "starvfx.tree.whisper.strong.1": "Nothing can hurt you here.",
+  "starvfx.tree.whisper.strong.2": "You came back. My branches knew before I did.",
+  "starvfx.tree.whisper.strong.3": "Rest a moment by my side.",
+  "starvfx.tree.whisper.strong.4": "Tell me what you saw out there.",
+  "starvfx.tree.whisper.strong.5": "How good to hear footsteps again.",
+  "starvfx.tree.whisper.strong.6": "My children always find their way back.",
+  "starvfx.tree.whisper.strong.7": "Kneel by my roots if you are hurt.",
+  "starvfx.tree.whisper.weak.0": "Forgive me... it is hard to shine today.",
+  "starvfx.tree.whisper.weak.1": "Do not fear for my branches. I am still here.",
+  "starvfx.tree.whisper.weak.2": "It is cold in my roots.",
+  "starvfx.tree.whisper.weak.3": "Stay a while. It hurts less with you near.",
+  "starvfx.tree.whisper.weak.4": "Did you find him? No... do not tell me yet."
 }

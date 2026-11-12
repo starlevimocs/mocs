@@ -39,6 +39,34 @@ T.update({
     'tree_list': ('Árboles: %s', 'Trees: %s'),
 })
 EXTRA = {'gui.starvfx.tree_talk': ('Clic derecho: hablar con el Árbol Madre', 'Right click: speak with the Mother Tree')}
+# lo que el arbol dice en voz baja cuando alguien llega (segun cuanta vida le queda)
+WHISPERS = {
+    'strong': [
+        ('Te sentí llegar. Acércate.', 'I felt you coming. Come closer.'),
+        ('Aquí nada puede hacerte daño.', 'Nothing can hurt you here.'),
+        ('Volviste. Mis ramas lo supieron antes que yo.', 'You came back. My branches knew before I did.'),
+        ('Descansa un momento a mi lado.', 'Rest a moment by my side.'),
+        ('Cuéntame qué viste allá afuera.', 'Tell me what you saw out there.'),
+        ('Qué bueno oír pasos otra vez.', 'How good to hear footsteps again.'),
+        ('Mis hijos siempre encuentran el camino de vuelta.', 'My children always find their way back.'),
+        ('Agáchate junto a mis raíces si estás herido.', 'Kneel by my roots if you are hurt.'),
+    ],
+    'weak': [
+        ('Perdona... hoy me cuesta brillar.', 'Forgive me... it is hard to shine today.'),
+        ('No te asustes por mis ramas. Todavía estoy aquí.', 'Do not fear for my branches. I am still here.'),
+        ('Hace frío en mis raíces.', 'It is cold in my roots.'),
+        ('Quédate un poco. Contigo cerca duele menos.', 'Stay a while. It hurts less with you near.'),
+        ('¿Lo encontraron? No... no me digas todavía.', 'Did you find him? No... do not tell me yet.'),
+    ],
+    'dying': [
+        ('...no te alejes...', '...do not go far...'),
+        ('...ya casi no los oigo...', '...I can barely hear you now...'),
+        ('...todavía... estoy...', '...I am... still...'),
+    ],
+}
+for group, lines in WHISPERS.items():
+    for i, line in enumerate(lines):
+        EXTRA['starvfx.tree.whisper.%s.%d' % (group, i)] = line
 NEUTRO = {'Usá': 'Usa', 'elegí': 'elige', 'estás parado': 'estás parado'}
 os.makedirs(OUT, exist_ok=True)
 for lang, idx, neutral in [('es_ar', 0, False), ('es_uy', 0, False), ('es_mx', 0, True), ('es_es', 0, True), ('es_cl', 0, True),

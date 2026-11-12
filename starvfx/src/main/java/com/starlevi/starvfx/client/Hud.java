@@ -132,10 +132,10 @@ public final class Hud {
                 y += (int) (9 * scale) + 6;
             }
             if (!sub.isEmpty()) {
-                float sa = Mth.clamp(Math.min((t - 0.7F) / 0.8F, (textSeconds - t) / 0.9F), 0, 1);
+                float sa = Mth.clamp(Math.min((t - (text.isEmpty() ? 0 : 0.7F)) / 0.8F, (textSeconds - t) / 0.9F), 0, 1);
                 int salpha = (int) (sa * 255);
                 if (salpha > 4) {
-                    g.drawCenteredString(font, sub, width / 2, y, salpha << 24 | 0xE6E0D0);
+                    g.drawCenteredString(font, sub, width / 2, y, salpha << 24 | (text.isEmpty() ? textColor & 0xFFFFFF : 0xE6E0D0));
                 }
             }
         }

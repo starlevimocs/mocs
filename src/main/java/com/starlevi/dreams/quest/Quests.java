@@ -200,7 +200,7 @@ public final class Quests {
             return "locked";
         }
         JsonObject st = state(player, id, def, false);
-        if (QuestData.flag(st, "done")) {
+        if (QuestData.flag(st, "done") && !repeatReady(def, st)) {
             return "done";
         }
         if (QuestData.flag(st, "active")) {
@@ -214,6 +214,20 @@ public final class Quests {
             }
         }
         return "available";
+    }
+
+    /** Oculta: no se anuncia ni se muestra; sirve de marca ("ya hablo con el arbol") o de favor que se repite. */
+    private static boolean hidden(JsonObject def) {
+        return def.has("hidden") && def.get("hidden").getAsBoolean();
+    }
+
+    /** Una mision con "repeat_minutes" vuelve a estar disponible pasado ese tiempo. */
+    private static boolean repeatReady(JsonObject def, JsonObject st) {
+        int minutes = num(def, "repeat_minutes", 0);
+        if (minutes <= 0 || st == null || !st.has("done_at")) {
+            return false;
+        }
+        return System.currentTimeMillis() - st.get("done_at").getAsLong() >= minutes * 60_000L;
     }
 
     // ================================================================ acciones
@@ -269,8 +283,19 @@ public final class Quests {
         if (def == null || !stateOf(player, id).equals("available")) {
             return false;
         }
-        state(player, id, def, true).addProperty("active", true);
+        JsonObject fresh = state(player, id, def, true);
+        fresh.addProperty("done", false);
+        if (objectives(def).isEmpty()) {
+            // sin objetivos: se cumple en el acto
+            complete(player, id, def);
+            return true;
+        }
+        fresh.addProperty("active", true);
         QuestData.get(player.server).setDirty();
+        if (hidden(def)) {
+            run(player.server, player, def, "on_accept");
+            return true;
+        }
         if (community(def)) {
             for (ServerPlayer p : player.server.getPlayerList().getPlayers()) {
                 tell(p, "quest_community_started", ChatFormatting.AQUA, SoundEvents.AMETHYST_BLOCK_CHIME, title(def, id));
@@ -286,8 +311,11 @@ public final class Quests {
         JsonObject st = state(player, id, def, true);
         st.addProperty("active", false);
         st.addProperty("done", true);
+        st.addProperty("done_at", System.currentTimeMillis());
         QuestData.get(player.server).setDirty();
-        if (community(def)) {
+        if (hidden(def)) {
+            reward(player, def);
+        } else if (community(def)) {
             for (ServerPlayer p : player.server.getPlayerList().getPlayers()) {
                 tell(p, "quest_community_done", ChatFormatting.GOLD, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, title(def, id));
                 reward(p, def);

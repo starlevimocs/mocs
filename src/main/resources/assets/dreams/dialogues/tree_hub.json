@@ -3,7 +3,7 @@
   "nodes": {
     "inicio": {
       "speaker": "dreams:tree",
-      "text": "{player}... Te siento cerca. Acércate, pequeña hoja.",
+      "text": "{player}. Qué bueno tenerte cerca otra vez.",
       "next": "menu",
       "branch": [
         {
@@ -12,12 +12,55 @@
             "state": "ready"
           },
           "next": "luz_lista"
+        },
+        {
+          "if": {
+            "quest": "encuentro",
+            "state": "done",
+            "not": true
+          },
+          "next": "primera_vez"
+        },
+        {
+          "if": {
+            "quest": "raices_dormidas",
+            "state": "done"
+          },
+          "next": "saludo_fuerte"
+        },
+        {
+          "if": {
+            "quest": "primera_luz",
+            "state": "done"
+          },
+          "next": "saludo_luz"
         }
       ]
     },
+    "primera_vez": {
+      "speaker": "dreams:tree",
+      "text": "Viniste a verme por tu cuenta... Acércate. No le tengas miedo a la luz: es lo único que sé dar.",
+      "color": "#FFE9A8",
+      "next": "menu",
+      "quest": {
+        "accept": "encuentro"
+      }
+    },
+    "saludo_luz": {
+      "speaker": "dreams:tree",
+      "text": "Desde lo que me trajiste, la tierra me sabe distinta. Te lo debo a ti.",
+      "color": "#8DFFB0",
+      "next": "menu"
+    },
+    "saludo_fuerte": {
+      "speaker": "dreams:tree",
+      "text": "Mira mis raíces: ya no duelen como antes. Eso lo hicieron entre todos.",
+      "color": "#8DFFB0",
+      "next": "menu"
+    },
     "menu": {
       "speaker": "dreams:tree",
-      "text": "¿Qué buscas en mí?",
+      "text": "Dime qué necesitas.",
       "color": "#6FC8FF",
       "choices": [
         {
@@ -53,8 +96,24 @@
           }
         },
         {
-          "text": "¿Quién eres?",
-          "next": "quien"
+          "text": "Quiero preguntarte algo",
+          "next": "preguntas"
+        },
+        {
+          "text": "Dame tu bendición",
+          "next": "bendicion_da",
+          "if": {
+            "quest": "bendicion",
+            "state": "available"
+          }
+        },
+        {
+          "text": "Dame tu bendición",
+          "next": "bendicion_espera",
+          "if": {
+            "quest": "bendicion",
+            "state": "done"
+          }
         },
         {
           "text": "Solo quería verte",
@@ -62,21 +121,145 @@
         }
       ]
     },
-    "quien": {
+    "preguntas": {
       "speaker": "dreams:tree",
-      "text": "Soy la que soñó este mundo. Cada hoja que cae de mí despierta como uno de ustedes.",
+      "text": "Pregunta. Lo que sé, es tuyo.",
       "color": "#B9A2FF",
-      "next": "quien2"
+      "choices": [
+        {
+          "text": "¿Quién eres?",
+          "next": "soy1"
+        },
+        {
+          "text": "¿Quiénes son los guardianes?",
+          "next": "guardianes1"
+        },
+        {
+          "text": "¿Quién es el guardián que se fue?",
+          "next": "ausente1"
+        },
+        {
+          "text": "¿Qué es la Marchitez?",
+          "next": "marchitez1"
+        },
+        {
+          "text": "¿Qué hay dentro de mí?",
+          "next": "don1"
+        },
+        {
+          "text": "Nada más",
+          "next": "menu"
+        }
+      ]
     },
-    "quien2": {
+    "soy1": {
       "speaker": "dreams:tree",
-      "text": "Mientras yo brille, el sueño sigue. Si me apago... no quiero que lo descubran.",
+      "text": "Estoy aquí desde antes de que alguien contara los años. Mis raíces llegan a cada rincón de esta tierra: lo que vive, vive un poco gracias a mí.",
+      "color": "#B9A2FF",
+      "next": "soy2"
+    },
+    "soy2": {
+      "speaker": "dreams:tree",
+      "text": "Pero no soy tan fuerte como parezco desde abajo. Dependo de quienes me cuidan. Y ahora, también de ustedes.",
       "color": "#8E7CC3",
+      "next": "soy3"
+    },
+    "soy3": {
+      "speaker": "dreams:tree",
+      "text": "Los traje al mundo con la fuerza que me quedaba. No fue un capricho: los necesitaba. Perdóname por eso.",
+      "color": "#9AD0FF",
+      "next": "preguntas"
+    },
+    "guardianes1": {
+      "speaker": "dreams:tree",
+      "text": "Cada región grande tiene el suyo. Ellos sostienen la tierra donde mis raíces no alcanzan, y yo los sostengo a ellos.",
+      "color": "#8DFFB0",
+      "next": "guardianes2"
+    },
+    "guardianes2": {
+      "speaker": "dreams:tree",
+      "text": "Son buenos, pero no son perfectos. Guardan silencios que ni a mí me cuentan.",
+      "color": "#8E7CC3",
+      "next": "guardianes3"
+    },
+    "guardianes3": {
+      "speaker": "dreams:tree",
+      "text": "Cuando los conozcan, escuchen también lo que no dicen.",
+      "color": "#8E7CC3",
+      "next": "preguntas"
+    },
+    "ausente1": {
+      "speaker": "dreams:tree",
+      "text": "Era el más alegre de todos. Hacía reír hasta a las piedras. Un día se fue... y no volvió.",
+      "color": "#FFE9A8",
+      "next": "ausente2"
+    },
+    "ausente2": {
+      "speaker": "dreams:tree",
+      "text": "Los demás dicen que no pudo soportarlo. Nunca me dijeron qué. Desde entonces me apago un poco con cada estación.",
+      "color": "#8E7CC3",
+      "next": "ausente3"
+    },
+    "ausente3": {
+      "speaker": "dreams:tree",
+      "text": "Si lo encuentran, díganle que su lugar sigue aquí. Que nadie lo ocupó.",
+      "color": "#9AD0FF",
+      "next": "preguntas"
+    },
+    "marchitez1": {
+      "speaker": "dreams:tree",
+      "text": "Es una historia vieja, y es verdad. Hace mucho, una plaga pudría la savia de todo lo vivo. La llamaron la Marchitez.",
+      "color": "#8E7CC3",
+      "next": "marchitez2"
+    },
+    "marchitez2": {
+      "speaker": "dreams:tree",
+      "text": "Una mujer la tomó dentro de su propio cuerpo y la encerró ahí. El mundo se salvó. Ella se fue consumiendo despacio.",
+      "color": "#FFB7C8",
+      "next": "marchitez3"
+    },
+    "marchitez3": {
+      "speaker": "dreams:tree",
+      "text": "Cuentan que vivía con alguien en un valle, y que eran felices. No me pidas nombres: hay cosas que la tierra prefiere callar.",
+      "color": "#FFB7C8",
+      "next": "marchitez4"
+    },
+    "marchitez4": {
+      "speaker": "dreams:tree",
+      "text": "Ahora hay criaturas de savia podrida caminando otra vez, y detrás de ellas algo sin rostro y sin voz. Lo llaman la Pesadilla. No sé de dónde viene. Eso es lo que más me asusta.",
+      "color": "#8E7CC3",
+      "next": "preguntas"
+    },
+    "don1": {
+      "speaker": "dreams:tree",
+      "text": "Algo mío. En unos es la Raíz, que protege y no se mueve. En otros la Savia, que cura. En otros la Brisa, que nadie atrapa.",
+      "color": "#8DFFB0",
+      "next": "don2"
+    },
+    "don2": {
+      "speaker": "dreams:tree",
+      "text": "Todavía es pequeño. Crece con cada fragmento de vida que encuentren por el mundo; búsquenlos en los lugares que otros abandonaron.",
+      "color": "#8DFFB0",
+      "next": "preguntas"
+    },
+    "bendicion_da": {
+      "speaker": "dreams:tree",
+      "text": "Quédate quieto un momento... Ya está. Lleva mi luz contigo; no dura mucho, pero siempre puedes volver por más.",
+      "color": "#FFE9A8",
+      "next": null,
+      "quest": {
+        "accept": "bendicion"
+      }
+    },
+    "bendicion_espera": {
+      "speaker": "dreams:tree",
+      "text": "Todavía llevas mi luz encima, {player}. Déjame juntar fuerzas y vuelve más tarde.",
+      "color": "#9AD0FF",
       "next": "menu"
     },
     "luz_ofrece": {
       "speaker": "dreams:tree",
-      "text": "Mis raíces tienen hambre. Tráeme polvo de hueso, dieciséis puñados, y sentiré la tierra otra vez.",
+      "text": "Mis raíces tienen hambre. Tráeme polvo de hueso, dieciséis puñados, y volveré a sentir la tierra.",
       "color": "#8DFFB0",
       "choices": [
         {
@@ -100,7 +283,7 @@
     },
     "luz_falta": {
       "speaker": "dreams:tree",
-      "text": "Todavía no alcanza: llevas {progress:primera_luz}. No te apures, pequeña hoja.",
+      "text": "Todavía no alcanza: llevas {progress:primera_luz}. No te apures, {player}. Sé esperar.",
       "color": "#9AD0FF",
       "next": null
     },
@@ -124,13 +307,13 @@
     },
     "luz_fin": {
       "speaker": "dreams:tree",
-      "text": "Ahhh... Hace tanto que no sentía esto. Gracias. Toma: es poco, pero nació de mí.",
+      "text": "Ahhh... Hacía tanto que no sentía esto. Gracias. Toma: es poco, pero nació de mí.",
       "color": "#FFE9A8",
       "next": null
     },
     "raices_ofrece": {
       "speaker": "dreams:tree",
-      "text": "Hay un frío que ninguna hoja puede quitar sola. Bayas que brillan y fragmentos de amatista: si todos traen un poco, despertaré mis raíces dormidas.",
+      "text": "Hay un frío que nadie puede quitarme solo. Bayas que brillan y fragmentos de amatista: si cada uno trae un poco, despertaré mis raíces dormidas.",
       "color": "#B9A2FF",
       "choices": [
         {
@@ -148,7 +331,7 @@
     },
     "raices_inicio": {
       "speaker": "dreams:tree",
-      "text": "Entonces que empiece. Cada cosa que me traigan la sentiré.",
+      "text": "Entonces que empiece. Cada cosa que me traigan, la sentiré.",
       "color": "#B9A2FF",
       "next": null
     },
@@ -172,13 +355,13 @@
     },
     "raices_gracias": {
       "speaker": "dreams:tree",
-      "text": "Lo siento bajar hasta el fondo. Gracias, pequeña hoja.",
+      "text": "Lo siento bajar hasta el fondo. Gracias, {player}.",
       "color": "#8DFFB0",
       "next": null
     },
     "adios": {
       "speaker": "dreams:tree",
-      "text": "Vuelve cuando quieras. Aquí el tiempo pasa despacio.",
+      "text": "Ve en paz. Yo no me muevo de aquí.",
       "next": null
     }
   }

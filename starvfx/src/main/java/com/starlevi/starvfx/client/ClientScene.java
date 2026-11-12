@@ -192,6 +192,12 @@ public final class ClientScene {
                     }
                 }
             }
+            case "tree" -> {
+                // el Arbol Madre mas cercano brilla de ese color
+                if (late < 2) {
+                    Tree.shine(world(Geo.vec(e, "pos", Vec3.ZERO)), Geo.color(e, "color", 0xFFFFFF), Geo.num(e, "duration", 4));
+                }
+            }
             case "fade" -> {
                 if (late < 3) {
                     Hud.fade(Geo.color(e, "color", 0x000000), Geo.num(e, "in", 1), Geo.num(e, "hold", 0.5F), Geo.num(e, "out", 1), late);

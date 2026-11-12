@@ -4,53 +4,79 @@
   "nodes": {
     "caida": {
       "speaker": "dreams:narrator",
-      "text": "Una hoja se desprende de la rama más alta y cae, despacio, hasta tocar la tierra.",
+      "text": "Algo se desprendió de la rama más alta y bajó, despacio, hasta tocar la tierra.",
       "next": "despertar"
     },
     "despertar": {
       "speaker": "dreams:tree",
       "expression": "neutral",
-      "text": "Despierta, pequeña hoja... Has caído justo a tiempo.",
+      "text": "Abran los ojos, hijos míos. Despacio... la luz molesta al principio.",
       "next": "presentacion"
     },
     "presentacion": {
       "speaker": "dreams:tree",
       "expression": "neutral",
-      "text": "Soy el Árbol Madre. Soñé este mundo mucho antes de que existieras, y ahora tú eres parte de ese sueño.",
-      "next": "problema"
+      "text": "Soy quien los trajo a este mundo. Los pueblos me llaman Árbol Madre; ustedes llámenme como quieran.",
+      "next": "don",
+      "color": "#6FC8FF"
+    },
+    "don": {
+      "speaker": "dreams:tree",
+      "expression": "happy",
+      "text": "Nacieron de la fuerza que me quedaba, y por eso llevan algo mío: la firmeza de la Raíz, el calor de la Savia o la ligereza de la Brisa. Ya van a descubrir cuál.",
+      "next": "problema",
+      "color": "#8DFFB0"
     },
     "problema": {
       "speaker": "dreams:tree",
       "expression": "sad",
-      "text": "Algo anda mal. Mis raíces se enfrían y mis ramas se secan. Antes alguien velaba por mí, pero... se fue.",
+      "text": "No los desperté por capricho. Me estoy marchitando. Mis guardianes cuidan cada región de esta tierra, pero uno de ellos se fue hace mucho... y desde entonces nada me alcanza.",
       "choices": [
         {
           "text": "¿Quién se fue?",
           "next": "quien"
         },
         {
-          "text": "¿Qué puedo hacer yo?",
+          "text": "¿Qué podemos hacer?",
           "next": "ayuda"
         }
-      ]
+      ],
+      "color": "#8E7CC3"
     },
     "quien": {
       "speaker": "dreams:tree",
       "expression": "sad",
-      "text": "No me pidas que lo diga todavía. Duele más de lo que parece... Solo sé que hay que encontrarlo.",
-      "next": "camino"
+      "text": "Se fue. Dicen que no pudo soportarlo... No me pidas más por ahora. Solo sé que hay que encontrarlo.",
+      "next": "camino",
+      "color": "#8E7CC3"
     },
     "ayuda": {
       "speaker": "dreams:tree",
       "expression": "happy",
-      "text": "Eres pequeña, pero naciste de mí. Eso es más fuerza de la que crees.",
-      "next": "camino"
+      "text": "Son jóvenes, pero nacieron de mí. Eso es más fuerza de la que creen.",
+      "next": "camino",
+      "color": "#FFE9A8"
     },
     "camino": {
       "speaker": "dreams:tree",
       "expression": "happy",
-      "text": "Camina hacia el este, donde los bosques todavía recuerdan los cuentos. Las otras hojas ya despiertan a tu lado.",
-      "next": null
+      "text": "Vayan al este, a los bosques. Allí la gente todavía cuenta historias viejas, y alguna habla de él.",
+      "next": "aviso",
+      "color": "#8DFFB0"
+    },
+    "aviso": {
+      "speaker": "dreams:tree",
+      "expression": "sad",
+      "text": "Tengan cuidado: algo que no tiene rostro anda pudriendo la savia de las cosas. Si lo ven, no lo enfrenten solos.",
+      "next": "despedida",
+      "color": "#8E7CC3"
+    },
+    "despedida": {
+      "speaker": "dreams:tree",
+      "expression": "happy",
+      "text": "Y vuelvan a mí cuando lo necesiten. Aquí siempre va a haber luz para ustedes.",
+      "next": null,
+      "color": "#FFE9A8"
     }
   }
 }

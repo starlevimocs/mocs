@@ -1,0 +1,15 @@
+{
+  "title": "Bendición del Árbol Madre",
+  "description": "El árbol te presta un poco de su luz.",
+  "scope": "personal",
+  "hidden": true,
+  "repeat_minutes": 20,
+  "objectives": [],
+  "rewards": {
+    "commands": [
+      "effect give %player% minecraft:regeneration 45 1 true",
+      "effect give %player% minecraft:absorption 240 1 true",
+      "effect give %player% minecraft:slow_falling 180 0 true"
+    ]
+  }
+}

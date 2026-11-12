@@ -29,5 +29,21 @@
   "message.starvfx.zone_added": "Zona de cámara fija \"%s\" creada. La cámara queda donde estás parado",
   "message.starvfx.zone_list": "Zonas: %s",
   "message.starvfx.zone_missing": "No hay una zona llamada \"%s\" en esta dimensión",
-  "message.starvfx.zone_removed": "Zona \"%s\" quitada"
+  "message.starvfx.zone_removed": "Zona \"%s\" quitada",
+  "starvfx.tree.whisper.dying.0": "...no te alejes...",
+  "starvfx.tree.whisper.dying.1": "...ya casi no los oigo...",
+  "starvfx.tree.whisper.dying.2": "...todavía... estoy...",
+  "starvfx.tree.whisper.strong.0": "Te sentí llegar. Acércate.",
+  "starvfx.tree.whisper.strong.1": "Aquí nada puede hacerte daño.",
+  "starvfx.tree.whisper.strong.2": "Volviste. Mis ramas lo supieron antes que yo.",
+  "starvfx.tree.whisper.strong.3": "Descansa un momento a mi lado.",
+  "starvfx.tree.whisper.strong.4": "Cuéntame qué viste allá afuera.",
+  "starvfx.tree.whisper.strong.5": "Qué bueno oír pasos otra vez.",
+  "starvfx.tree.whisper.strong.6": "Mis hijos siempre encuentran el camino de vuelta.",
+  "starvfx.tree.whisper.strong.7": "Agáchate junto a mis raíces si estás herido.",
+  "starvfx.tree.whisper.weak.0": "Perdona... hoy me cuesta brillar.",
+  "starvfx.tree.whisper.weak.1": "No te asustes por mis ramas. Todavía estoy aquí.",
+  "starvfx.tree.whisper.weak.2": "Hace frío en mis raíces.",
+  "starvfx.tree.whisper.weak.3": "Quédate un poco. Contigo cerca duele menos.",
+  "starvfx.tree.whisper.weak.4": "¿Lo encontraron? No... no me digas todavía."
 }
