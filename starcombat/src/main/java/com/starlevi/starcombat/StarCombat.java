@@ -41,7 +41,6 @@ public final class StarCombat {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         ITEMS.register(bus);
         TABS.register(bus);
-        Sounds.SOUNDS.register(bus);
         bus.addListener(this::setup);
     }
 

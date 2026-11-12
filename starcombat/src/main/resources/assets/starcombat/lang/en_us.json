@@ -10,13 +10,6 @@
   "itemGroup.starcombat": "Star Combat",
   "key.categories.starcombat": "Star Combat",
   "key.starcombat.grapple": "Chain grapple",
-  "subtitles.starcombat.swing": "Blades cut the air",
-  "subtitles.starcombat.chain": "Chains rattle",
-  "subtitles.starcombat.slam": "Ember burst",
-  "subtitles.starcombat.hit": "Blade hits",
-  "subtitles.starcombat.grapple": "Grapple thrown",
-  "subtitles.starcombat.latch": "Grapple latches",
-  "subtitles.starcombat.ignite": "Embers ignite",
   "commands.starcombat.give": "Gave Ember Fangs to %s player(s)",
   "commands.starcombat.reload": "Star Combat config reloaded"
 }

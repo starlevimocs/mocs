@@ -10,13 +10,6 @@
   "itemGroup.starcombat": "Star Combat",
   "key.categories.starcombat": "Star Combat",
   "key.starcombat.grapple": "Gancho de cadenas",
-  "subtitles.starcombat.swing": "Hojas cortan el aire",
-  "subtitles.starcombat.chain": "Cadenas",
-  "subtitles.starcombat.slam": "Estallido de brasas",
-  "subtitles.starcombat.hit": "Golpe de hoja",
-  "subtitles.starcombat.grapple": "Gancho lanzado",
-  "subtitles.starcombat.latch": "Gancho clavado",
-  "subtitles.starcombat.ignite": "Brasas se encienden",
   "commands.starcombat.give": "Colmillos de Brasa entregados a %s jugador(es)",
   "commands.starcombat.reload": "Configuración de Star Combat recargada"
 }

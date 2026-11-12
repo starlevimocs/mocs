@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.starlevi.starcombat.Config;
 import com.starlevi.starcombat.Moves;
 import com.starlevi.starcombat.Net;
-import com.starlevi.starcombat.Sounds;
 import com.starlevi.starcombat.StarCombat;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -12,6 +11,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -213,7 +213,7 @@ public final class Combat {
             }
             e.hurtMarked = true;
             if (count == 1) {
-                level.playSound(null, e.getX(), e.getY(), e.getZ(), Sounds.HIT.get(), SoundSource.PLAYERS, 1.0F,
+                level.playSound(null, e.getX(), e.getY(), e.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, 0.8F,
                         0.85F + level.random.nextFloat() * 0.3F);
             }
         }
@@ -264,7 +264,7 @@ public final class Combat {
         st.yanked = false;
         st.gReady = now + Config.grappleCooldown;
         Net.toWatchers(p, new Net.GrappleMsg(p.getId(), true, anchor.x, anchor.y, anchor.z, target));
-        p.level().playSound(p, p.getX(), p.getY(), p.getZ(), Sounds.GRAPPLE.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+        p.level().playSound(p, p.getX(), p.getY(), p.getZ(), SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 0.9F, 0.7F);
     }
 
     /** Ticks que tarda la hoja en llegar. Igual en el cliente. */
@@ -292,7 +292,7 @@ public final class Combat {
             le.setSecondsOnFire(2);
         }
         le.setDeltaMovement(v.x, Math.max(0.32, v.y + 0.28), v.z);
-        p.level().playSound(null, le.getX(), le.getY(), le.getZ(), Sounds.LATCH.get(), SoundSource.PLAYERS, 1.0F, 1.1F);
+        p.level().playSound(null, le.getX(), le.getY(), le.getZ(), SoundEvents.CHAIN_BREAK, SoundSource.PLAYERS, 1.0F, 0.7F);
     }
 
     /** {@code self} = tambien se le avisa al propio jugador (cuando lo corta el servidor). */
