@@ -152,6 +152,7 @@ public final class ClientScene {
                 Fx.WORLD.clear();
                 PlayerFx.clear();
                 Cine.ZONES.clear();
+                Tree.TREES.clear();
             }
         }
         if (mc.level == null) {

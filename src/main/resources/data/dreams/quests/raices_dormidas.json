@@ -1,0 +1,27 @@
+{
+  "title": "Raíces dormidas",
+  "description": "Entre todos, devolverle fuerza al Árbol Madre.",
+  "scope": "community",
+  "requires": [],
+  "objectives": [
+    {
+      "type": "item",
+      "item": "minecraft:glow_berries",
+      "count": 128,
+      "label": "Bayas luminosas"
+    },
+    {
+      "type": "item",
+      "item": "minecraft:amethyst_shard",
+      "count": 64,
+      "label": "Fragmentos de amatista"
+    }
+  ],
+  "rewards": {
+    "xp": 150
+  },
+  "on_complete": [
+    "starvfx tree vitality madre add 15",
+    "starvfx tree speak madre #ffe9a8 12"
+  ]
+}

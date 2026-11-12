@@ -21,6 +21,8 @@ public final class WorldData extends SavedData {
     private JsonArray effects = new JsonArray();
     /** zonas: [{name, dim, box:[x1,y1,z1,x2,y2,z2], cam:[x,y,z], yaw, pitch, fov, mode}] */
     private JsonArray zones = new JsonArray();
+    /** arboles madre: [{id, dim, pos:[x,y,z], size, radius, vitality, color, on_use}] */
+    private JsonArray trees = new JsonArray();
 
     public static WorldData get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(WorldData::load, WorldData::new, "starvfx");
@@ -38,6 +40,11 @@ public final class WorldData extends SavedData {
         } catch (RuntimeException ignored) {
             d.zones = new JsonArray();
         }
+        try {
+            d.trees = JsonParser.parseString(tag.getString("trees")).getAsJsonArray();
+        } catch (RuntimeException ignored) {
+            d.trees = new JsonArray();
+        }
         return d;
     }
 
@@ -45,6 +52,7 @@ public final class WorldData extends SavedData {
     public CompoundTag save(CompoundTag tag) {
         tag.putString("effects", effects.toString());
         tag.putString("zones", zones.toString());
+        tag.putString("trees", trees.toString());
         return tag;
     }
 
@@ -123,6 +131,44 @@ public final class WorldData extends SavedData {
         return zones;
     }
 
+    public JsonArray trees() {
+        return trees;
+    }
+
+    /** El arbol con ese nombre (en cualquier dimension), o null. */
+    public JsonObject tree(String id) {
+        for (JsonElement e : trees) {
+            if (Geo.str(e.getAsJsonObject(), "id", "").equals(id)) {
+                return e.getAsJsonObject();
+            }
+        }
+        return null;
+    }
+
+    public void putTree(JsonObject tree) {
+        removeTree(Geo.str(tree, "id", ""));
+        trees.add(tree);
+        setDirty();
+    }
+
+    public boolean removeTree(String id) {
+        for (int i = trees.size() - 1; i >= 0; i--) {
+            if (Geo.str(trees.get(i).getAsJsonObject(), "id", "").equals(id)) {
+                trees.remove(i);
+                setDirty();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void syncTrees(MinecraftServer server) {
+        Net.Trees msg = new Net.Trees(trees.toString());
+        for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+            Net.toPlayer(p, msg);
+        }
+    }
+
     public void syncZones(MinecraftServer server) {
         Net.Zones msg = new Net.Zones(zones.toString());
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
@@ -133,6 +179,7 @@ public final class WorldData extends SavedData {
     /** Todo lo de la dimension donde esta el jugador (al entrar o al cambiar de dimension). */
     public void sync(ServerPlayer player) {
         Net.toPlayer(player, new Net.Zones(zones.toString()));
+        Net.toPlayer(player, new Net.Trees(trees.toString()));
         Net.toPlayer(player, new Net.Fx("*", true, "", 0, 0, 0, "{}", 0));
         String dim = dim(player.serverLevel());
         for (JsonElement e : effects) {

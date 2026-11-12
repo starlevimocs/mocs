@@ -1,6 +1,10 @@
 package com.starlevi.dreams.client.screen;
 
 import com.starlevi.dreams.client.CinematicClient;
+import com.starlevi.dreams.client.ClientQuests;
+import com.starlevi.dreams.client.TreeBridge;
+import com.starlevi.dreams.network.DreamsNetwork;
+import com.starlevi.dreams.network.QuestActionPacket;
 import com.starlevi.dreams.client.data.SpeakerManager;
 import com.starlevi.dreams.dialogue.Dialogue;
 import com.starlevi.dreams.dialogue.Speaker;
@@ -49,6 +53,9 @@ public class DialogueScreen extends Screen {
     private int letterCounter;
     private boolean choicesShown;
     private String pendingGoTo;
+    private boolean pendingClose;
+    private int accent = 0xFFFFFF;
+    private List<Dialogue.Choice> choices = List.of();
 
     public DialogueScreen(Dialogue dialogue) {
         super(Component.literal("Dreams"));
@@ -86,8 +93,31 @@ public class DialogueScreen extends Screen {
     // ---------------------------------------------------------------- flujo
 
     private void goTo(String nodeId) {
-        this.node = dialogue.nodes().get(nodeId);
+        // desvios: segun como va una mision, este nodo puede mandar a otro
+        Dialogue.Node target = dialogue.nodes().get(nodeId);
+        for (int hops = 0; hops < 16 && target != null; hops++) {
+            Dialogue.Node jump = null;
+            for (Dialogue.Branch b : target.branches()) {
+                if (ClientQuests.test(b.cond())) {
+                    jump = dialogue.nodes().get(b.next());
+                    break;
+                }
+            }
+            if (jump == null || jump == target) {
+                break;
+            }
+            target = jump;
+        }
+        this.node = target;
         this.speaker = SpeakerManager.get(node.speaker());
+        this.accent = node.color() != null ? node.color() : speaker.color();
+        if (speaker.tree()) {
+            TreeBridge.speak(accent);
+        }
+        if (node.action() != null) {
+            DreamsNetwork.CHANNEL.sendToServer(new QuestActionPacket(node.action().type(), node.action().quest()));
+        }
+        this.choices = node.choices().stream().filter(c -> ClientQuests.test(c.cond())).toList();
         this.revealed = 0;
         this.nextCharAt = Util.getMillis();
         this.letterCounter = 0;
@@ -99,11 +129,28 @@ public class DialogueScreen extends Screen {
 
     private void wrap() {
         int textWidth = width - 2 * MARGIN - 2 * PADDING;
-        this.lines = font.getSplitter().splitLines(node.text(), textWidth, Style.EMPTY).stream()
+        this.lines = font.getSplitter().splitLines(fill(node.text()), textWidth, Style.EMPTY).stream()
                 .map(FormattedText::getString)
                 .toList();
         this.flat = String.join("", lines);
         this.revealed = Math.min(revealed, flat.length());
+    }
+
+    /** {player} = nombre del jugador; {progress:mision} = cuanto lleva de esa mision. */
+    private static String fill(String text) {
+        Minecraft mc = Minecraft.getInstance();
+        if (text.contains("{player}") && mc.player != null) {
+            text = text.replace("{player}", mc.player.getGameProfile().getName());
+        }
+        int at;
+        while ((at = text.indexOf("{progress:")) >= 0) {
+            int end = text.indexOf('}', at);
+            if (end < 0) {
+                break;
+            }
+            text = text.substring(0, at) + ClientQuests.progressText(text.substring(at + 10, end)) + text.substring(end + 1);
+        }
+        return text;
     }
 
     private boolean textFinished() {
@@ -115,7 +162,7 @@ public class DialogueScreen extends Screen {
             revealed = flat.length();
             return;
         }
-        if (!node.choices().isEmpty()) {
+        if (!choices.isEmpty()) {
             return; // el jugador tiene que elegir
         }
         if (node.next() == null) {
@@ -127,11 +174,15 @@ public class DialogueScreen extends Screen {
 
     @Override
     public void tick() {
+        if (pendingClose) {
+            onClose();
+            return;
+        }
         if (pendingGoTo != null) {
             goTo(pendingGoTo);
             return;
         }
-        if (textFinished() && !choicesShown && !node.choices().isEmpty()) {
+        if (textFinished() && !choicesShown && !choices.isEmpty()) {
             choicesShown = true;
             layoutChoices();
         }
@@ -142,9 +193,18 @@ public class DialogueScreen extends Screen {
         int buttonWidth = Math.min(width - 2 * MARGIN, 260);
         int x = width - MARGIN - buttonWidth;
         int y = boxTop - 8 - 20;
-        for (Dialogue.Choice choice : node.choices()) {
+        for (Dialogue.Choice choice : choices) {
             addRenderableWidget(Button.builder(Component.literal(choice.text()),
-                            button -> pendingGoTo = choice.next())
+                            button -> {
+                                if (choice.action() != null) {
+                                    DreamsNetwork.CHANNEL.sendToServer(new QuestActionPacket(choice.action().type(), choice.action().quest()));
+                                }
+                                if (choice.next() == null) {
+                                    pendingClose = true;
+                                } else {
+                                    pendingGoTo = choice.next();
+                                }
+                            })
                     .bounds(x, y, buttonWidth, 20)
                     .build());
             y -= 24;
@@ -184,20 +244,28 @@ public class DialogueScreen extends Screen {
         }
         float pitch = Mth.clamp(voice.pitch() + (random.nextFloat() * 2.0F - 1.0F) * voice.variance(), 0.5F, 2.0F);
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(event, pitch, voice.volume()));
+        if (speaker.tree()) {
+            TreeBridge.pulse();
+        }
     }
 
     // ---------------------------------------------------------------- render
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        renderBackground(g);
+        if (speaker.tree()) {
+            // ante el arbol no se oscurece el mundo: se lo ve brillar mientras habla
+            g.fillGradient(0, height / 2, width, height, 0x00000000, 0xA0000008);
+        } else {
+            renderBackground(g);
+        }
         advanceText();
 
         int boxLeft = MARGIN;
         int boxRight = width - MARGIN;
         int boxBottom = height - MARGIN;
         int boxTop = boxBottom - BOX_HEIGHT;
-        int accent = 0xFF000000 | speaker.color();
+        int accent = 0xFF000000 | this.accent;
 
 
         // caja de texto
@@ -227,7 +295,7 @@ public class DialogueScreen extends Screen {
         }
 
         // indicador de "sigue"
-        if (textFinished() && node.choices().isEmpty() && (Util.getMillis() / 400) % 2 == 0) {
+        if (textFinished() && choices.isEmpty() && (Util.getMillis() / 400) % 2 == 0) {
             g.drawString(font, "▼", boxRight - 20, boxBottom - 16, 0xFFFFFFFF, true);
         }
 

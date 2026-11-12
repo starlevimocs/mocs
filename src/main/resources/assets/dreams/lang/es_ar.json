@@ -2,5 +2,16 @@
   "item.dreams.spawn_wand": "Varita de spawn",
   "item.dreams.spawn_wand.tooltip.a": "Clic izquierdo en un bloque: marcar el punto A",
   "item.dreams.spawn_wand.tooltip.b": "Clic derecho en un bloque: marcar el punto B",
-  "item.dreams.spawn_wand.tooltip.menu": "Clic derecho al aire (o agachado + clic derecho): abrir el menu"
+  "item.dreams.spawn_wand.tooltip.menu": "Clic derecho al aire (o agachado + clic derecho): abrir el menu",
+  "message.dreams.quest_accepted": "Nueva misión: %s",
+  "message.dreams.quest_community_started": "Misión de todos: %s",
+  "message.dreams.quest_done": "Misión cumplida: %s",
+  "message.dreams.quest_community_done": "¡Entre todos lo lograron! %s",
+  "message.dreams.quest_ready": "Ya tenés todo para \"%s\". Volvé a entregarla",
+  "message.dreams.quest_contributed": "Aportaste %s a \"%s\"",
+  "message.dreams.quest_nothing": "No tenés nada para aportar a \"%s\"",
+  "message.dreams.quests_reloaded": "Misiones recargadas: %s",
+  "gui.dreams.quest_ready": "Listo para entregar",
+  "gui.dreams.quest_kill": "Vencer: %s",
+  "gui.dreams.quest_visit": "Llegar al lugar"
 }

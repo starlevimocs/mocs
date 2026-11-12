@@ -48,7 +48,30 @@ public class DreamsMod {
         registerCommands(event.getDispatcher());
     }
 
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> questCommand(
+            String name, java.util.function.BiConsumer<ServerPlayer, String> action) {
+        com.mojang.brigadier.suggestion.SuggestionProvider<CommandSourceStack> ids = (c, b) ->
+                net.minecraft.commands.SharedSuggestionProvider.suggest(com.starlevi.dreams.quest.Quests.defs().keySet(), b);
+        return Commands.literal(name).then(Commands.argument("quest", com.mojang.brigadier.arguments.StringArgumentType.word()).suggests(ids)
+                .executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayerOrException();
+                    action.accept(p, com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "quest"));
+                    com.starlevi.dreams.quest.Quests.sync(p);
+                    return 1;
+                })
+                .then(Commands.argument("targets", EntityArgument.players()).executes(ctx -> {
+                    String id = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "quest");
+                    Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "targets");
+                    for (ServerPlayer p : players) {
+                        action.accept(p, id);
+                        com.starlevi.dreams.quest.Quests.sync(p);
+                    }
+                    return players.size();
+                })));
+    }
+
     /**
+     * /dreams quest reload|list|start|complete|reset   misiones
      * /dreams dialogue &lt;id&gt; [jugadores]   abre un dialogo
      * /dreams spawn                       abre el menu de control de spawn
      * /dreams spawn wand                  te da la varita de spawn
@@ -91,6 +114,20 @@ public class DreamsMod {
                                     }
                                     return 1;
                                 })))
+                .then(Commands.literal("quest")
+                        .then(Commands.literal("reload").executes(ctx -> {
+                            com.starlevi.dreams.quest.Quests.reload();
+                            ctx.getSource().sendSuccess(() -> Component.translatable("message.dreams.quests_reloaded",
+                                    com.starlevi.dreams.quest.Quests.defs().size()), true);
+                            return 1;
+                        }))
+                        .then(Commands.literal("list").executes(ctx -> {
+                            ctx.getSource().sendSuccess(() -> Component.literal(String.join(", ", com.starlevi.dreams.quest.Quests.defs().keySet())), false);
+                            return 1;
+                        }))
+                        .then(questCommand("start", (p, id) -> com.starlevi.dreams.quest.Quests.accept(p, id)))
+                        .then(questCommand("complete", (p, id) -> com.starlevi.dreams.quest.Quests.forceComplete(p, id)))
+                        .then(questCommand("reset", (p, id) -> com.starlevi.dreams.quest.Quests.reset(p, id))))
                 .then(CinematicCommands.build()));
     }
 }

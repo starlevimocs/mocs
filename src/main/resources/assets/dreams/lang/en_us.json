@@ -2,5 +2,16 @@
   "item.dreams.spawn_wand": "Spawn Wand",
   "item.dreams.spawn_wand.tooltip.a": "Left click on a block: set point A",
   "item.dreams.spawn_wand.tooltip.b": "Right click on a block: set point B",
-  "item.dreams.spawn_wand.tooltip.menu": "Right click in the air (or sneak + right click): open the menu"
+  "item.dreams.spawn_wand.tooltip.menu": "Right click in the air (or sneak + right click): open the menu",
+  "message.dreams.quest_accepted": "New quest: %s",
+  "message.dreams.quest_community_started": "Community quest: %s",
+  "message.dreams.quest_done": "Quest complete: %s",
+  "message.dreams.quest_community_done": "Together you did it! %s",
+  "message.dreams.quest_ready": "You have everything for \"%s\". Go back to turn it in",
+  "message.dreams.quest_contributed": "You contributed %s to \"%s\"",
+  "message.dreams.quest_nothing": "You have nothing to contribute to \"%s\"",
+  "message.dreams.quests_reloaded": "Quests reloaded: %s",
+  "gui.dreams.quest_ready": "Ready to turn in",
+  "gui.dreams.quest_kill": "Defeat: %s",
+  "gui.dreams.quest_visit": "Reach the place"
 }

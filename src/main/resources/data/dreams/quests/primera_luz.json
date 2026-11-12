@@ -1,0 +1,25 @@
+{
+  "title": "Primera luz",
+  "description": "El Árbol Madre necesita alimento para sus raíces.",
+  "scope": "personal",
+  "objectives": [
+    {
+      "type": "item",
+      "item": "minecraft:bone_meal",
+      "count": 16,
+      "label": "Polvo de hueso"
+    }
+  ],
+  "rewards": {
+    "xp": 60,
+    "items": [
+      {
+        "item": "minecraft:golden_apple",
+        "count": 1
+      }
+    ]
+  },
+  "on_complete": [
+    "starvfx tree vitality madre add 2"
+  ]
+}

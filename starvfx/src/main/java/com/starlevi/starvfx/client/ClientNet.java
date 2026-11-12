@@ -46,4 +46,15 @@ public final class ClientNet {
     public static void zones(Net.Zones msg) {
         Cine.setZones(msg.json());
     }
+
+    public static void trees(Net.Trees msg) {
+        Tree.sync(msg.json());
+    }
+
+    public static void treeSpeak(Net.TreeSpeak msg) {
+        Tree t = Tree.TREES.get(msg.id());
+        if (t != null) {
+            t.speak(msg.color(), msg.seconds());
+        }
+    }
 }

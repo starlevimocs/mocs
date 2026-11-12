@@ -23,4 +23,17 @@ public final class ClientHooks {
         }
         mc.setScreen(new DialogueScreen(dialogue));
     }
+
+    /** Dialogo que viene escrito desde el servidor. */
+    public static void openDialogueJson(ResourceLocation id, String json) {
+        Minecraft mc = Minecraft.getInstance();
+        try {
+            Dialogue dialogue = DialogueManager.parse(id, com.google.gson.JsonParser.parseString(json).getAsJsonObject());
+            mc.setScreen(new DialogueScreen(dialogue));
+        } catch (RuntimeException e) {
+            if (mc.player != null) {
+                mc.player.displayClientMessage(Component.literal("[Dreams] El dialogo " + id + " esta mal escrito: " + e.getMessage()), false);
+            }
+        }
+    }
 }

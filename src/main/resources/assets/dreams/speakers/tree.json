@@ -1,10 +1,11 @@
 {
   "name": "Árbol Madre",
-  "color": "#7FD99A",
+  "color": "#6FC8FF",
   "voice": {
     "sound": "minecraft:block.note_block.didgeridoo",
     "pitch": 0.75,
     "variance": 0.08,
     "volume": 0.7
-  }
+  },
+  "tree": true
 }

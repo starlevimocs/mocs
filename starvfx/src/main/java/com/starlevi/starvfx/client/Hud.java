@@ -79,6 +79,21 @@ public final class Hud {
             g.fillGradient(0, height - height / 3, width, height, 0, va);
         }
 
+        // aura del Arbol Madre: los bordes de la pantalla se tinen de su luz y laten despacio
+        float aura = Tree.aura;
+        if (aura > 0.01F && !Minecraft.getInstance().options.hideGui) {
+            float breath = 0.8F + 0.2F * Mth.sin((now % 600_000L) / 1000F * 0.9F);
+            int col = Tree.auraColor;
+            int edge = (int) (Mth.clamp(aura * breath * 0.42F, 0, 1) * 255) << 24 | col;
+            g.fillGradient(0, 0, width, height * 2 / 5, edge, col);
+            g.fillGradient(0, height - height * 2 / 5, width, height, col, edge);
+            g.fill(0, 0, width, height, (int) (aura * 0.07F * 255) << 24 | col);
+            if (Tree.talkable != null && Minecraft.getInstance().screen == null && !ClientScene.hudHidden()) {
+                g.drawCenteredString(Minecraft.getInstance().font, net.minecraft.network.chat.Component.translatable("gui.starvfx.tree_talk"),
+                        width / 2, height / 2 + 18, 0xFFFFFF);
+            }
+        }
+
         FADES.removeIf(f -> f.done(now));
         for (Fade f : FADES) {
             int a = (int) (Mth.clamp(f.alpha(now), 0, 1) * 255);

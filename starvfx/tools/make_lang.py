@@ -30,6 +30,15 @@ T = {
     'nothing_to_undo': ('No hay nada para deshacer', 'Nothing to undo'),
     'scene_undone': ('Se quitó lo último que anotaste', 'Removed the last thing you added'),
 }
+T.update({
+    'tree_placed': ('Árbol Madre "%s" plantado', 'Mother Tree "%s" placed'),
+    'tree_removed': ('Árbol "%s" quitado', 'Tree "%s" removed'),
+    'tree_missing': ('No hay un árbol llamado "%s"', 'There is no tree called "%s"'),
+    'tree_vitality': ('Vida del árbol "%s": %s%%', 'Tree "%s" vitality: %s%%'),
+    'tree_changed': ('Árbol "%s" actualizado', 'Tree "%s" updated'),
+    'tree_list': ('Árboles: %s', 'Trees: %s'),
+})
+EXTRA = {'gui.starvfx.tree_talk': ('Clic derecho: hablar con el Árbol Madre', 'Right click: speak with the Mother Tree')}
 NEUTRO = {'Usá': 'Usa', 'elegí': 'elige', 'estás parado': 'estás parado'}
 os.makedirs(OUT, exist_ok=True)
 for lang, idx, neutral in [('es_ar', 0, False), ('es_uy', 0, False), ('es_mx', 0, True), ('es_es', 0, True), ('es_cl', 0, True),
@@ -41,5 +50,7 @@ for lang, idx, neutral in [('es_ar', 0, False), ('es_uy', 0, False), ('es_mx', 0
             for a, b in NEUTRO.items():
                 s = s.replace(a, b)
         out['message.starvfx.' + k] = s
+    for k, v in EXTRA.items():
+        out[k] = v[idx]
     json.dump(out, open(os.path.join(OUT, lang + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2, sort_keys=True)
 print('ok')

@@ -69,10 +69,10 @@ public class SpeakerManager extends SimpleJsonResourceReloadListener {
                     GsonHelper.getAsFloat(v, "variance", 0.1F),
                     GsonHelper.getAsFloat(v, "volume", 0.6F));
         }
-        return new Speaker(id, name, color, Map.copyOf(portraits), voice);
+        return new Speaker(id, name, color, Map.copyOf(portraits), voice, GsonHelper.getAsBoolean(json, "tree", false));
     }
 
-    private static int parseColor(String text) {
+    public static int parseColor(String text) {
         String hex = text.startsWith("#") ? text.substring(1) : text;
         return Integer.parseInt(hex, 16) & 0xFFFFFF;
     }

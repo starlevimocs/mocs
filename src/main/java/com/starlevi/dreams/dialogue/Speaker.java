@@ -6,9 +6,10 @@ import java.util.Map;
 
 /**
  * Un personaje que habla: nombre, color, retratos por expresion y su "voz" de bips.
+ * Si {@code tree} es true, es el Arbol Madre: cuando habla, el arbol del mundo se enciende con el color de la linea.
  */
 public record Speaker(ResourceLocation id, String displayName, int color,
-                      Map<String, ResourceLocation> portraits, Voice voice) {
+                      Map<String, ResourceLocation> portraits, Voice voice, boolean tree) {
 
     /**
      * @param sound    id del sonido (vanilla o propio, definido en sounds.json)
@@ -22,7 +23,7 @@ public record Speaker(ResourceLocation id, String displayName, int color,
     }
 
     public static Speaker unknown(ResourceLocation id) {
-        return new Speaker(id, id.getPath(), 0xFFFFFF, Map.of(), Voice.DEFAULT);
+        return new Speaker(id, id.getPath(), 0xFFFFFF, Map.of(), Voice.DEFAULT, false);
     }
 
     /** Devuelve el retrato de la expresion, o el "neutral" si no existe, o null. */

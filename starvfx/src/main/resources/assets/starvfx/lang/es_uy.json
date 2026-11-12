@@ -1,4 +1,5 @@
 {
+  "gui.starvfx.tree_talk": "Clic derecho: hablar con el Árbol Madre",
   "message.starvfx.bad_name": "El nombre solo puede tener minúsculas, números y guion bajo",
   "message.starvfx.fx_added": "Efecto \"%s\" (%s) puesto en el mundo. Queda hasta que lo quites con /starvfx fx remove",
   "message.starvfx.fx_cleared": "Efectos quitados: %s",
@@ -19,6 +20,12 @@
   "message.starvfx.scene_undone": "Se quitó lo último que anotaste",
   "message.starvfx.scenes": "Escenas: %s",
   "message.starvfx.stopped": "Escenas cortadas: %s",
+  "message.starvfx.tree_changed": "Árbol \"%s\" actualizado",
+  "message.starvfx.tree_list": "Árboles: %s",
+  "message.starvfx.tree_missing": "No hay un árbol llamado \"%s\"",
+  "message.starvfx.tree_placed": "Árbol Madre \"%s\" plantado",
+  "message.starvfx.tree_removed": "Árbol \"%s\" quitado",
+  "message.starvfx.tree_vitality": "Vida del árbol \"%s\": %s%%",
   "message.starvfx.zone_added": "Zona de cámara fija \"%s\" creada. La cámara queda donde estás parado",
   "message.starvfx.zone_list": "Zonas: %s",
   "message.starvfx.zone_missing": "No hay una zona llamada \"%s\" en esta dimensión",

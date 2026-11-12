@@ -52,7 +52,29 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
         LOGGER.info("[Dreams] {} dialogo(s) cargados.", loaded.size());
     }
 
-    private static Dialogue parse(ResourceLocation id, JsonObject root) {
+    private static Dialogue.Cond cond(JsonObject o) {
+        if (!o.has("if")) {
+            return null;
+        }
+        JsonObject c = GsonHelper.getAsJsonObject(o, "if");
+        return new Dialogue.Cond(GsonHelper.getAsString(c, "quest"), GsonHelper.getAsString(c, "state"), GsonHelper.getAsBoolean(c, "not", false));
+    }
+
+    private static Dialogue.Action action(JsonObject o) {
+        if (!o.has("quest")) {
+            return null;
+        }
+        JsonObject q = GsonHelper.getAsJsonObject(o, "quest");
+        for (String type : List.of("accept", "turn_in", "contribute")) {
+            if (q.has(type)) {
+                return new Dialogue.Action(type, GsonHelper.getAsString(q, type));
+            }
+        }
+        return null;
+    }
+
+    /** Lee un dialogo de su json (tambien lo usa el servidor cuando manda uno de su carpeta de config). */
+    public static Dialogue parse(ResourceLocation id, JsonObject root) {
         String start = GsonHelper.getAsString(root, "start");
         JsonObject nodesJson = GsonHelper.getAsJsonObject(root, "nodes");
 
@@ -61,10 +83,11 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
             String nodeId = entry.getKey();
             JsonObject n = GsonHelper.convertToJsonObject(entry.getValue(), "nodo " + nodeId);
 
-            ResourceLocation speaker = new ResourceLocation(GsonHelper.getAsString(n, "speaker"));
+            ResourceLocation speaker = new ResourceLocation(GsonHelper.getAsString(n, "speaker", "dreams:narrator"));
             String expression = GsonHelper.getAsString(n, "expression", "neutral");
-            String text = GsonHelper.getAsString(n, "text");
+            String text = GsonHelper.getAsString(n, "text", "");
             String next = n.has("next") && !n.get("next").isJsonNull() ? GsonHelper.getAsString(n, "next") : null;
+            Integer color = n.has("color") ? SpeakerManager.parseColor(GsonHelper.getAsString(n, "color")) : null;
 
             List<Dialogue.Choice> choices = new ArrayList<>();
             if (n.has("choices")) {
@@ -73,10 +96,22 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
                     JsonObject c = GsonHelper.convertToJsonObject(el, "opcion");
                     choices.add(new Dialogue.Choice(
                             GsonHelper.getAsString(c, "text"),
-                            GsonHelper.getAsString(c, "next")));
+                            c.has("next") && !c.get("next").isJsonNull() ? GsonHelper.getAsString(c, "next") : null,
+                            cond(c), action(c)));
                 }
             }
-            nodes.put(nodeId, new Dialogue.Node(nodeId, speaker, expression, text, next, List.copyOf(choices)));
+            List<Dialogue.Branch> branches = new ArrayList<>();
+            if (n.has("branch")) {
+                for (JsonElement el : GsonHelper.getAsJsonArray(n, "branch")) {
+                    JsonObject b = GsonHelper.convertToJsonObject(el, "desvio");
+                    Dialogue.Cond cond = cond(b);
+                    if (cond != null) {
+                        branches.add(new Dialogue.Branch(cond, GsonHelper.getAsString(b, "next")));
+                    }
+                }
+            }
+            nodes.put(nodeId, new Dialogue.Node(nodeId, speaker, expression, text, next, List.copyOf(choices), color,
+                    List.copyOf(branches), action(n)));
         }
 
         if (!nodes.containsKey(start)) {
@@ -87,8 +122,13 @@ public class DialogueManager extends SimpleJsonResourceReloadListener {
                 throw new IllegalArgumentException("el nodo '" + node.id() + "' apunta a '" + node.next() + "', que no existe");
             }
             for (Dialogue.Choice choice : node.choices()) {
-                if (!nodes.containsKey(choice.next())) {
+                if (choice.next() != null && !nodes.containsKey(choice.next())) {
                     throw new IllegalArgumentException("una opcion del nodo '" + node.id() + "' apunta a '" + choice.next() + "', que no existe");
+                }
+            }
+            for (Dialogue.Branch branch : node.branches()) {
+                if (!nodes.containsKey(branch.next())) {
+                    throw new IllegalArgumentException("un desvio del nodo '" + node.id() + "' apunta a '" + branch.next() + "', que no existe");
                 }
             }
         }

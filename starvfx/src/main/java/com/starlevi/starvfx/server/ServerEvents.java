@@ -26,6 +26,7 @@ public final class ServerEvents {
         if (event.phase == TickEvent.Phase.END) {
             Director.tick(event.getServer());
             Lifecycle.tick(event.getServer());
+            Trees.tick(event.getServer());
         }
     }
 
@@ -77,8 +78,17 @@ public final class ServerEvents {
         }
     }
 
+    /** Cerca del Arbol Madre nadie se lastima al caer. */
+    @SubscribeEvent
+    public static void fall(net.minecraftforge.event.entity.living.LivingFallEvent event) {
+        if (event.getEntity() instanceof ServerPlayer p && Trees.aura(p) > 0.05F) {
+            event.setCanceled(true);
+        }
+    }
+
     @SubscribeEvent
     public static void stopped(ServerStoppedEvent event) {
         Director.reset();
+        Trees.reset();
     }
 }

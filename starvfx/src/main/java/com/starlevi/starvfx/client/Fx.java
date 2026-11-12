@@ -245,7 +245,7 @@ public final class Fx {
         if (mc.level == null) {
             return;
         }
-        boolean any = !WORLD.isEmpty() || PlayerFx.hasWorldVisuals();
+        boolean any = !WORLD.isEmpty() || PlayerFx.hasWorldVisuals() || !Tree.TREES.isEmpty();
         for (ClientScene s : ClientScene.ACTIVE) {
             any |= !s.effects.isEmpty();
         }
@@ -265,6 +265,11 @@ public final class Fx {
             for (Effect e : s.effects) {
                 draw(e);
             }
+        }
+        try {
+            Tree.renderAll(CTX);
+        } catch (RuntimeException ex) {
+            StarVfx.LOGGER.warn("[Star VFX] Fallo el dibujo del arbol", ex);
         }
         PlayerFx.renderWorld(CTX);
     }

@@ -1,4 +1,5 @@
 {
+  "gui.starvfx.tree_talk": "Right click: speak with the Mother Tree",
   "message.starvfx.bad_name": "The name may only have lowercase letters, digits and underscores",
   "message.starvfx.fx_added": "Effect \"%s\" (%s) placed in the world. It stays until removed with /starvfx fx remove",
   "message.starvfx.fx_cleared": "Effects removed: %s",
@@ -19,6 +20,12 @@
   "message.starvfx.scene_undone": "Removed the last thing you added",
   "message.starvfx.scenes": "Scenes: %s",
   "message.starvfx.stopped": "Scenes stopped: %s",
+  "message.starvfx.tree_changed": "Tree \"%s\" updated",
+  "message.starvfx.tree_list": "Trees: %s",
+  "message.starvfx.tree_missing": "There is no tree called \"%s\"",
+  "message.starvfx.tree_placed": "Mother Tree \"%s\" placed",
+  "message.starvfx.tree_removed": "Tree \"%s\" removed",
+  "message.starvfx.tree_vitality": "Tree \"%s\" vitality: %s%%",
   "message.starvfx.zone_added": "Fixed camera zone \"%s\" created. The camera stays where you stand",
   "message.starvfx.zone_list": "Zones: %s",
   "message.starvfx.zone_missing": "There is no zone called \"%s\" in this dimension",

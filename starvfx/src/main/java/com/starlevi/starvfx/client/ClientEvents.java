@@ -73,6 +73,7 @@ public final class ClientEvents {
             ClientScene.tickAll(mc);
             Cine.tick(mc);
             PlayerFx.tick(mc);
+            Tree.tickAll(mc);
         }
 
         @SubscribeEvent
@@ -136,6 +137,18 @@ public final class ClientEvents {
             if (ClientScene.locked() || PlayerFx.localBusy()) {
                 event.setSwingHand(false);
                 event.setCanceled(true);
+                return;
+            }
+            // clic derecho mirando al Arbol Madre de cerca: hablarle
+            Tree tree = Tree.talkable;
+            if (tree != null && event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.hitResult == null || mc.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.MISS
+                        || (mc.player != null && mc.player.getMainHandItem().isEmpty() && mc.hitResult.getType() != net.minecraft.world.phys.HitResult.Type.ENTITY)) {
+                    com.starlevi.starvfx.net.Net.toServer(new com.starlevi.starvfx.net.Net.TreeUse(tree.id));
+                    event.setSwingHand(true);
+                    event.setCanceled(true);
+                }
             }
         }
 
@@ -158,6 +171,10 @@ public final class ClientEvents {
             Cine.View v = Cine.last;
             if (v != null && event.usedConfiguredFov()) {
                 event.setFOV(v.fov());
+            } else if (v == null && Tree.aura > 0.01F) {
+                // ante el arbol todo se siente un poco mas amplio, y respira
+                float t = (net.minecraft.Util.getMillis() % 600_000L) / 1000F;
+                event.setFOV(event.getFOV() * (1 + Tree.aura * (0.05F + 0.012F * Mth.sin(t * 0.7F))));
             }
         }
 
@@ -167,6 +184,11 @@ public final class ClientEvents {
             if (v != null) {
                 event.setRoll(v.roll());
             } else {
+                if (Tree.aura > 0.01F) {
+                    // flotar: la vista se mece apenas
+                    float t = (net.minecraft.Util.getMillis() % 600_000L) / 1000F;
+                    event.setRoll(event.getRoll() + Mth.sin(t * 0.45F) * 0.7F * Tree.aura);
+                }
                 float[] s = Cine.shakeOffsets();
                 if (s != null) {
                     event.setYaw(event.getYaw() + s[0] * 0.6F);
@@ -182,6 +204,9 @@ public final class ClientEvents {
             Fx.WORLD.clear();
             PlayerFx.clear();
             Cine.ZONES.clear();
+            Tree.TREES.clear();
+            Tree.aura = 0;
+            TreeMusic.stopAll();
             Cine.zone = null;
             Cine.last = null;
             Hud.reset();

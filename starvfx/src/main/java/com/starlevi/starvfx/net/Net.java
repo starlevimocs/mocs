@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 
 /** Mensajes del servidor a los clientes (el cliente no manda nada: todo se maneja con comandos). */
 public final class Net {
-    private static final String VERSION = "1";
+    private static final String VERSION = "2";
     private static final int MAX_JSON = 1 << 18;
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(StarVfx.MOD_ID, "main"), () -> VERSION, VERSION::equals, VERSION::equals);
@@ -34,6 +34,9 @@ public final class Net {
         CHANNEL.registerMessage(id++, Fx.class, Fx::encode, Fx::decode, Fx::handle, down);
         CHANNEL.registerMessage(id++, PlayerAnim.class, PlayerAnim::encode, PlayerAnim::decode, PlayerAnim::handle, down);
         CHANNEL.registerMessage(id++, Zones.class, Zones::encode, Zones::decode, Zones::handle, down);
+        CHANNEL.registerMessage(id++, Trees.class, Trees::encode, Trees::decode, Trees::handle, down);
+        CHANNEL.registerMessage(id++, TreeSpeak.class, TreeSpeak::encode, TreeSpeak::decode, TreeSpeak::handle, down);
+        CHANNEL.registerMessage(id++, TreeUse.class, TreeUse::encode, TreeUse::decode, TreeUse::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 
     public static void toPlayer(ServerPlayer player, Object msg) {
@@ -43,6 +46,10 @@ public final class Net {
     /** A todos los que estan en esa dimension. */
     public static void toLevel(ServerLevel level, Object msg) {
         CHANNEL.send(PacketDistributor.DIMENSION.with(level::dimension), msg);
+    }
+
+    public static void toServer(Object msg) {
+        CHANNEL.sendToServer(msg);
     }
 
     private static void client(Supplier<NetworkEvent.Context> ctx, Runnable run) {
@@ -156,6 +163,59 @@ public final class Net {
 
         public void handle(Supplier<NetworkEvent.Context> ctx) {
             client(ctx, () -> com.starlevi.starvfx.client.ClientNet.zones(this));
+        }
+    }
+
+    /** Todos los arboles madre (json). */
+    public record Trees(String json) {
+        public void encode(FriendlyByteBuf buf) {
+            buf.writeUtf(json, MAX_JSON);
+        }
+
+        public static Trees decode(FriendlyByteBuf buf) {
+            return new Trees(buf.readUtf(MAX_JSON));
+        }
+
+        public void handle(Supplier<NetworkEvent.Context> ctx) {
+            client(ctx, () -> com.starlevi.starvfx.client.ClientNet.trees(this));
+        }
+    }
+
+    /** El arbol "habla": se tine de ese color durante esos segundos (lo ven todos). */
+    public record TreeSpeak(String id, int color, float seconds) {
+        public void encode(FriendlyByteBuf buf) {
+            buf.writeUtf(id, 64);
+            buf.writeInt(color);
+            buf.writeFloat(seconds);
+        }
+
+        public static TreeSpeak decode(FriendlyByteBuf buf) {
+            return new TreeSpeak(buf.readUtf(64), buf.readInt(), buf.readFloat());
+        }
+
+        public void handle(Supplier<NetworkEvent.Context> ctx) {
+            client(ctx, () -> com.starlevi.starvfx.client.ClientNet.treeSpeak(this));
+        }
+    }
+
+    /** Cliente -> servidor: el jugador le hablo al arbol (clic derecho mirandolo de cerca). */
+    public record TreeUse(String id) {
+        public void encode(FriendlyByteBuf buf) {
+            buf.writeUtf(id, 64);
+        }
+
+        public static TreeUse decode(FriendlyByteBuf buf) {
+            return new TreeUse(buf.readUtf(64));
+        }
+
+        public void handle(Supplier<NetworkEvent.Context> ctx) {
+            ServerPlayer player = ctx.get().getSender();
+            ctx.get().enqueueWork(() -> {
+                if (player != null) {
+                    com.starlevi.starvfx.server.Trees.onUse(player, id);
+                }
+            });
+            ctx.get().setPacketHandled(true);
         }
     }
 }

@@ -1,0 +1,185 @@
+{
+  "start": "inicio",
+  "nodes": {
+    "inicio": {
+      "speaker": "dreams:tree",
+      "text": "{player}... Te siento cerca. Acércate, pequeña hoja.",
+      "next": "menu",
+      "branch": [
+        {
+          "if": {
+            "quest": "primera_luz",
+            "state": "ready"
+          },
+          "next": "luz_lista"
+        }
+      ]
+    },
+    "menu": {
+      "speaker": "dreams:tree",
+      "text": "¿Qué buscas en mí?",
+      "color": "#6FC8FF",
+      "choices": [
+        {
+          "text": "¿Cómo puedo ayudarte?",
+          "next": "luz_ofrece",
+          "if": {
+            "quest": "primera_luz",
+            "state": "available"
+          }
+        },
+        {
+          "text": "Sobre lo que me pediste...",
+          "next": "luz_falta",
+          "if": {
+            "quest": "primera_luz",
+            "state": "active"
+          }
+        },
+        {
+          "text": "¿Qué podemos hacer entre todos?",
+          "next": "raices_ofrece",
+          "if": {
+            "quest": "raices_dormidas",
+            "state": "available"
+          }
+        },
+        {
+          "text": "Traigo algo para tus raíces",
+          "next": "raices_aporte",
+          "if": {
+            "quest": "raices_dormidas",
+            "state": "active"
+          }
+        },
+        {
+          "text": "¿Quién eres?",
+          "next": "quien"
+        },
+        {
+          "text": "Solo quería verte",
+          "next": "adios"
+        }
+      ]
+    },
+    "quien": {
+      "speaker": "dreams:tree",
+      "text": "Soy la que soñó este mundo. Cada hoja que cae de mí despierta como uno de ustedes.",
+      "color": "#B9A2FF",
+      "next": "quien2"
+    },
+    "quien2": {
+      "speaker": "dreams:tree",
+      "text": "Mientras yo brille, el sueño sigue. Si me apago... no quiero que lo descubran.",
+      "color": "#8E7CC3",
+      "next": "menu"
+    },
+    "luz_ofrece": {
+      "speaker": "dreams:tree",
+      "text": "Mis raíces tienen hambre. Tráeme polvo de hueso, dieciséis puñados, y sentiré la tierra otra vez.",
+      "color": "#8DFFB0",
+      "choices": [
+        {
+          "text": "Lo haré",
+          "next": "luz_gracias",
+          "quest": {
+            "accept": "primera_luz"
+          }
+        },
+        {
+          "text": "Ahora no puedo",
+          "next": "adios"
+        }
+      ]
+    },
+    "luz_gracias": {
+      "speaker": "dreams:tree",
+      "text": "Ve con cuidado. Yo te espero aquí; no sé hacer otra cosa.",
+      "color": "#8DFFB0",
+      "next": null
+    },
+    "luz_falta": {
+      "speaker": "dreams:tree",
+      "text": "Todavía no alcanza: llevas {progress:primera_luz}. No te apures, pequeña hoja.",
+      "color": "#9AD0FF",
+      "next": null
+    },
+    "luz_lista": {
+      "speaker": "dreams:tree",
+      "text": "Lo trajiste... Puedo olerlo desde aquí.",
+      "color": "#FFE9A8",
+      "choices": [
+        {
+          "text": "Entregar el polvo de hueso",
+          "next": "luz_fin",
+          "quest": {
+            "turn_in": "primera_luz"
+          }
+        },
+        {
+          "text": "Todavía no",
+          "next": "menu"
+        }
+      ]
+    },
+    "luz_fin": {
+      "speaker": "dreams:tree",
+      "text": "Ahhh... Hace tanto que no sentía esto. Gracias. Toma: es poco, pero nació de mí.",
+      "color": "#FFE9A8",
+      "next": null
+    },
+    "raices_ofrece": {
+      "speaker": "dreams:tree",
+      "text": "Hay un frío que ninguna hoja puede quitar sola. Bayas que brillan y fragmentos de amatista: si todos traen un poco, despertaré mis raíces dormidas.",
+      "color": "#B9A2FF",
+      "choices": [
+        {
+          "text": "Se lo diré a todos",
+          "next": "raices_inicio",
+          "quest": {
+            "accept": "raices_dormidas"
+          }
+        },
+        {
+          "text": "Es demasiado",
+          "next": "adios"
+        }
+      ]
+    },
+    "raices_inicio": {
+      "speaker": "dreams:tree",
+      "text": "Entonces que empiece. Cada cosa que me traigan la sentiré.",
+      "color": "#B9A2FF",
+      "next": null
+    },
+    "raices_aporte": {
+      "speaker": "dreams:tree",
+      "text": "Deja aquí lo que tengas. Entre todos llevan {progress:raices_dormidas}.",
+      "color": "#B9A2FF",
+      "choices": [
+        {
+          "text": "Dar lo que traigo",
+          "next": "raices_gracias",
+          "quest": {
+            "contribute": "raices_dormidas"
+          }
+        },
+        {
+          "text": "Todavía no tengo nada",
+          "next": "adios"
+        }
+      ]
+    },
+    "raices_gracias": {
+      "speaker": "dreams:tree",
+      "text": "Lo siento bajar hasta el fondo. Gracias, pequeña hoja.",
+      "color": "#8DFFB0",
+      "next": null
+    },
+    "adios": {
+      "speaker": "dreams:tree",
+      "text": "Vuelve cuando quieras. Aquí el tiempo pasa despacio.",
+      "next": null
+    }
+  }
+}

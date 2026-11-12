@@ -44,6 +44,13 @@ public final class VfxCommands {
 
     private static final Map<UUID, Editing> EDITING = new HashMap<>();
     private static final SuggestionProvider<CommandSourceStack> SCENES = (c, b) -> SharedSuggestionProvider.suggest(Scenes.list(), b);
+    private static final SuggestionProvider<CommandSourceStack> TREES = (c, b) -> {
+        java.util.List<String> ids = new java.util.ArrayList<>();
+        for (JsonElement e : WorldData.get(c.getSource().getServer()).trees()) {
+            ids.add(Geo.str(e.getAsJsonObject(), "id", ""));
+        }
+        return SharedSuggestionProvider.suggest(ids, b);
+    };
     private static final SuggestionProvider<CommandSourceStack> TYPES = (c, b) -> SharedSuggestionProvider.suggest(EFFECTS, b);
 
     private VfxCommands() {
@@ -172,6 +179,57 @@ public final class VfxCommands {
                             }
                             return ok(c, "zone_list", sb.length() == 0 ? "-" : sb.toString());
                         })))
+                // ---- arbol madre
+                .then(literal("tree")
+                        .then(literal("place").then(argument("id", StringArgumentType.word())
+                                .executes(c -> treePlace(c, null, 160))
+                                .then(argument("pos", Vec3Argument.vec3()).executes(c -> treePlace(c, Vec3Argument.getVec3(c, "pos"), 160))
+                                        .then(argument("size", FloatArgumentType.floatArg(20, 400))
+                                                .executes(c -> treePlace(c, Vec3Argument.getVec3(c, "pos"), FloatArgumentType.getFloat(c, "size")))))))
+                        .then(literal("remove").then(argument("id", StringArgumentType.word()).suggests(TREES).executes(c -> {
+                            String id = StringArgumentType.getString(c, "id");
+                            WorldData data = WorldData.get(c.getSource().getServer());
+                            if (!data.removeTree(id)) {
+                                return fail(c, "tree_missing", id);
+                            }
+                            data.syncTrees(c.getSource().getServer());
+                            return ok(c, "tree_removed", id);
+                        })))
+                        .then(literal("vitality").then(argument("id", StringArgumentType.word()).suggests(TREES)
+                                .then(literal("set").then(argument("percent", FloatArgumentType.floatArg(0, 100)).executes(c -> treeVitality(c, false))))
+                                .then(literal("add").then(argument("percent", FloatArgumentType.floatArg(-100, 100)).executes(c -> treeVitality(c, true))))))
+                        .then(literal("color").then(argument("id", StringArgumentType.word()).suggests(TREES)
+                                .then(argument("color", StringArgumentType.word()).executes(c -> treeSet(c, "color", StringArgumentType.getString(c, "color"))))))
+                        .then(literal("use").then(argument("id", StringArgumentType.word()).suggests(TREES)
+                                .then(argument("command", StringArgumentType.greedyString()).executes(c -> treeSet(c, "on_use", StringArgumentType.getString(c, "command"))))))
+                        .then(literal("sound").then(argument("id", StringArgumentType.word()).suggests(TREES)
+                                .then(literal("hum").then(argument("sound", StringArgumentType.greedyString()).executes(c -> treeSet(c, "hum", StringArgumentType.getString(c, "sound").trim()))))
+                                .then(literal("chime").then(argument("sound", StringArgumentType.greedyString()).executes(c -> treeSet(c, "chime", StringArgumentType.getString(c, "sound").trim()))))
+                                .then(literal("music").then(argument("sound", StringArgumentType.greedyString()).executes(c -> treeSet(c, "music", StringArgumentType.getString(c, "sound").trim()))))
+                                .then(literal("music_volume").then(argument("percent", FloatArgumentType.floatArg(0, 100)).executes(c -> {
+                                    String id = StringArgumentType.getString(c, "id");
+                                    WorldData data = WorldData.get(c.getSource().getServer());
+                                    JsonObject tree = data.tree(id);
+                                    if (tree == null) {
+                                        return fail(c, "tree_missing", id);
+                                    }
+                                    tree.addProperty("music_volume", FloatArgumentType.getFloat(c, "percent") / 100F);
+                                    data.setDirty();
+                                    data.syncTrees(c.getSource().getServer());
+                                    return ok(c, "tree_changed", id);
+                                })))))
+                        .then(literal("speak").then(argument("id", StringArgumentType.word()).suggests(TREES)
+                                .then(argument("color", StringArgumentType.word()).executes(c -> treeSpeak(c, 6))
+                                        .then(num("seconds").executes(c -> treeSpeak(c, f(c, "seconds", 6)))))))
+                        .then(literal("list").executes(c -> {
+                            StringBuilder sb = new StringBuilder();
+                            for (JsonElement e : WorldData.get(c.getSource().getServer()).trees()) {
+                                JsonObject o = e.getAsJsonObject();
+                                sb.append(sb.length() > 0 ? ", " : "").append(Geo.str(o, "id", "?")).append(" (")
+                                        .append(Math.round(Geo.num(o, "vitality", 1) * 100)).append("%)");
+                            }
+                            return ok(c, "tree_list", sb.length() == 0 ? "-" : sb.toString());
+                        })))
                 // ---- animaciones de jugador (para probar o para la historia)
                 .then(literal("anim").then(argument("player", EntityArgument.players())
                         .then(literal("sprout").executes(c -> {
@@ -269,6 +327,67 @@ public final class VfxCommands {
                             Director.play(c.getSource().getLevel(), scene, ed.origin, 0);
                             return 1;
                         }))));
+    }
+
+    private static int treePlace(CommandContext<CommandSourceStack> c, Vec3 pos, float size) {
+        String id = StringArgumentType.getString(c, "id");
+        Vec3 at = pos != null ? pos : here(c.getSource());
+        WorldData data = WorldData.get(c.getSource().getServer());
+        JsonObject old = data.tree(id);
+        JsonObject tree = Trees.create(c.getSource().getLevel(), id, at, size);
+        if (old != null) {
+            // moverlo no le cambia la vida, el color ni lo que hace al hablarle
+            for (String k : List.of("vitality", "color", "on_use", "hum", "chime", "music", "music_volume")) {
+                if (old.has(k)) {
+                    tree.add(k, old.get(k));
+                }
+            }
+        }
+        data.putTree(tree);
+        data.syncTrees(c.getSource().getServer());
+        return ok(c, "tree_placed", id);
+    }
+
+    private static int treeVitality(CommandContext<CommandSourceStack> c, boolean add) {
+        String id = StringArgumentType.getString(c, "id");
+        WorldData data = WorldData.get(c.getSource().getServer());
+        JsonObject tree = data.tree(id);
+        if (tree == null) {
+            return fail(c, "tree_missing", id);
+        }
+        float v = FloatArgumentType.getFloat(c, "percent") / 100F;
+        if (add) {
+            v += Geo.num(tree, "vitality", 1);
+        }
+        v = Math.max(0, Math.min(1, v));
+        tree.addProperty("vitality", Math.round(v * 1000) / 1000F);
+        data.setDirty();
+        data.syncTrees(c.getSource().getServer());
+        return ok(c, "tree_vitality", id, String.valueOf(Math.round(v * 100)));
+    }
+
+    private static int treeSet(CommandContext<CommandSourceStack> c, String key, String value) {
+        String id = StringArgumentType.getString(c, "id");
+        WorldData data = WorldData.get(c.getSource().getServer());
+        JsonObject tree = data.tree(id);
+        if (tree == null) {
+            return fail(c, "tree_missing", id);
+        }
+        tree.addProperty(key, value);
+        data.setDirty();
+        data.syncTrees(c.getSource().getServer());
+        return ok(c, "tree_changed", id);
+    }
+
+    private static int treeSpeak(CommandContext<CommandSourceStack> c, float seconds) {
+        String id = StringArgumentType.getString(c, "id");
+        if (WorldData.get(c.getSource().getServer()).tree(id) == null) {
+            return fail(c, "tree_missing", id);
+        }
+        JsonObject o = new JsonObject();
+        o.addProperty("c", StringArgumentType.getString(c, "color"));
+        Trees.speak(c.getSource().getServer(), id, Geo.color(o, "c", 0x6FC8FF), seconds);
+        return 1;
     }
 
     private static JsonObject event(float t, String type) {
