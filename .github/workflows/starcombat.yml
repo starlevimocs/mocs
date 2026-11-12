@@ -1,0 +1,45 @@
+name: Compilar Star Combat
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'starcombat/**'
+      - '.github/workflows/starcombat.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.8
+
+      - name: Compilar Star Combat
+        run: gradle -p starcombat build --no-daemon --console=plain
+
+      - name: Guardar el jar como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: starcombat
+          path: starcombat/build/libs/starcombat-*.jar
+          if-no-files-found: error
+
+      - name: Publicar en Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Ultima version
+          files: starcombat/build/libs/starcombat-*.jar
+          prerelease: true

@@ -1,0 +1,15 @@
+{
+  "item.starcombat.ember_fangs": "Colmillos de Brasa",
+  "item.starcombat.ember_fangs_glow": "Brasa",
+  "item.starcombat.ember_fangs.lore": "Dos hojas atadas a quien las empuña. No se sueltan.",
+  "item.starcombat.ember_fangs.tip1": "Clic izquierdo (se puede mantener): combo de cuatro golpes",
+  "item.starcombat.ember_fangs.tip2": "Clic derecho: barrido en giro y martillo",
+  "item.starcombat.ember_fangs.tip3": "Dos livianos y clic derecho: ciclón",
+  "item.starcombat.ember_fangs.tip4": "Clic derecho en el aire: caída con estallido",
+  "item.starcombat.ember_fangs.tip5": "Tecla del gancho (R): engancharse y subir, o atraer a una criatura",
+  "itemGroup.starcombat": "Star Combat",
+  "key.categories.starcombat": "Star Combat",
+  "key.starcombat.grapple": "Gancho de cadenas",
+  "commands.starcombat.give": "Colmillos de Brasa entregados a %s jugador(es)",
+  "commands.starcombat.reload": "Configuración de Star Combat recargada"
+}

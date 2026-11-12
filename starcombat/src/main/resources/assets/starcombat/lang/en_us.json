@@ -1,0 +1,15 @@
+{
+  "item.starcombat.ember_fangs": "Ember Fangs",
+  "item.starcombat.ember_fangs_glow": "Ember",
+  "item.starcombat.ember_fangs.lore": "Two blades bound to their wielder. They do not let go.",
+  "item.starcombat.ember_fangs.tip1": "Left click (can be held): four-hit combo",
+  "item.starcombat.ember_fangs.tip2": "Right click: spinning sweep and hammer",
+  "item.starcombat.ember_fangs.tip3": "Two light hits, then right click: cyclone",
+  "item.starcombat.ember_fangs.tip4": "Right click in the air: plunge with a burst",
+  "item.starcombat.ember_fangs.tip5": "Grapple key (R): hook and climb, or pull a creature",
+  "itemGroup.starcombat": "Star Combat",
+  "key.categories.starcombat": "Star Combat",
+  "key.starcombat.grapple": "Chain grapple",
+  "commands.starcombat.give": "Gave Ember Fangs to %s player(s)",
+  "commands.starcombat.reload": "Star Combat config reloaded"
+}
