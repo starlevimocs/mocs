@@ -2,6 +2,7 @@ package com.starlevi.starcombat.client;
 
 import com.starlevi.starcombat.Moves;
 import com.starlevi.starcombat.Net;
+import com.starlevi.starcombat.Sounds;
 import com.starlevi.starcombat.StarCombat;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
@@ -11,7 +12,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -359,7 +359,7 @@ public final class ClientCombat {
         }
         Object[] found = findGrapple(mc, p);
         if (found == null) {
-            p.level().playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.CHAIN_FALL, SoundSource.PLAYERS, 0.5F, 1.4F, false);
+            p.level().playLocalSound(p.getX(), p.getY(), p.getZ(), Sounds.CHAIN.get(), SoundSource.PLAYERS, 0.5F, 1.4F, false);
             return;
         }
         Vec3 anchor = (Vec3) found[0];
@@ -368,7 +368,7 @@ public final class ClientCombat {
         pulling = target < 0;
         grappleReadyMs = now + grappleCooldown * 50L;
         Net.toServer(new Net.GrappleReq(anchor.x, anchor.y, anchor.z, target));
-        p.level().playLocalSound(p.getX(), p.getY(), p.getZ(), SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 0.9F, 0.7F, false);
+        p.level().playLocalSound(p.getX(), p.getY(), p.getZ(), Sounds.GRAPPLE.get(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
         PunchyCompat.attack(true, true);
     }
 
@@ -516,8 +516,7 @@ public final class ClientCombat {
             if (s.grapple && !s.arrived && (now - s.gStartMs) / 50F >= s.flyTicks) {
                 s.arrived = true;
                 Vec3 a = anchorNow(s, 1);
-                level.playLocalSound(a.x, a.y, a.z, SoundEvents.TRIDENT_HIT_GROUND, SoundSource.PLAYERS, 1.0F, 0.8F, false);
-                level.playLocalSound(a.x, a.y, a.z, SoundEvents.CHAIN_PLACE, SoundSource.PLAYERS, 1.0F, 0.7F, false);
+                level.playLocalSound(a.x, a.y, a.z, Sounds.LATCH.get(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
                 burst(level, a, 10, 0.12);
             }
             for (int side = -1; side <= 1; side += 2) {
@@ -547,11 +546,10 @@ public final class ClientCombat {
         Moves.Move m = s.move;
         if (k == 0) {
             if (m.prep) {
-                sound(level, e, SoundEvents.FIRECHARGE_USE, 0.6F, 0.6F);
+                sound(level, e, Sounds.IGNITE.get(), 0.9F, 1.0F);
             } else {
-                sound(level, e, SoundEvents.PLAYER_ATTACK_SWEEP, 0.8F, m.heavy ? 0.6F : 0.95F + m.idx * 0.06F);
-                sound(level, e, SoundEvents.CHAIN_PLACE, 0.7F, m.heavy ? 0.6F : 0.9F);
-                sound(level, e, SoundEvents.FIRECHARGE_USE, 0.35F, m.heavy ? 0.7F : 1.2F);
+                sound(level, e, m.heavy ? Sounds.SWING_HEAVY.get() : Sounds.SWING.get(), 0.9F, m.heavy ? 1.0F : 0.95F + m.idx * 0.05F);
+                sound(level, e, Sounds.CHAIN.get(), 0.6F, m.heavy ? 0.8F : 1.0F);
             }
         }
         for (Moves.Hit h : m.hits) {
@@ -563,19 +561,17 @@ public final class ClientCombat {
                 Vec3 at = e.position().add(f.scale(h.range - 0.9)).add(0, 0.2, 0);
                 burst(level, at, 26, 0.22);
                 level.addParticle(ParticleTypes.EXPLOSION, at.x, at.y + 0.3, at.z, 0, 0, 0);
-                level.playLocalSound(at.x, at.y, at.z, SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 0.9F, 0.7F, false);
-                level.playLocalSound(at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.35F, 1.5F, false);
+                level.playLocalSound(at.x, at.y, at.z, Sounds.SLAM.get(), SoundSource.PLAYERS, 0.8F, 1.3F, false);
             } else if (h.fx == 2) {
                 Vec3 at = e.position().add(f.scale(h.fwd)).add(0, 0.15, 0);
                 ring(level, at, h.range);
                 level.addParticle(ParticleTypes.EXPLOSION, at.x, at.y + 0.4, at.z, 0, 0, 0);
-                level.playLocalSound(at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.6F, 1.25F, false);
-                level.playLocalSound(at.x, at.y, at.z, SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 1.0F, 0.55F, false);
+                level.playLocalSound(at.x, at.y, at.z, Sounds.SLAM.get(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
                 if (e == Minecraft.getInstance().player) {
                     shake = Math.min(1.6F, shake + 0.7F);
                 }
             } else if (k > 0) {
-                sound(level, e, SoundEvents.PLAYER_ATTACK_SWEEP, 0.5F, 1.2F);
+                sound(level, e, Sounds.SWING.get(), 0.5F, 1.25F);
             }
         }
     }

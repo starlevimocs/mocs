@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "starcombat.refmap.json",
   "client": [
-    "HumanoidModelMixin"
+    "HumanoidModelMixin",
+    "ItemInHandLayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

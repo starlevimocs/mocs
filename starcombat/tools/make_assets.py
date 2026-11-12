@@ -143,9 +143,10 @@ xt = spine(Y1)
 base.append(box([xt, Y1, 7.6], [xt + 0.9, Y1 + 0.8, 8.4], EDGE))
 
 FIRST = {"rotation": [0, -90, -20], "translation": [1.13, 0.31, 0.07], "scale": [0.6, 0.6, 0.6]}
-ZERO = {"scale": [0, 0, 0]}
+# en tercera persona se empuña como una espada; Punchy usa esta misma pose para sus manos en primera persona
+THIRD = {"rotation": [0, -90, 10], "translation": [0, 0, 1.2], "scale": [0.7, 0.7, 0.7]}
 display = {
-    "thirdperson_righthand": ZERO, "thirdperson_lefthand": ZERO,
+    "thirdperson_righthand": THIRD,
     "firstperson_righthand": FIRST,
     "gui": {"rotation": [0, 0, -40], "translation": [-1.8, -2.1, 0], "scale": [0.5, 0.5, 0.5]},
     "ground": {"translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
@@ -156,7 +157,7 @@ tex = {"0": "starcombat:item/ember_fangs", "particle": "starcombat:item/ember_fa
 json.dump({"credit": "Star Combat", "texture_size": [32, 32], "textures": tex, "gui_light": "front",
            "elements": base, "display": display}, open(out('models', 'item', 'ember_fangs.json'), 'w'), separators=(',', ':'))
 json.dump({"credit": "Star Combat", "texture_size": [32, 32], "textures": tex, "gui_light": "front",
-           "elements": glowels, "display": {}}, open(out('models', 'item', 'ember_fangs_glow.json'), 'w'), separators=(',', ':'))
+           "elements": glowels, "display": display}, open(out('models', 'item', 'ember_fangs_glow.json'), 'w'), separators=(',', ':'))
 
 # ------------------------------------------------------------------ idiomas
 ES = {
@@ -171,6 +172,13 @@ ES = {
     "itemGroup.starcombat": "Star Combat",
     "key.categories.starcombat": "Star Combat",
     "key.starcombat.grapple": "Gancho de cadenas",
+    "subtitles.starcombat.swing": "Hojas cortan el aire",
+    "subtitles.starcombat.chain": "Cadenas",
+    "subtitles.starcombat.slam": "Estallido de brasas",
+    "subtitles.starcombat.hit": "Golpe de hoja",
+    "subtitles.starcombat.grapple": "Gancho lanzado",
+    "subtitles.starcombat.latch": "Gancho clavado",
+    "subtitles.starcombat.ignite": "Brasas se encienden",
     "commands.starcombat.give": "Colmillos de Brasa entregados a %s jugador(es)",
     "commands.starcombat.reload": "Configuración de Star Combat recargada",
 }
@@ -186,6 +194,13 @@ EN = {
     "itemGroup.starcombat": "Star Combat",
     "key.categories.starcombat": "Star Combat",
     "key.starcombat.grapple": "Chain grapple",
+    "subtitles.starcombat.swing": "Blades cut the air",
+    "subtitles.starcombat.chain": "Chains rattle",
+    "subtitles.starcombat.slam": "Ember burst",
+    "subtitles.starcombat.hit": "Blade hits",
+    "subtitles.starcombat.grapple": "Grapple thrown",
+    "subtitles.starcombat.latch": "Grapple latches",
+    "subtitles.starcombat.ignite": "Embers ignite",
     "commands.starcombat.give": "Gave Ember Fangs to %s player(s)",
     "commands.starcombat.reload": "Star Combat config reloaded",
 }

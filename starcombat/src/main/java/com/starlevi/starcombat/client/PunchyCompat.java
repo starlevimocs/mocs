@@ -20,6 +20,9 @@ final class PunchyCompat {
     static void init() {
         try {
             PunchyApi.heldItemLook(StarCombat.MOD_ID, PunchyCompat::look);
+            // Punchy reconoce las espadas por el nombre; a los Colmillos hay que decirle que lo son
+            PunchyApi.itemKind(StarCombat.MOD_ID, stack ->
+                    stack instanceof ItemStack st && st.is(StarCombat.EMBER_FANGS.get()) ? "SWORD" : null);
             active = true;
             StarCombat.LOGGER.info("[Star Combat] Compatibilidad con Punchy activa");
         } catch (Throwable t) {

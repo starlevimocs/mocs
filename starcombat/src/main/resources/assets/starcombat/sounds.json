@@ -1,0 +1,57 @@
+{
+  "swing": {
+    "subtitle": "subtitles.starcombat.swing",
+    "sounds": [
+      "starcombat:swing1",
+      "starcombat:swing2",
+      "starcombat:swing3"
+    ]
+  },
+  "swing_heavy": {
+    "subtitle": "subtitles.starcombat.swing",
+    "sounds": [
+      "starcombat:swing_heavy1",
+      "starcombat:swing_heavy2"
+    ]
+  },
+  "chain": {
+    "subtitle": "subtitles.starcombat.chain",
+    "sounds": [
+      "starcombat:chain1",
+      "starcombat:chain2",
+      "starcombat:chain3"
+    ]
+  },
+  "hit": {
+    "subtitle": "subtitles.starcombat.hit",
+    "sounds": [
+      "starcombat:hit1",
+      "starcombat:hit2",
+      "starcombat:hit3"
+    ]
+  },
+  "slam": {
+    "subtitle": "subtitles.starcombat.slam",
+    "sounds": [
+      "starcombat:slam"
+    ]
+  },
+  "ignite": {
+    "subtitle": "subtitles.starcombat.ignite",
+    "sounds": [
+      "starcombat:ignite"
+    ]
+  },
+  "grapple": {
+    "subtitle": "subtitles.starcombat.grapple",
+    "sounds": [
+      "starcombat:grapple"
+    ]
+  },
+  "latch": {
+    "subtitle": "subtitles.starcombat.latch",
+    "sounds": [
+      "starcombat:latch"
+    ]
+  }
+}

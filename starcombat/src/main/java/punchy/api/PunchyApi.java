@@ -17,6 +17,14 @@ public final class PunchyApi {
         throw new UnsupportedOperationException("stub");
     }
 
+    public static void itemKind(String owner, ItemKindLook look) {
+        throw new UnsupportedOperationException("stub");
+    }
+
+    public interface ItemKindLook {
+        String kind(Object stack);
+    }
+
     public interface HeldItemLook {
         Object stack(Object player, boolean mainHand, Object stack);
     }

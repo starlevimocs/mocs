@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +51,15 @@ final class Render {
         ItemStack stack = bladeStack();
         mc.getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE, light, OverlayTexture.NO_OVERLAY, ps, buffers, mc.level, 0);
         mc.getItemRenderer().renderStatic(glow, ItemDisplayContext.NONE, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, ps, buffers, mc.level, 0);
+    }
+
+    /** La hoja empuñada en tercera persona ({@code side}: +1 derecha, -1 izquierda), con su brillo. */
+    static void heldBlade(PoseStack ps, MultiBufferSource buffers, int light, LivingEntity holder, int side) {
+        Minecraft mc = Minecraft.getInstance();
+        ItemStack stack = bladeStack();
+        ItemDisplayContext ctx = side > 0 ? ItemDisplayContext.THIRD_PERSON_RIGHT_HAND : ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
+        mc.getItemRenderer().renderStatic(holder, stack, ctx, side < 0, ps, buffers, holder.level(), light, OverlayTexture.NO_OVERLAY, holder.getId());
+        mc.getItemRenderer().renderStatic(holder, glow, ctx, side < 0, ps, buffers, holder.level(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, holder.getId());
     }
 
     static void world(PoseStack ps, Vec3 cam, float partial) {
