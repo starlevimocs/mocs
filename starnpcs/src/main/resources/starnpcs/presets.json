@@ -1,0 +1,240 @@
+{
+ "aldeano": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Aldeano",
+     "idle": "idle",
+     "talk": "talk",
+     "see": "wave",
+     "interact": "nod"
+    }
+   }
+  ]
+ },
+ "paseante": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Paseante",
+     "behavior": "wander",
+     "wanderRadius": 8,
+     "idle": "idle",
+     "talk": "talk",
+     "interact": "nod"
+    }
+   }
+  ]
+ },
+ "herrero": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Herrero",
+     "idle": "blacksmith",
+     "talk": "blacksmith_talk",
+     "interact": "nod",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "pescador": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Pescador",
+     "idle": "fishing",
+     "talk": "fishing_talk",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "barrendero": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Barrendero",
+     "idle": "sweep",
+     "talk": "talk",
+     "interact": "nod",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "lenador": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Leñador",
+     "idle": "chop",
+     "talk": "talk",
+     "interact": "nod",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "mercader": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Mercader",
+     "idle": "merchant",
+     "talk": "merchant_talk",
+     "see": "wave",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "guardia": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Guardia",
+     "idle": "guard",
+     "talk": "guard",
+     "interact": "nod",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "sentado": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Aldeano",
+     "idle": "sit_ground",
+     "talk": "sit_ground",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "charla": {
+  "npcs": [
+   {
+    "dx": -0.45,
+    "profile": {
+     "name": "Aldeana",
+     "idle": "sit_chat_a",
+     "talk": "sit_chat_a",
+     "lookAtPlayer": false,
+     "turnToPlayer": false
+    }
+   },
+   {
+    "dx": 0.45,
+    "profile": {
+     "name": "Aldeano",
+     "idle": "sit_chat_b",
+     "talk": "sit_chat_b",
+     "lookAtPlayer": false,
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "ninos": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Niña",
+     "scale": 0.65,
+     "idle": "kid_play_a",
+     "talk": "talk",
+     "lookAtPlayer": false,
+     "turnToPlayer": false
+    }
+   },
+   {
+    "dz": 2.5,
+    "yaw": 180,
+    "profile": {
+     "name": "Niño",
+     "scale": 0.65,
+     "idle": "kid_play_b",
+     "talk": "talk",
+     "lookAtPlayer": false,
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "duelo": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "Guardia",
+     "idle": "duel_a",
+     "talk": "guard",
+     "lookAtPlayer": false,
+     "turnToPlayer": false
+    }
+   },
+   {
+    "dz": 2.0,
+    "yaw": 180,
+    "profile": {
+     "name": "Guardia",
+     "idle": "duel_b",
+     "talk": "guard",
+     "lookAtPlayer": false,
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "scenes1": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "NPC",
+     "model": "scenes_quests",
+     "idle": "idle1",
+     "see": "seeplayer1",
+     "interact": "interact1",
+     "talk": "",
+     "walk": "",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "scenes2": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "NPC",
+     "model": "scenes_quests",
+     "idle": "idle2",
+     "see": "seeplayer2",
+     "interact": "interact2",
+     "talk": "",
+     "walk": "",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ },
+ "scenes3": {
+  "npcs": [
+   {
+    "profile": {
+     "name": "NPC",
+     "model": "scenes_quests",
+     "idle": "idle3",
+     "see": "seeplayer3",
+     "interact": "interact3",
+     "talk": "",
+     "walk": "",
+     "turnToPlayer": false
+    }
+   }
+  ]
+ }
+}

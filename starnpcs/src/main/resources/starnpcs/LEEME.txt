@@ -1,0 +1,29 @@
+STAR NPCs - carpeta de configuracion (este archivo se reescribe al iniciar)
+
+Todo lo que pongas aca, en el SERVIDOR, se manda solo a los jugadores al entrar.
+Despues de cambiar archivos: /starnpcs reload
+
+models/     Modelos de Blockbench (.bbmodel) con sus animaciones. El nombre del archivo es el nombre del modelo.
+            - Huesos que empiezan con prop_ : solo se ven en las animaciones que tienen alguna clave para ese hueso.
+            - Huesos item_right / item_left : ahi se dibuja lo que el NPC lleva en cada mano.
+            - Una textura cuyo nombre contiene "skin" se reemplaza por la skin del NPC.
+            - Hueso head : sigue al jugador con la mirada.
+            - Sonidos: en Blockbench, en la linea de Efectos de la animacion, una clave de sonido con el texto
+              minecraft:block.anvil.place|volumen|tono
+              Particulas: una clave de particula con  minecraft:crit|cantidad|x|y|z  (en pixeles del modelo).
+            - Si un archivo se llama human.bbmodel o human_slim.bbmodel reemplaza al modelo del mod.
+editable/   Copia del modelo humano del mod (human.bbmodel) para abrir en Blockbench y agregarle animaciones.
+            Guardalo en models/ con el mismo nombre para usar tu version.
+skins/      Skins .png de 64x64. En el NPC: file:nombre
+emotes/     Emotes de Emotecraft (.json). Quedan como animaciones del modelo humano (experimental).
+presets/    NPCs guardados con /starnpcs preset save <nombre>
+sounds.json Sonidos agregados a animaciones con /starnpcs sound add <modelo> <animacion> <segundo> <sonido> [volumen] [tono]
+
+Comandos (/starnpcs o /snpc, actuan sobre el NPC mas cercano):
+  wand | spawn [preset] | presets | edit | remove | list | info
+  move <front|back|left|right|up|down> [bloques] | rotate <grados> | here
+  set <campo> <valor> | skin <player:Nombre|url:https://...|file:archivo> | scale <n>
+  play <animacion|@see|@interact> | sync | say <texto> | equip
+  trade add | trade clear | trade open <jugador>
+  line add <texto> | line clear | command add <comando> | command clear
+  sound add ... | sound clear <modelo> <animacion> | preset save <nombre> | reload
