@@ -1,0 +1,22 @@
+{
+  "entity.starnpcs.npc": "NPC",
+  "item.starnpcs.npc_wand": "NPC Wand",
+  "item.starnpcs.npc_wand.tip1": "Click a block: creates an NPC and opens its editor.",
+  "item.starnpcs.npc_wand.tip2": "Click an NPC: edits it.",
+  "starnpcs.msg.no_npc": "There is no NPC nearby.",
+  "starnpcs.msg.synced": "%s NPC(s) synced: their animations start together.",
+  "starnpcs.msg.played": "Animation triggered on %s NPC(s).",
+  "starnpcs.msg.trade_hands": "Hold what it sells in your main hand and the price in your off hand.",
+  "starnpcs.msg.trade_added": "Offer added (%s total).",
+  "starnpcs.msg.presets": "Presets: %s",
+  "starnpcs.msg.preset_saved": "Preset saved: %s",
+  "starnpcs.msg.no_preset": "Preset %s does not exist.",
+  "starnpcs.msg.spawned": "%s NPC(s) created from preset %s.",
+  "starnpcs.msg.removed": "NPC removed: %s",
+  "starnpcs.msg.count": "%s NPC(s) loaded.",
+  "starnpcs.msg.bad_field": "Field %s does not exist (or is a list).",
+  "starnpcs.msg.bad_number": "%s is not a number.",
+  "starnpcs.msg.set": "%s = %s",
+  "starnpcs.msg.reloaded": "Star NPCs files reloaded and sent to players.",
+  "starnpcs.msg.sound_added": "Sound added to %s/%s."
+}

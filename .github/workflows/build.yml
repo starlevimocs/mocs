@@ -14,6 +14,8 @@ on:
       - '.github/workflows/starvfx.yml'
       - 'starcombat/**'
       - '.github/workflows/starcombat.yml'
+      - 'starnpcs/**'
+      - '.github/workflows/starnpcs.yml'
   workflow_dispatch:
 
 permissions:

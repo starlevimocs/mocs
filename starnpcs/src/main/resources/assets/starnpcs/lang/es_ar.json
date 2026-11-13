@@ -1,0 +1,22 @@
+{
+  "entity.starnpcs.npc": "NPC",
+  "item.starnpcs.npc_wand": "Vara de NPC",
+  "item.starnpcs.npc_wand.tip1": "Clic en un bloque: crea un NPC y abre su editor.",
+  "item.starnpcs.npc_wand.tip2": "Clic en un NPC: lo edita.",
+  "starnpcs.msg.no_npc": "No hay ningún NPC cerca.",
+  "starnpcs.msg.synced": "%s NPC sincronizado(s): sus animaciones arrancan juntas.",
+  "starnpcs.msg.played": "Animación disparada en %s NPC.",
+  "starnpcs.msg.trade_hands": "Tené en la mano principal lo que vende y en la izquierda lo que cobra.",
+  "starnpcs.msg.trade_added": "Oferta agregada (%s en total).",
+  "starnpcs.msg.presets": "Presets: %s",
+  "starnpcs.msg.preset_saved": "Preset guardado: %s",
+  "starnpcs.msg.no_preset": "No existe el preset %s.",
+  "starnpcs.msg.spawned": "%s NPC creado(s) del preset %s.",
+  "starnpcs.msg.removed": "NPC borrado: %s",
+  "starnpcs.msg.count": "%s NPC cargado(s).",
+  "starnpcs.msg.bad_field": "No existe el campo %s (o es una lista).",
+  "starnpcs.msg.bad_number": "%s no es un número.",
+  "starnpcs.msg.set": "%s = %s",
+  "starnpcs.msg.reloaded": "Archivos de Star NPCs recargados y enviados a los jugadores.",
+  "starnpcs.msg.sound_added": "Sonido agregado a %s/%s."
+}
